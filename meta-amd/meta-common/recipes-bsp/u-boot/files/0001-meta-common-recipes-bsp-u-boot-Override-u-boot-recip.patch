@@ -1,26 +1,28 @@
-From d441ed230261a75eac5832c842aea8a5951fdc55 Mon Sep 17 00:00:00 2001
+From 1a09fab8d281e63595f1f7837a54f198fddddb2d Mon Sep 17 00:00:00 2001
 From: Ashok Kumar <ashok2.kumar@amd.com>
-Date: Tue, 25 Jul 2023 10:05:21 -0500
-Subject: [PATCH] Added new DTS ast2600-jamaica file
+Date: Wed, 26 Jul 2023 13:20:56 -0500
+Subject: [PATCH] meta-common/recipes-bsp/u-boot: Override u-boot recipe for
+ 2x1poc
 
-Added new DTS ast2600-jamaica file
+Overrides u-boot recipe for 2x1poc platform.
+1. Adds ast2600 jamaica dts.
+2. Adds amd-ast2600-u-boot.cfg.
 
 Signed-off-by: Ashok Kumar <ashok2.kumar@amd.com>
 ---
  arch/arm/dts/Makefile            |   3 +-
  arch/arm/dts/ast2600-jamaica.dts | 209 +++++++++++++++++++++++++++++++
- lib/smbios.c                     |   2 +-
- 3 files changed, 212 insertions(+), 2 deletions(-)
+ 2 files changed, 211 insertions(+), 1 deletion(-)
  create mode 100644 arch/arm/dts/ast2600-jamaica.dts
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 0a893baf64..1f30e620d1 100755
+index 786042cd83..6d760ac1fb 100755
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -697,7 +697,8 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+@@ -684,7 +684,8 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	ast2600-fpga.dtb \
+ 	ast2600-rainier.dtb \
  	ast2600-slt.dtb \
- 	ast2600-tacoma.dtb \
- 	ast2600-intel.dtb \
 -	ast2600-tacoma.dtb
 +	ast2600-tacoma.dtb \
 +	ast2600-jamaica.dtb
@@ -242,19 +244,6 @@ index 0000000000..9808302f09
 +&display_port {
 +	status = "okay";
 +};
-diff --git a/lib/smbios.c b/lib/smbios.c
-index e8ee55c4ae..2913d614e5 100644
---- a/lib/smbios.c
-+++ b/lib/smbios.c
-@@ -75,7 +75,7 @@ static int smbios_write_type0(ulong *current, int handle)
- {
- 	struct smbios_type0 *t;
- 	int len = sizeof(struct smbios_type0);
--
-+	const char U_BOOT_DMI_DATE[256] = "";
- 	t = map_sysmem(*current, len);
- 	memset(t, 0, sizeof(struct smbios_type0));
- 	fill_smbios_header(t, SMBIOS_BIOS_INFORMATION, len, handle);
 --
 2.25.1
 
