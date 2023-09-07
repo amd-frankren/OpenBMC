@@ -1,0 +1,473 @@
+From 06804f34b3986c2f9c6da6f512feb84a6e369651 Mon Sep 17 00:00:00 2001
+From: Ashok Kumar <ashok2.kumar@amd.com>
+Date: Thu, 7 Sep 2023 08:59:58 -0500
+Subject: [PATCH 1/1] Added Marley DTS base version
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+Signed-off-by: Ashok Kumar <ashok2.kumar@amd.com>
+---
+ arch/arm/boot/dts/Makefile                    |   2 +
+ .../boot/dts/aspeed-bmc-amd-marley-i3c.dts    | 214 +++++++++++++++++
+ arch/arm/boot/dts/aspeed-bmc-amd-marley.dts   | 215 ++++++++++++++++++
+ 3 files changed, 431 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-amd-marley.dts
+
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index c2166791ed77..23c24dba86a8 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1398,6 +1398,8 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-amd-purico.dtb \
+ 	aspeed-bmc-amd-recluse.dtb \
+ 	aspeed-bmc-amd-volcano.dtb \
++	aspeed-bmc-amd-marley.dtb \
++	aspeed-bmc-amd-marley-i3c.dtb \
+ 	aspeed-bmc-amd-parrypeak.dtb \
+ 	aspeed-bmc-amd-sh5d807.dtb \
+ 	aspeed-bmc-ampere-mtjade.dtb \
+diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts b/arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts
+new file mode 100644
+index 000000000000..6d852ded6959
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts
+@@ -0,0 +1,214 @@
++// SPDX-License-Identifier: GPL-2.0
++// Copyright (c) 2022 AMD Inc.
++// Author: Ashok kumar <ashok2.kumar@amd.com>
++// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
++
++/dts-v1/;
++
++#include "aspeed-g6.dtsi"
++#include "dt-bindings/gpio/aspeed-gpio.h"
++
++/ {
++	model = "AMD Marley BMC";
++	compatible = "amd,marley-bmc", "aspeed,ast2600";
++
++	aliases {
++		serial4 = &uart5;
++		ethernet0 = &mac3;
++		ethernet1 = &mac2;
++	};
++
++	chosen {
++		stdout-path = &uart5;
++		bootargs = "console=ttyS4,115200 earlycon vmalloc=512MB";
++	};
++
++
++	memory@80000000 {
++		device_type = "memory";
++		reg = <0x80000000 0x80000000>;
++	};
++
++	reserved-memory {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++
++		video_engine_memory: jpegbuffer {
++			size = <0x02000000>;	/* 32M */
++			alignment = <0x01000000>;
++			compatible = "shared-dma-pool";
++			reusable;
++		};
++
++		pcc_memory: pccbuffer {
++			no-map;
++			reg = <0xE0000000 0x00001000>; /* 4K */
++		};
++	};
++
++};
++
++&mdio0 {
++	status = "okay";
++
++	ethphy0: ethernet-phy@0 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <0>;
++	};
++};
++
++&mac2 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii3_default>;
++	clock-names = "MACCLK", "RCLK";
++	use-ncsi;
++};
++
++&mac3 {
++	status = "okay";
++	phy-mode = "rgmii";
++	phy-handle = <&ethphy0>;
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rgmii4_default>;
++};
++
++&fmc {
++	status = "okay";
++	fmc-spi-user-mode;
++	flash@0 {
++		compatible = "jedec,spi-nor";
++		status = "okay";
++		label = "bmc";
++		spi-tx-bus-width = <4>;
++		spi-rx-bus-width = <4>;
++		#include "openbmc-flash-layout-128.dtsi"
++	};
++};
++
++&spi1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi1_default &pinctrl_qspi1_default>;
++	fmc-spi-user-mode;
++	compatible = "aspeed,ast2600-spi";
++
++	flash@0 {
++		compatible = "jedec,spi-nor";
++		label = "pnor";
++		status = "okay";
++	};
++
++};
++
++&spi2 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi2_default &pinctrl_qspi2_default>;
++	fmc-spi-user-mode;
++	compatible = "aspeed,ast2600-spi";
++
++	flash@0 {
++		compatible = "jedec,spi-nor";
++		label = "pnor";
++		status = "okay";
++	};
++
++};
++
++// eSPI Virtual UART - 0x3F8
++&vuart1 {
++	status = "okay";
++};
++&uart1 {
++	//Host console
++	compatible = "aspeed,ast2600-uart";
++	/delete-property/ reg-shift;
++	/delete-property/ reg-io-width;
++	dma-mode;
++	dma-channel = <0>;
++	status = "okay";
++};
++
++//BMC Console
++&uart5 {
++	status = "okay";
++};
++
++// I2C configs
++&i2c8 {
++	// Net name i2c4 (SCM_I2C4) - HPM BRD ID
++	status = "okay";
++
++	mbeeprom@50 {
++		compatible = "microchip,24lc256","atmel,24c256";
++		reg = <0x50>;
++	};
++};
++
++&i2c12 {
++	// LOCAL MGMT - EEPROM, RTC
++	status = "okay";
++	bmceeprom@50 {
++	compatible = "microchip,24lc512","atmel,24c512";
++	reg = <0x50>;
++	};
++};
++
++&espi_ctrl {
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_espi_default &pinctrl_espialt_default>;
++
++	perif,dma-mode;
++	perif,memcyc-src-addr = <0x30000000>;
++	perif,memcyc-size = <0x4000000>;
++
++	/* SAFS - Hw mode */
++	flash,dma-mode;
++	flash,safs-mode = <0x2>;
++};
++
++&espi_mmbi {
++	status = "okay";
++};
++
++&jtag1 {
++	status = "okay";
++};
++
++&video {
++	status = "okay";
++	memory-region = <&video_engine_memory>;
++};
++
++&vhub {
++	status = "okay";
++};
++
++&lpc_ctrl {
++	status = "okay";
++};
++
++&lpc_pcc {
++	port-addr = <0x80>;
++	dma-mode;
++	memory-region = <&pcc_memory>;
++	rec-mode = <0x1>;
++	port-addr-hbits-select = <0x1>;
++	port-addr-xbits = <0x3>;
++	status = "okay";
++};
++
++&kcs3 {
++	status = "okay";
++	aspeed,lpc-io-reg = <0xCA2>;
++};
++
++&uart_routing {
++	status = "okay";
++};
++
+diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-marley.dts b/arch/arm/boot/dts/aspeed-bmc-amd-marley.dts
+new file mode 100644
+index 000000000000..dc77105794c5
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-amd-marley.dts
+@@ -0,0 +1,215 @@
++// SPDX-License-Identifier: GPL-2.0
++// Copyright (c) 2022 AMD Inc.
++// Author: Ashok kumar <ashok2.kumar@amd.com>
++// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
++
++/dts-v1/;
++
++#include "aspeed-g6.dtsi"
++#include "dt-bindings/gpio/aspeed-gpio.h"
++
++/ {
++	model = "AMD Marley BMC";
++	compatible = "amd,marley-bmc", "aspeed,ast2600";
++
++	aliases {
++		serial4 = &uart5;
++		ethernet0 = &mac3;
++		ethernet1 = &mac2;
++	};
++
++	chosen {
++		stdout-path = &uart5;
++		bootargs = "console=ttyS4,115200 earlycon vmalloc=512MB";
++	};
++
++
++	memory@80000000 {
++		device_type = "memory";
++		reg = <0x80000000 0x80000000>;
++	};
++
++	reserved-memory {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++
++		video_engine_memory: jpegbuffer {
++			size = <0x02000000>;	/* 32M */
++			alignment = <0x01000000>;
++			compatible = "shared-dma-pool";
++			reusable;
++		};
++
++		pcc_memory: pccbuffer {
++			no-map;
++			reg = <0xE0000000 0x00001000>; /* 4K */
++		};
++	};
++
++};
++
++&mdio0 {
++	status = "okay";
++
++	ethphy0: ethernet-phy@0 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <0>;
++	};
++};
++
++&mac2 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii3_default>;
++	clock-names = "MACCLK", "RCLK";
++	use-ncsi;
++};
++
++&mac3 {
++	status = "okay";
++	phy-mode = "rgmii";
++	phy-handle = <&ethphy0>;
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rgmii4_default>;
++};
++
++&fmc {
++	status = "okay";
++	fmc-spi-user-mode;
++	flash@0 {
++		compatible = "jedec,spi-nor";
++		status = "okay";
++		label = "bmc";
++		spi-tx-bus-width = <4>;
++		spi-rx-bus-width = <4>;
++		#include "openbmc-flash-layout-128.dtsi"
++	};
++};
++
++&spi1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi1_default &pinctrl_qspi1_default>;
++	fmc-spi-user-mode;
++	compatible = "aspeed,ast2600-spi";
++
++	flash@0 {
++		compatible = "jedec,spi-nor";
++		label = "pnor";
++		status = "okay";
++	};
++
++};
++
++&spi2 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi2_default &pinctrl_qspi2_default>;
++	fmc-spi-user-mode;
++	compatible = "aspeed,ast2600-spi";
++
++	flash@0 {
++		compatible = "jedec,spi-nor";
++		label = "pnor";
++		status = "okay";
++	};
++
++};
++
++// eSPI Virtual UART - 0x3F8
++&vuart1 {
++	status = "okay";
++};
++&uart1 {
++	//Host console
++	compatible = "aspeed,ast2600-uart";
++	/delete-property/ reg-shift;
++	/delete-property/ reg-io-width;
++	dma-mode;
++	dma-channel = <0>;
++	status = "okay";
++};
++
++//BMC Console
++&uart5 {
++	status = "okay";
++};
++
++// I2C configs
++&i2c8 {
++	// Net name i2c4 (SCM_I2C4) - HPM BRD ID
++	status = "okay";
++
++	mbeeprom@50 {
++		compatible = "microchip,24lc256","atmel,24c256";
++		reg = <0x50>;
++	};
++};
++
++&i2c12 {
++	// LOCAL MGMT - EEPROM, RTC
++	status = "okay";
++	bmceeprom@50 {
++	compatible = "microchip,24lc512","atmel,24c512";
++	reg = <0x50>;
++	};
++};
++
++&espi_ctrl {
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_espi_default &pinctrl_espialt_default>;
++
++	perif,dma-mode;
++	perif,memcyc-src-addr = <0x30000000>;
++	perif,memcyc-size = <0x4000000>;
++
++	/* SAFS - Hw mode */
++	flash,dma-mode;
++	flash,safs-mode = <0x2>;
++};
++
++&espi_mmbi {
++	status = "okay";
++};
++
++&jtag1 {
++	status = "okay";
++};
++
++&video {
++	status = "okay";
++	memory-region = <&video_engine_memory>;
++};
++
++&vhub {
++	status = "okay";
++};
++
++&lpc_ctrl {
++	status = "okay";
++};
++
++&lpc_pcc {
++	port-addr = <0x80>;
++	dma-mode;
++	memory-region = <&pcc_memory>;
++	rec-mode = <0x1>;
++	port-addr-hbits-select = <0x1>;
++	port-addr-xbits = <0x3>;
++	status = "okay";
++};
++
++&kcs3 {
++	status = "okay";
++	aspeed,lpc-io-reg = <0xCA2>;
++};
++
++&uart_routing {
++	status = "okay";
++};
++
++
+--
+2.17.1
+
