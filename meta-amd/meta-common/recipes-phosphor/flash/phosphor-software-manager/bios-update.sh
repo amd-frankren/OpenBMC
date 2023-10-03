@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Below are the BMC GPIO settings to access BIOS SPI flash
-# GPIOs: [HPM_BMC_GPIOO1:HPM_BMC_GPIOO0]
-#   	[00] = Run Mode
-#   	[01] = Local BIOS SPI
-#   	[10] = HPM FPGA SPI
-#   	[11] = HPM LOM SPI
-#
+# GPIOs: [SGPIO_O7, SGPIO_O5, SGPIO_O3]
+#   	[000] = Run Mode
+#   	[001] = Local P0 BIOS SPI
+#   	[101] = Local P1 BIOS SPI
+#   	[010] = HPM FPGA SPI
+#   	[011] = HPM LOM SPI
 
 set +e
 
@@ -14,14 +14,10 @@ POWER_CMD_OFF="busctl set-property xyz.openbmc_project.State.Chassis /xyz/openbm
 POWER_CMD_ON="busctl set-property xyz.openbmc_project.State.Chassis /xyz/openbmc_project/state/chassis0 xyz.openbmc_project.State.Chassis RequestedPowerTransition s xyz.openbmc_project.State.Chassis.Transition.On"
 IMAGE_DIR=$1
 
-GPIOCHIP=816
-GPIOO0=$((${GPIOCHIP} + 112 + 0))
-GPIOO1=$((${GPIOCHIP} + 112 + 1))
-
-# Lanai
-GPIOV0=$((${GPIOCHIP} + 168 + 0))
-GPIOV1=$((${GPIOCHIP} + 168 + 1))
-LANAI_SPI_DEV="1e630000.spi"
+GPIOCHIP=524
+GPIOO3=$((${GPIOCHIP} + 115))
+GPIOO5=$((${GPIOCHIP} + 117))
+GPIOO7=$((${GPIOCHIP} + 119))
 
 SPI_DEV="1e631000.spi"
 SPI_PATH="/sys/bus/platform/drivers/aspeed-smc"
@@ -38,12 +34,12 @@ power_status() {
 set_gpio_to_bmc()
 {
     echo "switch bios GPIO to bmc"
-    if [ ! -d /sys/class/gpio/gpio$GPIOO0 ]; then
+    if [ ! -d /sys/class/gpio/gpio$GPIOO3 ]; then
         cd /sys/class/gpio
-        echo $GPIOO0 > export
-        cd gpio$GPIOO0
+        echo $GPIOO3 > export
+        cd gpio$GPIOO3
     else
-        cd /sys/class/gpio/gpio$GPIOO0
+        cd /sys/class/gpio/gpio$GPIOO3
     fi
     direc=`cat direction`
     if [ $direc == "in" ]; then
@@ -54,12 +50,28 @@ set_gpio_to_bmc()
         echo 1 > value
     fi
 
-    if [ ! -d /sys/class/gpio/gpio$GPIOO1 ]; then
+    if [ ! -d /sys/class/gpio/gpio$GPIOO5 ]; then
         cd /sys/class/gpio
-        echo $GPIOO1 > export
-        cd gpio$GPIOO1
+        echo $GPIOO5 > export
+        cd gpio$GPIOO5
     else
-        cd /sys/class/gpio/gpio$GPIOO1
+        cd /sys/class/gpio/gpio$GPIOO5
+    fi
+    direc=`cat direction`
+    if [ $direc == "in" ]; then
+        echo "out" > direction
+    fi
+    data=`cat value`
+    if [ "$data" == "1" ]; then
+        echo 0 > value
+    fi
+
+    if [ ! -d /sys/class/gpio/gpio$GPIOO7 ]; then
+        cd /sys/class/gpio
+        echo $GPIOO7 > export
+        cd gpio$GPIOO7
+    else
+        cd /sys/class/gpio/gpio$GPIOO7
     fi
     direc=`cat direction`
     if [ $direc == "in" ]; then
@@ -72,50 +84,16 @@ set_gpio_to_bmc()
 
     return 0
 }
-set_lanai_gpio_to_bmc()
-{
-    echo "switch bios GPIO to bmc"
-    if [ ! -d /sys/class/gpio/gpio$GPIOV0 ]; then
-        cd /sys/class/gpio
-        echo $GPIOV0 > export
-        cd gpio$GPIOV0
-    else
-        cd /sys/class/gpio/gpio$GPIOV0
-    fi
-    direc=`cat direction`
-    if [ $direc == "in" ]; then
-        echo "out" > direction
-    fi
-    data=`cat value`
-    if [ "$data" == "0" ]; then
-        echo 1 > value
-    fi
-    if [ ! -d /sys/class/gpio/gpio$GPIOV1 ]; then
-        cd /sys/class/gpio
-        echo $GPIOV1 > export
-        cd gpio$GPIOV1
-    else
-        cd /sys/class/gpio/gpio$GPIOV1
-    fi
-    direc=`cat direction`
-    if [ $direc == "in" ]; then
-        echo "out" > direction
-    fi
-    data=`cat value`
-    if [ "$data" == "0" ]; then
-        echo 1 > value
-    fi
-    return 0
-}
+
 set_gpio_to_host()
 {
     echo "switch bios GPIO to host"
-    if [ ! -d /sys/class/gpio/gpio$GPIOO0 ]; then
+    if [ ! -d /sys/class/gpio/gpio$GPIOO3 ]; then
         cd /sys/class/gpio
-        echo $GPIOO0 > export
-        cd gpio$GPIOO0
+        echo $GPIOO3 > export
+        cd gpio$GPIOO3
     else
-        cd /sys/class/gpio/gpio$GPIOO0
+        cd /sys/class/gpio/gpio$GPIOO3
     fi
     direc=`cat direction`
     if [ $direc == "in" ]; then
@@ -126,14 +104,14 @@ set_gpio_to_host()
         echo 0 > value
     fi
     echo "in" > direction
-    echo $GPIOO0 > /sys/class/gpio/unexport
+    echo $GPIOO3 > /sys/class/gpio/unexport
 
-    if [ ! -d /sys/class/gpio/gpio$GPIOO1 ]; then
+    if [ ! -d /sys/class/gpio/gpio$GPIOO5 ]; then
         cd /sys/class/gpio
-        echo $GPIOO1 > export
-        cd gpio$GPIOO1
+        echo $GPIOO5 > export
+        cd gpio$GPIOO5
     else
-        cd /sys/class/gpio/gpio$GPIOO1
+        cd /sys/class/gpio/gpio$GPIOO5
     fi
     direc=`cat direction`
     if [ $direc == "in" ]; then
@@ -144,19 +122,14 @@ set_gpio_to_host()
         echo 0 > value
     fi
     echo "in" > direction
-    echo $GPIOO1 > /sys/class/gpio/unexport
+    echo $GPIOO5 > /sys/class/gpio/unexport
 
-    return 0
-}
-set_lanai_gpio_to_host()
-{
-    echo "switch bios GPIO to host"
-    if [ ! -d /sys/class/gpio/gpio$GPIOV0 ]; then
+    if [ ! -d /sys/class/gpio/gpio$GPIOO7 ]; then
         cd /sys/class/gpio
-        echo $GPIOV0 > export
-        cd gpio$GPIOV0
+        echo $GPIOO7 > export
+        cd gpio$GPIOO7
     else
-        cd /sys/class/gpio/gpio$GPIOV0
+        cd /sys/class/gpio/gpio$GPIOO7
     fi
     direc=`cat direction`
     if [ $direc == "in" ]; then
@@ -167,24 +140,8 @@ set_lanai_gpio_to_host()
         echo 0 > value
     fi
     echo "in" > direction
-    echo $GPIOV0 > /sys/class/gpio/unexport
-    if [ ! -d /sys/class/gpio/gpio$GPIOV1 ]; then
-        cd /sys/class/gpio
-        echo $GPIOV1 > export
-        cd gpio$GPIOV1
-    else
-        cd /sys/class/gpio/gpio$GPIOV1
-    fi
-    direc=`cat direction`
-    if [ $direc == "in" ]; then
-        echo "out" > direction
-    fi
-    data=`cat value`
-    if [ "$data" == "1" ]; then
-        echo 0 > value
-    fi
-    echo "in" > direction
-    echo $GPIOV1 > /sys/class/gpio/unexport
+    echo $GPIOO7 > /sys/class/gpio/unexport
+
     return 0
 }
 
@@ -271,22 +228,6 @@ sleep 1
 echo "Set GPIO $GPIO back for host to access SPI flash"
 set_gpio_to_host
 sleep 1
-
-# Lanai flash start--------------------------
-# (ignore errors but capture return status)
-lanai_ret=0
-set_lanai_gpio_to_bmc || lanai_ret=$?
-echo "Lanai gpio switch status: $lanai_ret"
-echo -n $LANAI_SPI_DEV > $SPI_PATH/bind || lanai_ret=$?
-echo "Lanai spi bind status: $lanai_ret"
-flash_image_to_mtd || lanai_ret=$?
-echo "Lanai flashcp status: $lanai_ret"
-echo -n $LANAI_SPI_DEV > $SPI_PATH/unbind || lanai_ret=$?
-echo "Lanai unbind status: $lanai_ret"
-set_lanai_gpio_to_host || lanai_ret=$?
-echo "Lanai gpio restore status: $lanai_ret"
-sleep 1
-# Lanai flash end----------------------------
 
 if [ "$power_state" != "off" ];
 then

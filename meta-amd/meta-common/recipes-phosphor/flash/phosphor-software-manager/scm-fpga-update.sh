@@ -5,8 +5,11 @@ set +e
 IMAGE_DIR=$1
 
 GPIOCHIP=816
-GPIOV0=$((${GPIOCHIP} + 168 + 0))
 GPIOV1=$((${GPIOCHIP} + 168 + 1))
+GPIOV2=$((${GPIOCHIP} + 168 + 2))
+GPIOV2=$((${GPIOCHIP} + 168 + 3))
+GPIOV2=$((${GPIOCHIP} + 168 + 4))
+GPIOV2=$((${GPIOCHIP} + 168 + 5))
 
 SPI_DEV="1e630000.spi"
 SPI_PATH="/sys/bus/platform/drivers/aspeed-smc"
@@ -14,21 +17,6 @@ SPI_PATH="/sys/bus/platform/drivers/aspeed-smc"
 set_gpio_to_bmc()
 {
     echo "switch SCM FPGA GPIO to bmc"
-    if [ ! -d /sys/class/gpio/gpio$GPIOV0 ]; then
-        cd /sys/class/gpio
-        echo $GPIOV0 > export
-        cd gpio$GPIOV0
-    else
-        cd /sys/class/gpio/gpio$GPIOV0
-    fi
-    direc=`cat direction`
-    if [ $direc == "in" ]; then
-        echo "out" > direction
-    fi
-    data=`cat value`
-    if [ "$data" == "0" ]; then
-        echo 1 > value
-    fi
 
     if [ ! -d /sys/class/gpio/gpio$GPIOV1 ]; then
         cd /sys/class/gpio
@@ -40,6 +28,70 @@ set_gpio_to_bmc()
     direc=`cat direction`
     if [ $direc == "in" ]; then
         echo "out" > direction
+    fi
+    data=`cat value`
+    if [ "$data" == "0" ]; then
+        echo 1 > value
+    fi
+
+    if [ ! -d /sys/class/gpio/gpio$GPIOV2 ]; then
+        cd /sys/class/gpio
+        echo $GPIOV2 > export
+        cd gpio$GPIOV2
+    else
+        cd /sys/class/gpio/gpio$GPIOV2
+    fi
+    direc=`cat direction`
+    if [ $direc == "out" ]; then
+        echo "in" > direction
+    fi
+    data=`cat value`
+    if [ "$data" == "1" ]; then
+        echo 0 > value
+    fi
+
+    if [ ! -d /sys/class/gpio/gpio$GPIOV3 ]; then
+        cd /sys/class/gpio
+        echo $GPIOV3 > export
+        cd gpio$GPIOV3
+    else
+        cd /sys/class/gpio/gpio$GPIOV3
+    fi
+    direc=`cat direction`
+    if [ $direc == "out" ]; then
+        echo "in" > direction
+    fi
+    data=`cat value`
+    if [ "$data" == "1" ]; then
+        echo 0 > value
+    fi
+
+    if [ ! -d /sys/class/gpio/gpio$GPIOV4 ]; then
+        cd /sys/class/gpio
+        echo $GPIOV4 > export
+        cd gpio$GPIOV4
+    else
+        cd /sys/class/gpio/gpio$GPIOV4
+    fi
+    direc=`cat direction`
+    if [ $direc == "out" ]; then
+        echo "in" > direction
+    fi
+    data=`cat value`
+    if [ "$data" == "1" ]; then
+        echo 0 > value
+    fi
+
+    if [ ! -d /sys/class/gpio/gpio$GPIOV5 ]; then
+        cd /sys/class/gpio
+        echo $GPIOV5 > export
+        cd gpio$GPIOV5
+    else
+        cd /sys/class/gpio/gpio$GPIOV5
+    fi
+    direc=`cat direction`
+    if [ $direc == "out" ]; then
+        echo "in" > direction
     fi
     data=`cat value`
     if [ "$data" == "1" ]; then
@@ -52,24 +104,7 @@ set_gpio_to_bmc()
 set_gpio_to_scm_fpga()
 {
     echo "switch GPIO to SCM FPGA"
-    if [ ! -d /sys/class/gpio/gpio$GPIOV0 ]; then
-        cd /sys/class/gpio
-        echo $GPIOV0 > export
-        cd gpio$GPIOV0
-    else
-        cd /sys/class/gpio/gpio$GPIOV0
-    fi
-    direc=`cat direction`
-    if [ $direc == "in" ]; then
-        echo "out" > direction
-    fi
-    data=`cat value`
-    if [ "$data" == "1" ]; then
-        echo 0 > value
-    fi
-    echo "in" > direction
-    echo $GPIOV0 > /sys/class/gpio/unexport
-
+    
     if [ ! -d /sys/class/gpio/gpio$GPIOV1 ]; then
         cd /sys/class/gpio
         echo $GPIOV1 > export
@@ -77,16 +112,73 @@ set_gpio_to_scm_fpga()
     else
         cd /sys/class/gpio/gpio$GPIOV1
     fi
-    direc=`cat direction`
-    if [ $direc == "in" ]; then
-        echo "out" > direction
-    fi
+    
     data=`cat value`
     if [ "$data" == "1" ]; then
         echo 0 > value
     fi
     echo "in" > direction
     echo $GPIOV1 > /sys/class/gpio/unexport
+
+    if [ ! -d /sys/class/gpio/gpio$GPIOV2 ]; then
+        cd /sys/class/gpio
+        echo $GPIOV2 > export
+        cd gpio$GPIOV2
+    else
+        cd /sys/class/gpio/gpio$GPIOV2
+    fi
+
+    data=`cat value`
+    if [ "$data" == "1" ]; then
+        echo 0 > value
+    fi
+    echo "in" > direction
+    echo $GPIOV2 > /sys/class/gpio/unexport
+
+    if [ ! -d /sys/class/gpio/gpio$GPIOV3 ]; then
+        cd /sys/class/gpio
+        echo $GPIOV3 > export
+        cd gpio$GPIOV3
+    else
+        cd /sys/class/gpio/gpio$GPIOV3
+    fi
+
+    data=`cat value`
+    if [ "$data" == "1" ]; then
+        echo 0 > value
+    fi
+    echo "in" > direction
+    echo $GPIOV3 > /sys/class/gpio/unexport
+
+    if [ ! -d /sys/class/gpio/gpio$GPIOV4 ]; then
+        cd /sys/class/gpio
+        echo $GPIOV4 > export
+        cd gpio$GPIOV4
+    else
+        cd /sys/class/gpio/gpio$GPIOV4
+    fi
+
+    data=`cat value`
+    if [ "$data" == "1" ]; then
+        echo 0 > value
+    fi
+    echo "in" > direction
+    echo $GPIOV4 > /sys/class/gpio/unexport
+
+    if [ ! -d /sys/class/gpio/gpio$GPIOV5 ]; then
+        cd /sys/class/gpio
+        echo $GPIOV5 > export
+        cd gpio$GPIOV5
+    else
+        cd /sys/class/gpio/gpio$GPIOV5
+    fi
+
+    data=`cat value`
+    if [ "$data" == "1" ]; then
+        echo 0 > value
+    fi
+    echo "in" > direction
+    echo $GPIOV5 > /sys/class/gpio/unexport
 
     return 0
 }
