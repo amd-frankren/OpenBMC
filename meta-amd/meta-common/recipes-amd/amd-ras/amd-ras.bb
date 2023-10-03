@@ -32,3 +32,5 @@ DEPENDS += " \
     "
 
 FILES_${PN} += "${systemd_unitdir}/system/com.amd.crashdump.service"
+
+SYSTEMD_AUTO_ENABLE = "disable"

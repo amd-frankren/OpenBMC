@@ -30,5 +30,5 @@ RDEPENDS_${PN} += "amd-apml"
 
 FILES_${PN}  += "${systemd_system_unitdir}/xyz.openbmc_project.Inventory.Item.Cpu_info.service"
 
-
+SYSTEMD_AUTO_ENABLE = "disable"
 

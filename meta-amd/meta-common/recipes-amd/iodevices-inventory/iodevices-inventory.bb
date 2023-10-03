@@ -26,3 +26,5 @@ DEPENDS += " \
     "
 
 FILES_${PN}  += "${systemd_system_unitdir}/xyz.openbmc_project.PCIe.service"
+
+SYSTEMD_AUTO_ENABLE = "disable"
