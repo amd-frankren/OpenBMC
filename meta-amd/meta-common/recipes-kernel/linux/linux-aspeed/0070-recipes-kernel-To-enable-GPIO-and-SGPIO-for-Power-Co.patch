@@ -1,0 +1,145 @@
+From 2c9f571b03dd250da60e61e71acfa25058089fd5 Mon Sep 17 00:00:00 2001
+From: Ashok Kumar <ashok2.kumar@amd.com>
+Date: Tue, 3 Oct 2023 11:53:33 -0500
+Subject: [PATCH 1/1] recipes-kernel: To enable GPIO and SGPIO for Power
+ Control
+
+Jamaica/Marley
+ - GPIO and SGPIO for power control
+ - pin ctrl changes for BIOS -SPIx1
+
+Signed-off-by: Ashok Kumar <ashok2.kumar@amd.com>
+---
+ .../boot/dts/aspeed-bmc-amd-marley-i3c.dts    | 26 +++++++++++++++----
+ arch/arm/boot/dts/aspeed-bmc-amd-marley.dts   | 26 +++++++++++++++----
+ 2 files changed, 42 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts b/arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts
+index f8a7a095c9ad..8c9b959dca72 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts
+@@ -106,7 +106,7 @@ flash@0 {
+ &spi2 {
+ 	status = "okay";
+ 	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_spi2_default &pinctrl_qspi2_default>;
++	pinctrl-0 = <&pinctrl_spi2_default &pinctrl_spi2_default>;
+ 	fmc-spi-user-mode;
+ 	compatible = "aspeed,ast2600-spi";
+
+@@ -657,7 +657,7 @@ &espi_mmbi {
+ &gpio0 {
+ 	gpio-line-names =
+ 	/*A0-A7*/       "","","","","","","","",
+-	/*B0-B7*/       "","","","","","","","",
++	/*B0-B7*/       "","","MON_RST_BTN_L","P0_THERMTRIP_L","","","","",
+ 	/*C0-C7*/       "","","","","","","","",
+ 	/*D0-D7*/       "","","","","","","","",
+ 	/*E0-E7*/       "","","","","","","","",
+@@ -674,13 +674,13 @@ &gpio0 {
+ 	/*P0-P7*/       "","","","","","","","",
+ 	/*Q0-Q7*/       "","","","","","","","",
+ 	/*R0-R7*/       "","","","","","","","",
+-	/*S0-S7*/       "","","","","","","","",
++	/*S0-S7*/       "","","","","","","MON_PWR_GOOD","",
+ 	/*T0-T7*/       "","","","","","","","",
+ 	/*U0-U7*/       "","","","","","","","",
+ 	/*V0-V7*/       "","","","","","","","",
+ 	/*W0-W7*/       "","","","","","","","",
+ 	/*X0-X7*/       "","","","","","","","",
+-	/*Y0-Y7*/       "ASSERT_BMC_READY","","","","","","","",
++	/*Y0-Y7*/       "ASSERT_BMC_READY","","MON_PWR_BTN_L","","","","","",
+ 	/*Z0-Z7*/       "","","","","","","","";
+ };
+
+@@ -688,7 +688,23 @@ &sgpiom0 {
+ 	status = "okay";
+ 	ngpios = <128>;
+ 	bus-frequency = <12000000>;
+-
++		gpio-line-names =
++			/*SA0-SA7*/       "","","","","","","","",
++			/*SB0-SB7*/       "","","","","MON_POST_COMPLETE","","","",
++			/*SC0-SC7*/       "","","","","","","","",
++			/*SD0-SD7*/       "","","","","","","","",
++			/*SE0-SE7*/       "","","P1_THERMTRIP_L","","","","","",
++			/*SF0-SF7*/       "","","","","","","","",
++			/*SG0-SG7*/       "","","","P1_ASSERT_WARM_RST_BTN_L","","","","P1_ASSERT_RST_BTN_L",
++			/*SH0-SH7*/       "","RSMRST","","ASSERT_WARM_RST_BTN_L","","","","",
++			/*SI0-SI7*/       "","","","","","","","",
++			/*SJ0-SJ7*/       "","","","","","","","",
++			/*SK0-SK7*/       "","","","","","","","",
++			/*SL0-SL7*/       "","P1_ASSERT_PWR_BTN_L","","P1_ASSERT_NMI_BTN_L","","","","",
++			/*SM0-SM7*/       "","","","","","","","",
++			/*SN0-SN7*/       "","","","","","","","",
++			/*SO0-SO7*/       "","","","","","","","",
++			/*SP0-SP7*/       "","ASSERT_RST_BTN_L","","ASSERT_PWR_BTN_L","","ASSERT_NMI_BTN_L","","";
+ };
+
+ &sgpiom1 {
+diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-marley.dts b/arch/arm/boot/dts/aspeed-bmc-amd-marley.dts
+index f8a7a095c9ad..8c9b959dca72 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-amd-marley.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-amd-marley.dts
+@@ -106,7 +106,7 @@ flash@0 {
+ &spi2 {
+ 	status = "okay";
+ 	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_spi2_default &pinctrl_qspi2_default>;
++	pinctrl-0 = <&pinctrl_spi2_default &pinctrl_spi2_default>;
+ 	fmc-spi-user-mode;
+ 	compatible = "aspeed,ast2600-spi";
+
+@@ -657,7 +657,7 @@ &espi_mmbi {
+ &gpio0 {
+ 	gpio-line-names =
+ 	/*A0-A7*/       "","","","","","","","",
+-	/*B0-B7*/       "","","","","","","","",
++	/*B0-B7*/       "","","MON_RST_BTN_L","P0_THERMTRIP_L","","","","",
+ 	/*C0-C7*/       "","","","","","","","",
+ 	/*D0-D7*/       "","","","","","","","",
+ 	/*E0-E7*/       "","","","","","","","",
+@@ -674,13 +674,13 @@ &gpio0 {
+ 	/*P0-P7*/       "","","","","","","","",
+ 	/*Q0-Q7*/       "","","","","","","","",
+ 	/*R0-R7*/       "","","","","","","","",
+-	/*S0-S7*/       "","","","","","","","",
++	/*S0-S7*/       "","","","","","","MON_PWR_GOOD","",
+ 	/*T0-T7*/       "","","","","","","","",
+ 	/*U0-U7*/       "","","","","","","","",
+ 	/*V0-V7*/       "","","","","","","","",
+ 	/*W0-W7*/       "","","","","","","","",
+ 	/*X0-X7*/       "","","","","","","","",
+-	/*Y0-Y7*/       "ASSERT_BMC_READY","","","","","","","",
++	/*Y0-Y7*/       "ASSERT_BMC_READY","","MON_PWR_BTN_L","","","","","",
+ 	/*Z0-Z7*/       "","","","","","","","";
+ };
+
+@@ -688,7 +688,23 @@ &sgpiom0 {
+ 	status = "okay";
+ 	ngpios = <128>;
+ 	bus-frequency = <12000000>;
+-
++		gpio-line-names =
++			/*SA0-SA7*/       "","","","","","","","",
++			/*SB0-SB7*/       "","","","","MON_POST_COMPLETE","","","",
++			/*SC0-SC7*/       "","","","","","","","",
++			/*SD0-SD7*/       "","","","","","","","",
++			/*SE0-SE7*/       "","","P1_THERMTRIP_L","","","","","",
++			/*SF0-SF7*/       "","","","","","","","",
++			/*SG0-SG7*/       "","","","P1_ASSERT_WARM_RST_BTN_L","","","","P1_ASSERT_RST_BTN_L",
++			/*SH0-SH7*/       "","RSMRST","","ASSERT_WARM_RST_BTN_L","","","","",
++			/*SI0-SI7*/       "","","","","","","","",
++			/*SJ0-SJ7*/       "","","","","","","","",
++			/*SK0-SK7*/       "","","","","","","","",
++			/*SL0-SL7*/       "","P1_ASSERT_PWR_BTN_L","","P1_ASSERT_NMI_BTN_L","","","","",
++			/*SM0-SM7*/       "","","","","","","","",
++			/*SN0-SN7*/       "","","","","","","","",
++			/*SO0-SO7*/       "","","","","","","","",
++			/*SP0-SP7*/       "","ASSERT_RST_BTN_L","","ASSERT_PWR_BTN_L","","ASSERT_NMI_BTN_L","","";
+ };
+
+ &sgpiom1 {
+--
+2.25.1
+

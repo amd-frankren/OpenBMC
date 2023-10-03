@@ -70,4 +70,5 @@ SRC_URI += "file://amd-bmc-baseline.cfg \
             file://0067-Added-Marley-DTS-base-version.patch \
             file://0068-Added-SGPIO-Driver-support.patch \
             file://0069-Jamaica-Marley-base-version-of-DTS-changes.patch \
+            file://0070-recipes-kernel-To-enable-GPIO-and-SGPIO-for-Power-Co.patch \
            "
