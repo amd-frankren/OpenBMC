@@ -1,0 +1,60 @@
+From 001800e3f5c98cbe955b85717d61e2d888af7636 Mon Sep 17 00:00:00 2001
+From: Ashok Kumar <ashok2.kumar@amd.com>
+Date: Thu, 5 Oct 2023 07:41:13 -0500
+Subject: [PATCH 1/1] recipes-kernel: Fixed HPM and BIOS Flash issue Marley
+
+Fixed HPM and BIOS update issue for Marley
+
+Signed-off-by: Ashok Kumar <ashok2.kumar@amd.com>
+---
+ arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts | 4 +++-
+ arch/arm/boot/dts/aspeed-bmc-amd-marley.dts     | 4 +++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts b/arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts
+index 8c9b959dca72..262774729180 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-amd-marley-i3c.dts
+@@ -106,7 +106,7 @@ flash@0 {
+ &spi2 {
+ 	status = "okay";
+ 	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_spi2_default &pinctrl_spi2_default>;
++	pinctrl-0 = <&pinctrl_spi2_default &pinctrl_qspi2_default>;
+ 	fmc-spi-user-mode;
+ 	compatible = "aspeed,ast2600-spi";
+
+@@ -114,6 +114,8 @@ flash@0 {
+ 		compatible = "jedec,spi-nor";
+ 		label = "pnor";
+ 		status = "okay";
++		spi-tx-bus-width = <1>;
++		spi-rx-bus-width = <1>;
+ 	};
+
+ };
+diff --git a/arch/arm/boot/dts/aspeed-bmc-amd-marley.dts b/arch/arm/boot/dts/aspeed-bmc-amd-marley.dts
+index 8c9b959dca72..262774729180 100644
+--- a/arch/arm/boot/dts/aspeed-bmc-amd-marley.dts
++++ b/arch/arm/boot/dts/aspeed-bmc-amd-marley.dts
+@@ -106,7 +106,7 @@ flash@0 {
+ &spi2 {
+ 	status = "okay";
+ 	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_spi2_default &pinctrl_spi2_default>;
++	pinctrl-0 = <&pinctrl_spi2_default &pinctrl_qspi2_default>;
+ 	fmc-spi-user-mode;
+ 	compatible = "aspeed,ast2600-spi";
+
+@@ -114,6 +114,8 @@ flash@0 {
+ 		compatible = "jedec,spi-nor";
+ 		label = "pnor";
+ 		status = "okay";
++		spi-tx-bus-width = <1>;
++		spi-rx-bus-width = <1>;
+ 	};
+
+ };
+--
+2.25.1
+
