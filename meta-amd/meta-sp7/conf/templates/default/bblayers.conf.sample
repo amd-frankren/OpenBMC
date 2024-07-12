@@ -17,5 +17,6 @@ BBLAYERS ?= " \
   ##OEROOT##/meta-security \
   ##OEROOT##/meta-aspeed-sdk \
   ##OEROOT##/meta-amd \
+  ##OEROOT##/meta-amd/meta-common \
   ##OEROOT##/meta-amd/meta-sp7 \
   "
