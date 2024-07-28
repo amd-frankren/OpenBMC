@@ -44,6 +44,7 @@ SUMMARY:${PN}-system = "AMD System"
 RDEPENDS:${PN}-system = " \
         dbus-sensors \
         entity-manager \
+        i3c-tools \
         ipmitool \
         phosphor-state-manager-bmc \
         set-fan-speed \

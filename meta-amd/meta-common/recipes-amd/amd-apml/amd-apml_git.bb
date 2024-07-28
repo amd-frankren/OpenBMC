@@ -11,7 +11,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}:"
 DEPENDS:append  = "apml-modules"
 RRECOMMENDS:${PN}:append = "apml-modules"
 
-RDEPENDS:${PN}:append = "bash i2c-tools"
+RDEPENDS:${PN}:append = "bash i2c-tools i3c-tools"
 
 SRC_URI = "git://github.com/amd/esmi_oob_library;protocol=https;branch=master"
 SRCREV = "48d0cd98051ef7c8e97b958ce061b89dd6bbd0c8"
