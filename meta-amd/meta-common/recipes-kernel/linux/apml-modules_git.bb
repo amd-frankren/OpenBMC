@@ -8,7 +8,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/linux-aspeed:"
 
 SRC_URI = "git://github.com/amd/apml_modules;protocol=https;branch=master"
 
-SRCREV = "36eda083aab61981ea5ec631460afdd21f558f7d"
+SRCREV = "812ed5c1b6d6a883a51b88b5964604190ca22d09"
 
 S = "${WORKDIR}/git"
 
