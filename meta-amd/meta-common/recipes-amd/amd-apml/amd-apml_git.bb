@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM = "file://License.txt;md5=a53f186511a093774907861d15f7014c"
 FILESEXTRAPATHS:prepend := "${THISDIR}:"
 
 # TODO Remove modules dependency once driver support
-#      available in kernel  
+#      available in kernel
 DEPENDS:append  = "apml-modules"
 RRECOMMENDS:${PN}:append = "apml-modules"
 
