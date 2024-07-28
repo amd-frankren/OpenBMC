@@ -1,5 +1,8 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
+PACKAGECONFIG:append = " \
+        kmod \
+        "
 SRC_URI:append = " \
     file://journald-size-policy.conf \
     file://journald-storage-policy.conf \

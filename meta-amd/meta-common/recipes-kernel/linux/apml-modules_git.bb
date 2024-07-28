@@ -19,13 +19,6 @@ do_install:append() {
     install -m 0755 ${S}/amd-apml.h ${D}${includedir}/linux/amd-apml.h
 }
 
-# autoload if installed
-KERNEL_MODULE_AUTOLOAD += "apml_sbrmi apml_sbtsi"
-KERNEL_MODULE_PROBECONF += "apml_sbrmi apml_sbtsi"
-
-PACKAGES += "kernel-module-apml_sbrmi kernel-module-apml_sbtsi"
-RRECOMMENDS:${PN} += "kernel-module-apml_sbrmi kernel-module-apml_sbtsi"
-
 EXTRA_OEMAKE += " \
      KDIR=${STAGING_KERNEL_DIR} \
 "
