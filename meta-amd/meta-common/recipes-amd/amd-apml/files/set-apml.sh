@@ -1,6 +1,6 @@
 #!/bin/bash
 
-num_of_cpu=`/sbin/fw_printenv -n num_of_cpu`
+num_of_cpu=$(/sbin/fw_printenv -n num_of_cpu)
 
 # i2c BUS
 DEV_I2C_2="/dev/i2c-2"
@@ -17,12 +17,11 @@ DEV_I2C_SBRMI_3="3-0038"
 
 # i3c bus
 I3C_TOOL="/usr/bin/i3ctransfer"
-DEV_I3C_PATH="/sys/bus/platform/drivers/dw-i3c-master"
-DEV_I3C_4="1e7a6000.i3c4"
-DEV_I3C_5="1e7a7000.i3c5"
-I3C_MUX_0="/dev/i3c-4-4cc00000000"
-I3C_MUX_1="/dev/i3c-5-4cc00000000"
-i3c_mux_present=0
+DEV_I3C_PATH="/sys/bus/platform/drivers/ast2600-i3c-master"
+DEV_I3C_4="1e7a6000.i3c"
+DEV_I3C_5="1e7a7000.i3c"
+I3C_MUX_0="/dev/bus/i3c/4-4cc00000000"
+I3C_MUX_1="/dev/bus/i3c/5-4cc00000000"
 
 DEV_I3C_SBTSI_PATH="/sys/bus/i3c/drivers/sbtsi_i3c"
 DEV_I3C_SBTSI_4="4-22400000001"
@@ -183,7 +182,7 @@ unbind_i3c_drivers()
 #---------
 
 # check num of cpu
-echo "Num of CPU " $num_of_cpu
+echo "Num of CPU " "$num_of_cpu"
 
 if [[ $1 == "i3c" ]];then
     fw_setenv apml_i3c true
