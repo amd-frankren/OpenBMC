@@ -25,4 +25,7 @@ inherit cmake
 do_install:append () {
         install -d ${D}${bindir}
         install -m 0755 ${WORKDIR}/set-apml.sh ${D}${bindir}
+
+        install -d ${D}${includedir}
+        install -m 0644 ${S}/include/esmi_oob/* ${D}${includedir}/
 }
