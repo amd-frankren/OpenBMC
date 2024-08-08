@@ -61,6 +61,7 @@ RDEPENDS_PN_SYSTEM_EXTRAS:amd-withhost = " \
         phosphor-watchdog \
         phosphor-host-postd \
         phosphor-post-code-manager \
+        vr-update \
         "
 
 python() {
