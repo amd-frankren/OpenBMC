@@ -1,0 +1,67 @@
+From 7521ea65a877a98622e575c814e9d23ac39aa7a5 Mon Sep 17 00:00:00 2001
+From: aasboddu <Aashray.Boddu@amd.com>
+Date: Wed, 28 Aug 2024 10:42:44 -0500
+Subject: [PATCH] phosphor-dbus-interfaces: Add re-timer bundle update
+ interface
+
+Adds re-timer bundle update DBUS interface and
+modifies Version DBUS interface to add RETIMER_BUNDLE
+
+Signed-off-by: aasboddu <Aashray.Boddu@amd.com>
+Change-Id: Ie101f80932b7c398d029a78ecc9d7ebd9119dd10
+---
+ .../RetimerBundleVersion.interface.yaml       | 27 +++++++++++++++++++
+ .../Software/Version.interface.yaml           |  3 +++
+ 2 files changed, 30 insertions(+)
+ create mode 100644 yaml/xyz/openbmc_project/Software/RetimerBundleVersion.interface.yaml
+
+diff --git a/yaml/xyz/openbmc_project/Software/RetimerBundleVersion.interface.yaml b/yaml/xyz/openbmc_project/Software/RetimerBundleVersion.interface.yaml
+new file mode 100644
+index 0000000..93a9c12
+--- /dev/null
++++ b/yaml/xyz/openbmc_project/Software/RetimerBundleVersion.interface.yaml
+@@ -0,0 +1,27 @@
++description: >
++    An extended version string for a xyz.openbmc_project.Software.RetimerBundleVersion.
++properties:
++    - name: FirmwareID
++      type: array[string]
++      description: >
++          Firmware IDs associated with each firmware.
++    - name: Versions
++      type: array[string]
++      description: >
++          Array of all firmware versions.
++    - name: Status
++      type: array[string]
++      description: >
++          Array consist status of all firmware flashed in Bundle.
++    - name: SlaveAddress
++      type: array[string]
++      description: >
++          Array of all slave address.
++    - name: Riser
++      type: array[string]
++      description: >
++          Array consist riser details of retimer.
++    - name: Checksum
++      type: array[string]
++      description: >
++          Array consist checksum details of retimer fw.
+diff --git a/yaml/xyz/openbmc_project/Software/Version.interface.yaml b/yaml/xyz/openbmc_project/Software/Version.interface.yaml
+index 4d64227..0fa4973 100644
+--- a/yaml/xyz/openbmc_project/Software/Version.interface.yaml
++++ b/yaml/xyz/openbmc_project/Software/Version.interface.yaml
+@@ -42,6 +42,9 @@ enumerations:
+           - name: PSU
+             description: >
+                 The version is a version for a PSU.
++          - name: RETIMER_BUNDLE
++            description: >
++                The version is a version for PCIe Retimer
+
+ associations:
+     - name: running
+--
+2.34.1
+
