@@ -42,6 +42,7 @@ RDEPENDS:${PN}-flash = " \
 
 SUMMARY:${PN}-system = "AMD System"
 RDEPENDS:${PN}-system = " \
+        bmc-retimer-update \
         dbus-sensors \
         entity-manager \
         i3c-tools \
