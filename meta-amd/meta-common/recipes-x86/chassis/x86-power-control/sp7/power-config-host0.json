@@ -2,43 +2,43 @@
     "gpio_configs": [
         {
              "Name": "PostComplete",
-             "LineName": "MON_POST_COMPLETE",
+             "LineName": "P0_MGMT_MON_POST_COMPLETE",
              "Type": "GPIO",
              "Polarity": "ActiveHigh"
         },
         {
             "Name": "PowerButton",
-            "LineName": "MON_PWR_BTN_L",
+            "LineName": "P0_MGMT_MON_PWR_BTN_L",
             "Type": "GPIO",
             "Polarity": "ActiveLow"
         },
         {
             "Name": "PowerOk",
-            "LineName": "MON_PWR_GOOD",
+            "LineName": "P0_MGMT_MON_PWR_GOOD",
             "Type": "GPIO",
             "Polarity": "ActiveHigh"
         },
         {
             "Name": "PowerOut",
-            "LineName": "ASSERT_PWR_BTN_L",
+            "LineName": "P0_MGMT_ASSERT_PWR_BTN_L",
             "Type": "GPIO",
             "Polarity": "ActiveLow"
         },
         {
             "Name": "ResetButton",
-            "LineName": "MON_RST_BTN_L",
+            "LineName": "P0_MGMT_MON_RST_BTN_L",
             "Type": "GPIO",
             "Polarity": "ActiveLow"
         },
         {
             "Name": "ResetOut",
-            "LineName": "ASSERT_WARM_RST_BTN_L",
+            "LineName": "P0_MGMT_ASSERT_RST_BTN_L",
             "Type": "GPIO",
             "Polarity": "ActiveLow"
         },
         {
             "Name": "HpmStbyEn",
-            "LineName": "ASSERT_BMC_READY",
+            "LineName": "HPM_STBY_EN",
             "Type": "GPIO",
             "Polarity": "ActiveHigh"
         }
