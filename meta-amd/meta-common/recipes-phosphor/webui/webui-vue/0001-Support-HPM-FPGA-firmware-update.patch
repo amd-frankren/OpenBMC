@@ -1,0 +1,173 @@
+From 4dd80cd941b5184a4ebe8874247fb2c5addc2c21 Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Wed, 14 Aug 2024 05:04:12 -0500
+Subject: [PATCH] webui support for HPM FPGA firmware update.
+
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ src/locales/en-US.json                        |  1 +
+ src/store/modules/Operations/FirmwareStore.js | 14 +++++++
+ src/views/Operations/Firmware/Firmware.vue    |  5 +++
+ .../Operations/Firmware/FirmwareCardsHPM.vue  | 40 +++++++++++++++++++
+ 4 files changed, 60 insertions(+)
+ create mode 100644 src/views/Operations/Firmware/FirmwareCardsHPM.vue
+
+diff --git a/src/locales/en-US.json b/src/locales/en-US.json
+index 8ba7ac9..e547e93 100644
+--- a/src/locales/en-US.json
++++ b/src/locales/en-US.json
+@@ -332,6 +332,7 @@
+         "sectionTitleBmcCards": "BMC",
+         "sectionTitleBmcCardsCombined": "BMC and server",
+         "sectionTitleHostCards": "Host",
++        "sectionTitleHPMCards": "HPM_FPGA",
+         "sectionTitleUpdateFirmware": "Update firmware",
+         "alert": {
+             "operationInProgress": "Server power operation in progress.",
+diff --git a/src/store/modules/Operations/FirmwareStore.js b/src/store/modules/Operations/FirmwareStore.js
+index f6f965f..cd4c992 100644
+--- a/src/store/modules/Operations/FirmwareStore.js
++++ b/src/store/modules/Operations/FirmwareStore.js
+@@ -6,8 +6,10 @@ const FirmwareStore = {
+   state: {
+     bmcFirmware: [],
+     hostFirmware: [],
++    hpmFirmware: [],
+     bmcActiveFirmwareId: null,
+     hostActiveFirmwareId: null,
++    hpmActiveFirmwareId: null,
+     applyTime: null,
+     httpPushUri: null,
+     tftpAvailable: false,
+@@ -25,6 +27,9 @@ const FirmwareStore = {
+         (firmware) => firmware.id === state.hostActiveFirmwareId,
+       );
+     },
++    activeHpmFirmware: (state) => {
++      return state.hpmFirmware.find((firmware) => firmware.id !== null);
++    },
+     backupBmcFirmware: (state) => {
+       return state.bmcFirmware.find(
+         (firmware) => firmware.id !== state.bmcActiveFirmwareId,
+@@ -39,8 +44,10 @@ const FirmwareStore = {
+   mutations: {
+     setActiveBmcFirmwareId: (state, id) => (state.bmcActiveFirmwareId = id),
+     setActiveHostFirmwareId: (state, id) => (state.hostActiveFirmwareId = id),
++    setActiveHpmFimwareId: (state, id) => (state.hpmActiveFirmwareID = id),
+     setBmcFirmware: (state, firmware) => (state.bmcFirmware = firmware),
+     setHostFirmware: (state, firmware) => (state.hostFirmware = firmware),
++    setHpmFirmware: (state, firmware) => (state.hpmFirmware = firmware),
+     setApplyTime: (state, applyTime) => (state.applyTime = applyTime),
+     setHttpPushUri: (state, httpPushUri) => (state.httpPushUri = httpPushUri),
+     setTftpUploadAvailable: (state, tftpAvailable) =>
+@@ -50,6 +57,7 @@ const FirmwareStore = {
+     async getFirmwareInformation({ dispatch }) {
+       dispatch('getActiveHostFirmware');
+       dispatch('getActiveBmcFirmware');
++      dispatch('getActiveHpmFirmware');
+       return await dispatch('getFirmwareInventory');
+     },
+     async getActiveBmcFirmware({ commit }) {
+@@ -82,10 +90,12 @@ const FirmwareStore = {
+         .then((response) => {
+           const bmcFirmware = [];
+           const hostFirmware = [];
++          const hpmFirmware = [];
+           response.forEach(({ data }) => {
+             const firmwareType = data?.RelatedItem?.[0]?.['@odata.id']
+               .split('/')
+               .pop();
++            const descType = data?.Description;
+             const item = {
+               version: data?.Version,
+               id: data?.Id,
+@@ -97,9 +107,13 @@ const FirmwareStore = {
+             } else if (firmwareType === 'Bios') {
+               hostFirmware.push(item);
+             }
++            if (descType === 'HPM_FPGA image') {
++              hpmFirmware.push(item);
++            }
+           });
+           commit('setBmcFirmware', bmcFirmware);
+           commit('setHostFirmware', hostFirmware);
++          commit('setHpmFirmware', hpmFirmware);
+         })
+         .catch((error) => {
+           console.log(error);
+diff --git a/src/views/Operations/Firmware/Firmware.vue b/src/views/Operations/Firmware/Firmware.vue
+index 44a721a..9097496 100644
+--- a/src/views/Operations/Firmware/Firmware.vue
++++ b/src/views/Operations/Firmware/Firmware.vue
+@@ -17,6 +17,9 @@
+
+         <!-- Host Firmware -->
+         <host-cards v-if="!isSingleFileUploadEnabled" />
++
++        <!-- HPM Firmware -->
++        <hpm-cards v-if="!isSingleFileUploadEnabled" />
+       </b-col>
+     </b-row>
+
+@@ -42,6 +45,7 @@ import AlertsServerPower from './FirmwareAlertServerPower';
+ import BmcCards from './FirmwareCardsBmc';
+ import FormUpdate from './FirmwareFormUpdate';
+ import HostCards from './FirmwareCardsHost';
++import HpmCards from './FirmwareCardsHPM';
+ import PageSection from '@/components/Global/PageSection';
+ import PageTitle from '@/components/Global/PageTitle';
+
+@@ -54,6 +58,7 @@ export default {
+     BmcCards,
+     FormUpdate,
+     HostCards,
++    HpmCards,
+     PageSection,
+     PageTitle,
+   },
+diff --git a/src/views/Operations/Firmware/FirmwareCardsHPM.vue b/src/views/Operations/Firmware/FirmwareCardsHPM.vue
+new file mode 100644
+index 0000000..73da054
+--- /dev/null
++++ b/src/views/Operations/Firmware/FirmwareCardsHPM.vue
+@@ -0,0 +1,40 @@
++<template>
++  <page-section :section-title="$t('pageFirmware.sectionTitleHPMCards')">
++    <b-card-group deck>
++      <!-- Running image -->
++      <b-card>
++        <template #header>
++          <p class="font-weight-bold m-0">
++            {{ $t('pageFirmware.cardTitleRunning') }}
++          </p>
++        </template>
++        <dl class="mb-0">
++          <dt>{{ $t('pageFirmware.cardBodyVersion') }}</dt>
++          <dd class="mb-0">{{ runningVersion }}</dd>
++        </dl>
++      </b-card>
++    </b-card-group>
++  </page-section>
++</template>
++
++<script>
++import PageSection from '@/components/Global/PageSection';
++
++export default {
++  components: { PageSection },
++  computed: {
++    running() {
++      return this.$store.getters['firmware/activeHpmFirmware'];
++    },
++    runningVersion() {
++      return this.running?.version || '-1';
++    },
++  },
++};
++</script>
++
++<style lang="scss" scoped>
++.page-section {
++  margin-top: -$spacer * 1.5;
++}
++</style>
