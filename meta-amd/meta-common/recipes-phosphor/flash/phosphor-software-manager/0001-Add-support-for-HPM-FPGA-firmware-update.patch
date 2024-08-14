@@ -1,0 +1,316 @@
+From 2cd59e754fb05a976e37234147f6a7b6ebe285ea Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Wed, 14 Aug 2024 05:22:08 -0500
+Subject: [PATCH] Add support for HPM FPGA firmware update
+
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ activation.cpp                  | 93 +++++++++++++++++++++++++++++++++
+ activation.hpp                  |  8 +++
+ item_updater.cpp                | 39 ++++++++++++++
+ item_updater.hpp                | 20 ++++++-
+ meson.build                     |  9 ++++
+ meson.options                   |  9 ++++
+ obmc-flash-hpm-fpga@.service.in |  7 +++
+ 7 files changed, 184 insertions(+), 1 deletion(-)
+ create mode 100644 obmc-flash-hpm-fpga@.service.in
+
+diff --git a/activation.cpp b/activation.cpp
+index 8f4c4c0..aba7d2f 100644
+--- a/activation.cpp
++++ b/activation.cpp
+@@ -143,6 +143,22 @@ auto Activation::activation(Activations value) -> Activations
+         }
+ #endif
+
++#ifdef HPM_FPGA_UPGRADE
++        if (purpose == VersionPurpose::HPM_FPGA)
++        {
++            // Enable systemd signals
++            subscribeToSystemdSignals();
++
++            // Set initial progress
++            activationProgress->progress(20);
++
++            // Initiate image writing to flash
++            flashWriteHPMFPGA();
++
++            return softwareServer::Activation::activation(value);
++        }
++#endif
++
+         activationProgress->progress(10);
+
+         parent.freeSpace(*this);
+@@ -318,6 +334,14 @@ void Activation::unitStateChange(sdbusplus::message_t& msg)
+     }
+ #endif
+
++#ifdef HPM_FPGA_UPGRADE
++    if (purpose == VersionPurpose::HPM_FPGA)
++    {
++        onStateChangesHpmFpga(msg);
++        return;
++    }
++#endif
++
+     onStateChanges(msg);
+
+     return;
+@@ -456,6 +480,75 @@ void Activation::onStateChangesBios(sdbusplus::message_t& msg)
+
+ #endif
+
++#ifdef HPM_FPGA_UPGRADE
++void Activation::flashWriteHPMFPGA()
++{
++    auto method = bus.new_method_call(SYSTEMD_BUSNAME, SYSTEMD_PATH,
++                                      SYSTEMD_INTERFACE, "StartUnit");
++    auto hpmfpgaServiceFile = "obmc-flash-hpm-fpga@" + versionId + ".service";
++    method.append(hpmfpgaServiceFile, "replace");
++    try
++    {
++        auto reply = bus.call(method);
++    }
++    catch (const sdbusplus::exception_t& e)
++    {
++        error("Error in trying to upgrade Host Bios: {ERROR}", "ERROR", e);
++        report<InternalFailure>();
++    }
++}
++
++void Activation::onStateChangesHpmFpga(sdbusplus::message::message& msg)
++{
++    uint32_t newStateID{};
++    sdbusplus::message::object_path newStateObjPath;
++    std::string newStateUnit{};
++    std::string newStateResult{};
++
++    // Read the msg and populate each variable
++    msg.read(newStateID, newStateObjPath, newStateUnit, newStateResult);
++
++    auto hpmfpgaServiceFile = "obmc-flash-hpm-fpga@" + versionId + ".service";
++
++    if (newStateUnit == hpmfpgaServiceFile)
++    {
++        // unsubscribe to systemd signals
++        unsubscribeFromSystemdSignals();
++
++       if (newStateResult == "done")
++        {
++            // Set activation progress to 100
++            activationProgress->progress(100);
++
++            // Set Activation value to active
++            activation(softwareServer::Activation::Activations::Active);
++
++            info("HPM FPGA upgrade completed successfully.");
++            parent.hpmfpgaVersion->version(
++                parent.versions.find(versionId)->second->version());
++
++            // Delete the uploaded activation
++            boost::asio::post(getIOContext(), [this]() {
++                this->parent.erase(this->versionId);
++            });
++
++        }
++        else if (newStateResult == "failed")
++        {
++
++
++            // Set Activation value to Failed
++            activation(softwareServer::Activation::Activations::Failed);
++
++            error("HPM FPGA upgrade failed.");
++        }
++    }
++
++    return;
++}
++
++#endif
++
+ void Activation::rebootBmc()
+ {
+     auto method = bus.new_method_call(SYSTEMD_BUSNAME, SYSTEMD_PATH,
+diff --git a/activation.hpp b/activation.hpp
+index f813886..f81bdbd 100644
+--- a/activation.hpp
++++ b/activation.hpp
+@@ -247,6 +247,14 @@ class Activation : public ActivationInherit, public Flash
+     void onStateChangesBios(sdbusplus::message_t&);
+ #endif
+
++#ifdef HPM_FPGA_UPGRADE
++    /* @brief write to HPM FPGA flash function */
++    void flashWriteHPMFPGA();
++
++    /** @brief Function that acts on HPM FPGA upgrade service file state changes */
++    void onStateChangesHpmFpga(sdbusplus::message::message&);
++#endif
++
+     /** @brief Overloaded function that acts on service file state changes */
+     void onStateChanges(sdbusplus::message_t&) override;
+
+diff --git a/item_updater.cpp b/item_updater.cpp
+index 9bbd6c8..40d43be 100644
+--- a/item_updater.cpp
++++ b/item_updater.cpp
+@@ -71,6 +71,9 @@ void ItemUpdater::createActivation(sdbusplus::message_t& msg)
+                     if (value == VersionPurpose::BMC ||
+ #ifdef HOST_BIOS_UPGRADE
+                         value == VersionPurpose::Host ||
++#endif
++#ifdef HPM_FPGA_UPGRADE
++                        value == VersionPurpose::HPM_FPGA ||
+ #endif
+                         value == VersionPurpose::System)
+                     {
+@@ -880,6 +883,42 @@ void ItemUpdater::createBIOSObject()
+ }
+ #endif
+
++#ifdef HPM_FPGA_UPGRADE
++void ItemUpdater::createHPMFPGAObject()
++{
++    std::string path = HPM_FPGA_OBJPATH;
++    // Get version id from last item in the path
++    auto pos = path.rfind("/");
++    if (pos == std::string::npos)
++    {
++        error("No version id found in object path {PATH}", "PATH", path);
++        return;
++    }
++
++    createActiveAssociation(path);
++    createFunctionalAssociation(path);
++     createUpdateableAssociation(path);
++
++    auto versionId = path.substr(pos + 1);
++    auto version = "null";
++
++    AssociationList assocs = {};
++    hpmfpgaActivation = std::make_unique<Activation>(
++        bus, path, *this, versionId, server::Activation::Activations::Active,
++        assocs);
++    auto dummyErase = [](std::string /*entryId*/) {
++        // Do nothing;
++    };
++    hpmfpgaVersion = std::make_unique<VersionClass>(
++        bus, path, version, VersionPurpose::HPM_FPGA, "", "",
++         std::vector<std::string>(),
++        std::bind(dummyErase, std::placeholders::_1),"");
++    hpmfpgaVersion->deleteObject =
++        std::make_unique<phosphor::software::manager::Delete>(bus, path,
++                                                              *hpmfpgaVersion);
++}
++#endif
++
+ void ItemUpdater::getRunningSlot()
+ {
+     // Check /run/media/slot to get the slot number
+diff --git a/item_updater.hpp b/item_updater.hpp
+index 59f9839..ab1f712 100644
+--- a/item_updater.hpp
++++ b/item_updater.hpp
+@@ -90,7 +90,9 @@ class ItemUpdater : public ItemUpdaterInherit
+ #ifdef HOST_BIOS_UPGRADE
+         createBIOSObject();
+ #endif
+-
++#ifdef HPM_FPGA_UPGRADE
++        createHPMFPGAObject();
++#endif
+         if (minimum_ship_level::enabled())
+         {
+             minimumVersionObject = std::make_unique<MinimumVersion>(bus, path);
+@@ -313,6 +315,22 @@ class ItemUpdater : public ItemUpdaterInherit
+     std::unique_ptr<VersionClass> biosVersion;
+ #endif
+
++#ifdef HPM_FPGA_UPGRADE
++    /** @brief Create the HPM FPGA object without knowing the version.
++     *
++     *  The object is created only to provide the DBus access so that an
++     *  external service could set the correct HPM FPGA version.
++     *  On HPM FPGA code update, the version is updated accordingly.
++     */
++    void createHPMFPGAObject();
++
++    /** @brief Persistent Activation D-Bus object for HPM FPGA */
++    std::unique_ptr<Activation> hpmfpgaActivation;
++  public:
++    /** @brief Persistent Version D-Bus object for HPM FPGA */
++    std::unique_ptr<VersionClass> hpmfpgaVersion;
++#endif
++
+     /** @brief Get the slot number of running image */
+     void getRunningSlot();
+ };
+diff --git a/meson.build b/meson.build
+index 92db933..be63533 100644
+--- a/meson.build
++++ b/meson.build
+@@ -67,6 +67,7 @@ conf.set('MMC_LAYOUT', get_option('bmc-layout').contains('mmc'))
+
+ # Configurable features
+ conf.set('HOST_BIOS_UPGRADE', get_option('host-bios-upgrade').allowed())
++conf.set('HPM_FPGA_UPGRADE', get_option('hpm-fpga-upgrade').allowed())
+ conf.set('WANT_SIGNATURE_VERIFY', get_option('verify-signature').allowed())
+
+ # Configurable variables
+@@ -93,6 +94,10 @@ if get_option('host-bios-upgrade').allowed()
+     conf.set_quoted('BIOS_OBJPATH', get_option('bios-object-path'))
+ endif
+
++if get_option('hpm-fpga-upgrade').allowed()
++    conf.set_quoted('HPM_FPGA_OBJPATH', get_option('hpm-fpga-object-path'))
++endif
++
+ if get_option('bmc-static-dual-image').allowed()
+   conf.set('BMC_STATIC_DUAL_IMAGE', get_option('bmc-static-dual-image').allowed())
+   conf.set_quoted('ALT_ROFS_DIR', get_option('alt-rofs-dir'))
+@@ -205,6 +210,10 @@ if get_option('host-bios-upgrade').allowed()
+     unit_files += 'obmc-flash-host-bios@.service.in'
+ endif
+
++if get_option('hpm-fpga-upgrade').enabled()
++    unit_files += 'obmc-flash-hpm-fpga@.service.in'
++endif
++
+ if get_option('bmc-static-dual-image').allowed()
+     unit_files += [
+         'static/obmc-flash-bmc-alt@.service.in',
+diff --git a/meson.options b/meson.options
+index 605786d..fedefeb 100644
+--- a/meson.options
++++ b/meson.options
+@@ -12,6 +12,15 @@ option('bmc-layout', type: 'combo',
+ option('host-bios-upgrade', type: 'feature', value: 'enabled',
+     description: 'Enable host bios upgrade support.')
+
++option(
++    'hpm-fpga-object-path', type: 'string',
++    value: '/xyz/openbmc_project/software/hpm_fpga_active',
++    description: 'The HPM FPGA DBus object path.',
++)
++
++option('hpm-fpga-upgrade', type: 'feature',
++    description: 'Enable hpm fpga upgrade support.')
++
+ option('sync-bmc-files', type: 'feature', value: 'enabled',
+     description: 'Enable sync of filesystem files.')
+
+diff --git a/obmc-flash-hpm-fpga@.service.in b/obmc-flash-hpm-fpga@.service.in
+new file mode 100644
+index 0000000..c9d7183
+--- /dev/null
++++ b/obmc-flash-hpm-fpga@.service.in
+@@ -0,0 +1,7 @@
++[Unit]
++Description=Flash HPM FPGA image %I to HPM FPGA
++
++[Service]
++Type=oneshot
++RemainAfterExit=no
++ExecStart=echo Please add custom command for flashing image /tmp/image/%i
