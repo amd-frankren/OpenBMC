@@ -1,0 +1,29 @@
+From 782bbab6898538fbe735341967528c14bf945aef Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Wed, 14 Aug 2024 05:44:43 -0500
+Subject: [PATCH] Add enumeration HPM_FPGA for version property
+
+Added a new D-Bus property HPM_FPGA to the Version
+interface for the HPM FPGA firmware update.
+
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ yaml/xyz/openbmc_project/Software/Version.interface.yaml | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/yaml/xyz/openbmc_project/Software/Version.interface.yaml b/yaml/xyz/openbmc_project/Software/Version.interface.yaml
+index 0fa4973..3c9c544 100644
+--- a/yaml/xyz/openbmc_project/Software/Version.interface.yaml
++++ b/yaml/xyz/openbmc_project/Software/Version.interface.yaml
+@@ -45,6 +45,9 @@ enumerations:
+           - name: RETIMER_BUNDLE
+             description: >
+                 The version is a version for PCIe Retimer
++          - name: HPM_FPGA
++            description: >
++                The version is a version for a HPM FPGA.
+
+ associations:
+     - name: running
+--
+2.34.1
