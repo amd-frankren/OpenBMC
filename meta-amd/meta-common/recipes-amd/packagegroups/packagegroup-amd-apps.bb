@@ -51,6 +51,7 @@ RDEPENDS:${PN}-system = " \
         set-fan-speed \
         srvcfg-manager \
         ${RDEPENDS_PN_SYSTEM_EXTRAS} \
+        ${RDEPENDS_PN_SYSTEM_MFG} \
         "
 RDEPENDS_PN_SYSTEM_EXTRAS = ""
 RDEPENDS_PN_SYSTEM_EXTRAS:amd-withhost = " \
@@ -61,3 +62,16 @@ RDEPENDS_PN_SYSTEM_EXTRAS:amd-withhost = " \
         phosphor-host-postd \
         phosphor-post-code-manager \
         "
+
+python() {
+     # Instead of using BB_ENV_EXTRAWHITE, we can get info from the
+     # shell environment this way.
+     mfg = d.getVar("BB_ORIGENV", False).getVar("BUILD_MFG_IMG", False)
+
+     # set recipes list if mfg env variable is set
+     if mfg == '1':
+         d.setVar("BUILD_FRUGEN", mfg)
+         bb.warn(" Building Manufacturing Image!!! \n")
+}
+
+RDEPENDS_PN_SYSTEM_MFG:amd += "${@'frugen' if d.getVar('BUILD_FRUGEN') == '1' else ''}"

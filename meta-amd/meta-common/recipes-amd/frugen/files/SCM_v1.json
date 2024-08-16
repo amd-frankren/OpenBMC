@@ -1,0 +1,26 @@
+{
+	/* The internal use area, if specified, must list all the data as hex string,
+	   the length is calculated automatically */
+	"internal" : "010203040A0B0C0D",
+	"board" : {
+		/* The date, if not specified, will be taken automatically from
+		 * the current system time. You may specify the `-u` option to
+		 * `frugen` in order to leave the date 'Unspecified' */
+		/* "date" : "1/10/2016 3:00:45",*/
+		"mfg" : "AMD Inc",
+		"pname" : "",
+		"serial" : "",
+		"pn" : "",
+		"file" : "SCM_v1.json"
+	},
+	"product" : {
+		"lang": 0,
+		"mfg" : "AMD Inc",
+		"pn" : "",
+		"pname" : "",
+		"serial" : "",
+		"atag" : "",
+		"ver" : "",
+		"file" : ""
+	}
+}

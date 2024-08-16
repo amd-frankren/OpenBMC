@@ -1,0 +1,315 @@
+From ebd475acd18fef6aa40c434e495fc8a8dcd5d853 Mon Sep 17 00:00:00 2001
+From: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
+Date: Fri, 16 Aug 2024 05:00:47 -0500
+Subject: [PATCH] Support for AMD Internal use area
+
+Adds support for AMD internal user area with
+- fields from command line
+- interactive field values
+
+Signed-off-by: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
+---
+ CMakeLists.txt |   5 ++
+ fru.h          |  32 ++++++++++
+ frugen.c       | 155 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 190 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 686e2ca..acb6df0 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -30,11 +30,16 @@ option(DEBUG_OUTPUT "show extra debug output" OFF)
+ option(DEBUG_SYMBOLS "compile with debug symbols" OFF)
+ option(DEBUG_NO_OPTIMIZE "do not optimize the code" OFF)
+ option(COMPILER_WARNINGS "show compiler warnings" ON)
++option(AMD_IA "AMD Internal Area" ON)
+
+ if (DEBUG_OUTPUT)
+   add_definitions(-DDEBUG)
+ endif(DEBUG_OUTPUT)
+
++if (AMD_IA)
++  add_definitions(-DAMD_IA_PROMPT)
++endif(AMD_IA)
++
+ add_definitions(-DVERSION="${gitver}")
+
+ function(set_compiler_flags TARGETS)
+diff --git a/fru.h b/fru.h
+index 20a6278..25d8775 100644
+--- a/fru.h
++++ b/fru.h
+@@ -195,6 +195,38 @@ typedef struct fru_internal_use_area_s {
+ 	uint8_t data[];
+ } fru_internal_use_area_t;
+
++#ifdef AMD_IA_PROMPT
++/* 72-bytes AMD Internal use area */
++#define SCM_BOARD_REV_LEN   1
++#define MAC_ADDR_LEN        6
++#define MAC_ADDR_PAD_LEN    2
++#define SER_NUM_LEN         24
++#define SER_NUM_EXP_LEN     8
++#define ECO_INTF_LEN        7
++
++#define ROT_ID_RUM          0x22  /* Fixed for Venice */
++
++typedef struct amd_internal_use_data_s {
++	uint8_t amd_fru_ver;
++	uint8_t dc_scm_type;
++	char    scm_board_rev[SCM_BOARD_REV_LEN];
++	uint8_t soc_vendor;
++	uint8_t soc_model;
++	uint8_t soc_rev;
++	uint8_t rot_id;
++	uint8_t mac1[MAC_ADDR_LEN];
++	uint8_t mac1_padding[MAC_ADDR_PAD_LEN];
++	uint8_t mac2[MAC_ADDR_LEN];
++	uint8_t mac2_padding[MAC_ADDR_PAD_LEN];
++	uint8_t mac3[MAC_ADDR_LEN];
++	uint8_t mac3_padding[MAC_ADDR_PAD_LEN];
++	char    serial_no[SER_NUM_LEN];
++	char    serial_no_exp[SER_NUM_EXP_LEN];
++	uint8_t bom_rev;
++	char    eco_intf_config[ECO_INTF_LEN];
++} amd_internal_use_data_t;
++#endif
++
+ typedef fru_info_area_t fru_chassis_area_t;
+
+ typedef struct fru_board_area_s {
+diff --git a/frugen.c b/frugen.c
+index 5e8b5dd..165bc97 100644
+--- a/frugen.c
++++ b/frugen.c
+@@ -47,6 +47,72 @@ volatile int debug_level = 0;
+ 	}                                   \
+ } while(0)
+
++#ifdef AMD_IA_PROMPT
++#define FRU_LOADFIELD_USER_STR(eafield, def_value, flen) {  \
++	char userstring[64] = {0};                               \
++	char padding[64] = {0};                                  \
++	uint8_t ulen = 0;                                        \
++	fgets(userstring, sizeof userstring, stdin);             \
++	if(userstring[0] == '\n') {                              \
++		strncpy(eafield, def_value, flen);                   \
++	}                                                        \
++	else {                                                   \
++		memset(padding, '0', sizeof padding);                \
++		userstring[strcspn(userstring,"\r\n")] = 0;          \
++		ulen = strlen(userstring);                           \
++		if (ulen < flen)                                     \
++		memcpy(padding + (flen - ulen), userstring, ulen);   \
++		strncpy(eafield, padding, flen);                     \
++	}                                                        \
++}
++
++#define FRU_LOADFIELD_USER_VSTR(eafield, def_value) {      \
++	char userstring[64] = {0};                              \
++	fgets(userstring, sizeof userstring, stdin);            \
++	if(userstring[0] == '\n') {                             \
++		strncpy(eafield, def_value, FRU_FIELDMAXLEN);       \
++	}                                                       \
++	else {                                                  \
++		userstring[strcspn(userstring,"\r\n")] = 0;         \
++		strncpy(eafield, userstring, FRU_FIELDMAXLEN);      \
++	}                                                       \
++}
++
++#define FRU_LOADFIELD_USER_INT(eafield, def_value) {       \
++	char userstring[64] = {0};                              \
++	fgets(userstring, sizeof userstring, stdin);            \
++	if(userstring[0] == '\n') {                             \
++		eafield = atoi(def_value);                          \
++	}                                                       \
++	else {                                                  \
++		eafield = atoi(userstring);                         \
++	}                                                       \
++}
++
++#define FRU_LOADFIELD_USER_HEXSTR(eafield, def_value) {    \
++	char userstring[64] = {0};                              \
++	fgets(userstring, sizeof userstring, stdin);            \
++	if(userstring[0] == '\n') {                             \
++		memset(eafield, def_value, sizeof eafield);         \
++	}                                                       \
++	else {                                                  \
++		userstring[strcspn(userstring,"\r\n")] = 0;         \
++		size_t len;                                         \
++		uint8_t *buf = fru_encode_binary_string(&len, userstring);  \
++		memcpy(eafield, buf, sizeof len);                   \
++		free(buf);                                          \
++	}                                                       \
++}
++
++#define FRU_LOADFIELD_STR(eafield, def_value, flen) {      \
++		strncpy(eafield, def_value, flen);                  \
++}
++
++#define FRU_LOADFIELD_INT(eafield, def_value) {            \
++		eafield = atoi(def_value);                          \
++}
++#endif
++
+ static
+ void hexdump(const void *data, size_t len)
+ {
+@@ -381,6 +447,38 @@ out:
+
+
+ #endif /* __HAS_JSON__ */
++#ifdef AMD_IA_PROMPT
++int get_amd_internal_use_area(char *encoded_data, int *datalen, amd_internal_use_data_t * amd_ia_data)
++{
++	/* Defaults */
++	amd_ia_data->amd_fru_ver = 1;
++	amd_ia_data->rot_id = ROT_ID_RUM;
++
++	/* User specified */
++	printf("MAC 1 [%s]:", "FFFFFFFFFFFF");
++	FRU_LOADFIELD_USER_HEXSTR(amd_ia_data->mac1, 0xFF);
++
++	printf("MAC 2 [%s]:", "FFFFFFFFFFFF");
++	FRU_LOADFIELD_USER_HEXSTR(amd_ia_data->mac2, 0xFF);
++
++	printf("MAC 3 [%s]:", "FFFFFFFFFFFF");
++	FRU_LOADFIELD_USER_HEXSTR(amd_ia_data->mac3, 0xFF);
++
++	printf("SCM Serial Number [%s]:", "000000000000000000000000");
++	FRU_LOADFIELD_USER_STR(amd_ia_data->serial_no,"000000000000000000000000", sizeof amd_ia_data->serial_no);
++
++	printf("SCM BoM Rev [%s]:", "0");
++	FRU_LOADFIELD_USER_INT(amd_ia_data->bom_rev, "0");
++
++	printf("ECO/Intf Config [%s]:", "0000000");
++	FRU_LOADFIELD_USER_STR(amd_ia_data->eco_intf_config, "0000000", sizeof amd_ia_data->eco_intf_config);
++
++	/* Update AMD Internal Area with user fields */
++	memcpy(encoded_data, amd_ia_data, sizeof(amd_internal_use_data_t));
++	*datalen = sizeof(amd_internal_use_data_t);
++	return 0;
++}
++#endif
+
+ int main(int argc, char *argv[])
+ {
+@@ -408,6 +506,12 @@ int main(int argc, char *argv[])
+ 	fru_exploded_chassis_t chassis = { 0, .type = SMBIOS_CHASSIS_UNKNOWN };
+ 	fru_exploded_board_t board = { 0, .lang = LANG_ENGLISH };
+ 	fru_exploded_product_t product = { 0, .lang = LANG_ENGLISH };
++	fru_internal_use_area_t *internal;
++
++#ifdef AMD_IA_PROMPT
++	amd_internal_use_data_t amd_ia_data;
++	memset(&amd_ia_data, 0xFF, sizeof (amd_internal_use_data_t));
++#endif
+
+ 	tzset();
+ 	gettimeofday(&board.tv, NULL);
+@@ -459,6 +563,14 @@ int main(int argc, char *argv[])
+ 		{ .name = "prod-custom",   .val = 'P', .has_arg = true },
+ 		/* MultiRecord area related options */
+ 		{ .name = "mr-uuid",       .val = 'U', .has_arg = true },
++#ifdef AMD_IA_PROMPT
++		/* AMD Internal area related options */
++		{ .name = "scm-brd-rev",   .val = 'q', .has_arg = true },
++		{ .name = "scm-type",      .val = 'Q', .has_arg = true },
++		{ .name = "scm-soc-vndr",  .val = 'w', .has_arg = true },
++		{ .name = "scm-soc-mdl",   .val = 'W', .has_arg = true },
++		{ .name = "scm-soc-rev",   .val = 'y', .has_arg = true },
++#endif
+ 	};
+
+ 	const char *option_help[] = {
+@@ -500,6 +612,14 @@ int main(int argc, char *argv[])
+ 		['P'] = "Add a custom product information field, may be used multiple times",
+ 		/* MultiRecord area related options */
+ 		['U'] = "Set System Unique ID (UUID/GUID)",
++#ifdef AMD_IA_PROMPT
++		/* AMD internal Area */
++		['q'] = "DC-SCM Board revision [A, B etc]",
++		['Q'] = "DC-SCM Type",
++		['w'] = "BMC SoC Vendor [1->Aspeed]",
++		['W'] = "BMC SoC Model [1->AST2600, 2->AST2700, 3->AST2750]",
++		['y'] = "BMC SoC silicon rev [0->A0,1->A1]",
++#endif
+ 	};
+
+ 	bool has_chassis  = false,
+@@ -585,7 +705,6 @@ int main(int argc, char *argv[])
+ 					json_object_object_foreachC(jstree, iter) {
+ 						jso = iter.val;
+ 						if (!strcmp(iter.key, "internal")) {
+-							fru_internal_use_area_t *internal;
+ 							const char *data = json_object_get_string(jso);
+ 							if (!data) {
+ 								debug(2, "Internal use are w/o data, skipping");
+@@ -593,8 +712,13 @@ int main(int argc, char *argv[])
+ 							}
+ 							fru_field_t *field;
+ 							size_t datalen;
++#ifndef AMD_IA_PROMPT
+ 							char *encoded_data =
+ 								fru_encode_binary_string(&datalen, data);
++#else
++							char encoded_data [1024] = {0};
++							get_amd_internal_use_area(&encoded_data, &datalen, &amd_ia_data);
++#endif
+ 							size_t blocklen = FRU_BLOCKS(datalen + sizeof(*internal));
+ 							internal = calloc(1, FRU_BYTES(blocklen));
+ 							if (!internal) {
+@@ -602,7 +726,9 @@ int main(int argc, char *argv[])
+ 							}
+ 							internal->ver = FRU_VER_1;
+ 							memcpy(internal->data, encoded_data, datalen);
++#ifndef AMD_IA_PROMPT
+ 							free(encoded_data);
++#endif
+ 							areas[FRU_INTERNAL_USE].blocks = blocklen;
+ 							areas[FRU_INTERNAL_USE].data = internal;
+
+@@ -768,7 +894,28 @@ int main(int argc, char *argv[])
+ 			          // and processed later in a separate switch
+ 				is_mr_record = true;
+ 				break;
+-
++#ifdef AMD_IA_PROMPT
++			case 'q':
++				debug(2, "Custom SCM board field [%s]", optarg);
++				FRU_LOADFIELD_STR(amd_ia_data.scm_board_rev, optarg, sizeof amd_ia_data.scm_board_rev);
++				break;
++			case 'Q':
++				debug(2, "Custom SCM type field [%s]", optarg);
++				FRU_LOADFIELD_INT(amd_ia_data.dc_scm_type, optarg);
++				break;
++			case 'w':
++				debug(2, "Custom SoC vendor field [%s]", optarg);
++				FRU_LOADFIELD_INT(amd_ia_data.soc_vendor, optarg);
++				break;
++			case 'W':
++				debug(2, "Custom SoC model field [%s]", optarg);
++				FRU_LOADFIELD_INT(amd_ia_data.soc_model, optarg);
++				break;
++			case 'y':
++				debug(2, "Custom SoC silicon rev field [%s]", optarg);
++				FRU_LOADFIELD_INT(amd_ia_data.soc_rev, optarg);
++				break;
++#endif
+ 			case '?':
+ 				exit(1);
+ 			default:
+@@ -826,6 +973,10 @@ int main(int argc, char *argv[])
+ 		debug(1, "FRU file will have an internal use area");
+ 		/* Nothing to do here, added for uniformity, the actual
+ 		 * internal use area can only be initialized from file */
++#ifdef AMD_IA_PROMPT
++		/* update AMD Internal Area with HW detected fields */
++		memcpy(internal->data, &amd_ia_data, sizeof(amd_internal_use_data_t));
++#endif
+ 	}
+
+ 	if (has_chassis) {
+--
+2.34.1
+
