@@ -1,0 +1,649 @@
+From 71565aa6b6aa23f8e7d38efc371136ac38b9b1e6 Mon Sep 17 00:00:00 2001
+From: aasboddu <Aashray.Boddu@amd.com>
+Date: Tue, 3 Sep 2024 17:49:29 -0500
+Subject: [PATCH] phosphor-software-manager: Enable Retimer framework
+
+Enabled support for Retimer bundle update framework.
+
+Signed-off-by: aasboddu <Aashray.Boddu@amd.com>
+---
+ activation.cpp                        | 195 ++++++++++++++++++++++++++
+ activation.hpp                        |  49 +++++++
+ item_updater.cpp                      |  72 ++++++++++
+ item_updater.hpp                      |  33 +++++
+ meson.build                           |  10 ++
+ meson.options                         |   9 ++
+ obmc-flash-retimer-bundle@.service.in |   7 +
+ version.hpp                           |  59 ++++++++
+ 8 files changed, 434 insertions(+)
+ create mode 100644 obmc-flash-retimer-bundle@.service.in
+
+diff --git a/activation.cpp b/activation.cpp
+index c828401..702c588 100644
+--- a/activation.cpp
++++ b/activation.cpp
+@@ -14,6 +14,7 @@
+ #include <xyz/openbmc_project/Common/error.hpp>
+ #include <xyz/openbmc_project/Software/Version/error.hpp>
+ #include <cereal/archives/json.hpp>
++#include <boost/container/flat_map.hpp>
+
+ #ifdef WANT_SIGNATURE_VERIFY
+ #include "image_verify.hpp"
+@@ -169,6 +170,22 @@ auto Activation::activation(Activations value) -> Activations
+         }
+ #endif
+
++#ifdef RETIMER_BUNDLE_UPGRADE
++        if (purpose == VersionPurpose::RETIMER_BUNDLE)
++        {
++            // Enable systemd signals
++            subscribeToSystemdSignals();
++
++            // Set initial progress
++            activationProgress->progress(20);
++
++            // Initiate image writing to flash
++            flashWriteRetimerBundle();
++
++            return softwareServer::Activation::activation(value);
++        }
++#endif
++
+         activationProgress->progress(10);
+
+         parent.freeSpace(*this);
+@@ -352,6 +369,14 @@ void Activation::unitStateChange(sdbusplus::message_t& msg)
+     }
+ #endif
+
++#ifdef RETIMER_BUNDLE_UPGRADE
++    if (purpose == VersionPurpose::RETIMER_BUNDLE)
++    {
++        onStateChangesRetimerBundle(msg);
++        return;
++    }
++#endif
++
+     onStateChanges(msg);
+
+     return;
+@@ -561,6 +586,176 @@ void Activation::onStateChangesHpmFpga(sdbusplus::message::message& msg)
+
+ #endif
+
++#ifdef RETIMER_BUNDLE_UPGRADE
++void Activation::retimerBundleDataSavetoFile()
++{
++    sdbusplus::bus::bus bus = sdbusplus::bus::new_default();
++    boost::system::error_code ec;
++    boost::asio::io_context io;
++    auto conn = std::make_shared<sdbusplus::asio::connection>(io);
++
++    try
++    {
++       conn->async_method_call(
++          [this](boost::system::error_code ec,
++                 const boost::container::flat_map< std::string,
++                 std::variant<std::string, std::vector<std::string>>>& propertiesList ) {
++
++             if (ec)
++             {
++                 error("RetimerBundle: Failed to get retimerbundle value from dbus interface \n");
++                 return;
++             }
++
++             RetimerBundleInfo retimerBundleObject;
++             for (const auto& propertyPair : propertiesList)
++             {
++                if (propertyPair.first == CHECKSUM)
++                {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    retimerBundleObject.Checksum = *fwvalue;
++                }
++                else if (propertyPair.first == FIRMWAREID)
++                {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    retimerBundleObject.FirmwareID = *fwvalue;
++                }
++                else if (propertyPair.first == SLAVEADDRESS)
++                {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    retimerBundleObject.SlaveAddress = *fwvalue;
++                }
++                else if (propertyPair.first == RISER)
++                {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    retimerBundleObject.Riser = *fwvalue;
++                }
++                else if (propertyPair.first == STATUS)
++                {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    retimerBundleObject.Status = *fwvalue;
++                }
++                else if (propertyPair.first == VERSIONS)
++                {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    retimerBundleObject.Versions = *fwvalue;
++                }
++
++             }//end of for loop
++
++             if (((retimerBundleObject.FirmwareID.size() == retimerBundleObject.SlaveAddress.size())
++                   == (retimerBundleObject.Riser.size() == retimerBundleObject.Status.size()))
++                   == (retimerBundleObject.Checksum.size() == retimerBundleObject.Versions.size()))
++             {
++                 std::ofstream os(PERSIST_DIR RETIMER_BUNDLE_INFO_FILE);
++                 cereal::JSONOutputArchive oarchive(os);
++
++                 oarchive(cereal::make_nvp("RetimerBundleInfo", retimerBundleObject));
++             }
++             else
++             {
++                 info("RetimerBundle: Number of elements are not equal");
++             }
++
++          },
++          retimerservice, retimerpath,
++          dbusPropIntf, "GetAll",
++          retimerinterface);
++    }
++    catch (sdbusplus::exception::SdBusError& e)
++    {
++       sd_journal_print(LOG_ERR, "RetimerBundle: Failed to get Dbus info %s \n", e.what());
++    }
++
++}
++
++void Activation::flashWriteRetimerBundle()
++{
++    auto method = bus.new_method_call(SYSTEMD_BUSNAME, SYSTEMD_PATH,
++                                      SYSTEMD_INTERFACE, "StartUnit");
++    auto retimerBundleServiceFile = "obmc-flash-retimer-bundle@" + versionId + ".service";
++    method.append(retimerBundleServiceFile, "replace");
++    try
++    {
++        auto reply = bus.call(method);
++    }
++    catch (sdbusplus::exception::SdBusError& e)
++    {
++        sd_journal_print(LOG_ERR, "Error in trying to upgrade Retimer bundle %s \n", e.what());
++        report<InternalFailure>();
++    }
++}
++
++void Activation::onStateChangesRetimerBundle(sdbusplus::message::message& msg)
++{
++    uint32_t newStateID{};
++    sdbusplus::message::object_path newStateObjPath;
++    std::string newStateUnit{};
++    std::string newStateResult{};
++
++    // Read the msg and populate each variable
++    msg.read(newStateID, newStateObjPath, newStateUnit, newStateResult);
++
++    auto retimerBundleServiceFile = "obmc-flash-retimer-bundle@" + versionId + ".service";
++
++    if (newStateUnit == retimerBundleServiceFile)
++    {
++        // unsubscribe to systemd signals
++        unsubscribeFromSystemdSignals();
++
++        if (newStateResult == "done")
++        {
++            // Set activation progress to 100
++            activationProgress->progress(100);
++
++            // Set Activation value to active
++            activation(softwareServer::Activation::Activations::Active);
++
++            info("Retimer bundle upgrade completed successfully.");
++            parent.retimerBundleVersion->version(
++                parent.versions.find(versionId)->second->version());
++            SET_VER(RETIMER_BUNDLE_VER_FILE);
++            parent.versions.find(versionId)->second->version("--");
++
++            // Delete the uploaded activation
++            boost::asio::post(getIOContext(), [this]() {
++                this->parent.erase(this->versionId);
++            });
++
++        }
++        else if (newStateResult == "failed")
++        {
++            // Delete the uploaded activation
++            boost::asio::post(getIOContext(), [this]() {
++                this->parent.erase(this->versionId);
++            });
++
++            // Set Activation value to Failed
++            activation(softwareServer::Activation::Activations::Failed);
++
++            error("Retimer bundle upgrade failed.");
++        }
++        // this call will save the Retimer Bundle from Dbus to file,
++        // even its failed save the entry
++        retimerBundleDataSavetoFile();
++    }
++
++    return;
++}
++#endif
++
+ void Activation::rebootBmc()
+ {
+     auto method = bus.new_method_call(SYSTEMD_BUSNAME, SYSTEMD_PATH,
+diff --git a/activation.hpp b/activation.hpp
+index f81bdbd..94c5133 100644
+--- a/activation.hpp
++++ b/activation.hpp
+@@ -11,6 +11,13 @@
+ #include <xyz/openbmc_project/Association/Definitions/server.hpp>
+ #include <xyz/openbmc_project/Software/Activation/server.hpp>
+ #include <xyz/openbmc_project/Software/ActivationBlocksTransition/server.hpp>
++#include <sdbusplus/asio/connection.hpp>
++#include <sdbusplus/asio/object_server.hpp>
++#include <sdbusplus/asio/property.hpp>
++
++#include <cereal/archives/json.hpp>
++#include <cereal/types/memory.hpp>
++#include <cereal/types/vector.hpp>
+
+ #ifdef WANT_SIGNATURE_VERIFY
+ #include <filesystem>
+@@ -46,9 +53,40 @@ constexpr auto applyTimeIntf = "xyz.openbmc_project.Software.ApplyTime";
+ constexpr auto dbusPropIntf = "org.freedesktop.DBus.Properties";
+ constexpr auto applyTimeObjPath = "/xyz/openbmc_project/software/apply_time";
+ constexpr auto applyTimeProp = "RequestedApplyTime";
++constexpr auto retimerpath = "/xyz/openbmc_project/software/retimer_bundle_active";
++constexpr auto retimerinterface = "xyz.openbmc_project.Software.RetimerBundleVersion";
++constexpr auto retimerservice = "xyz.openbmc_project.Software.BMC.Updater";
++constexpr auto FIRMWAREID = "FirmwareID";
++constexpr auto SLAVEADDRESS = "SlaveAddress";
++constexpr auto PROCESSOR = "Processor";
++constexpr auto STATUS = "Status";
++constexpr auto VERSIONS = "Versions";
++constexpr auto CHECKSUM = "Checksum";
++constexpr auto RISER = "Riser";
+
+ namespace sdbusRule = sdbusplus::bus::match::rules;
+
++#ifdef RETIMER_BUNDLE_UPGRADE
++struct RetimerBundleInfo {
++    std::vector<std::string> Checksum;
++    std::vector<std::string> FirmwareID;
++    std::vector<std::string> SlaveAddress;
++    std::vector<std::string> Riser;
++    std::vector<std::string> Status;
++    std::vector<std::string> Versions;
++};
++
++template <typename Archive>
++void serialize(Archive& archive, RetimerBundleInfo& retimerBundle) {
++    archive(cereal::make_nvp(CHECKSUM, retimerBundle.Checksum),
++        cereal::make_nvp(FIRMWAREID, retimerBundle.FirmwareID),
++        cereal::make_nvp(SLAVEADDRESS, retimerBundle.SlaveAddress),
++        cereal::make_nvp(RISER, retimerBundle.Riser),
++        cereal::make_nvp(STATUS, retimerBundle.Status),
++        cereal::make_nvp(VERSIONS, retimerBundle.Versions));
++}
++#endif
++
+ class ItemUpdater;
+ class Activation;
+ class RedundancyPriority;
+@@ -255,6 +293,17 @@ class Activation : public ActivationInherit, public Flash
+     void onStateChangesHpmFpga(sdbusplus::message::message&);
+ #endif
+
++#ifdef RETIMER_BUNDLE_UPGRADE
++    /* @brief write to Retimer flash function */
++    void flashWriteRetimerBundle();
++
++    /** @brief Function that acts on Retimer service file state changes */
++    void onStateChangesRetimerBundle(sdbusplus::message::message&);
++
++    /** @brief Function that reads Retimer Bundle data from Dbus and save to json file*/
++    void retimerBundleDataSavetoFile();
++#endif
++
+     /** @brief Overloaded function that acts on service file state changes */
+     void onStateChanges(sdbusplus::message_t&) override;
+
+diff --git a/item_updater.cpp b/item_updater.cpp
+index 7a16a70..0a21e38 100644
+--- a/item_updater.cpp
++++ b/item_updater.cpp
+@@ -91,6 +91,9 @@ void ItemUpdater::createActivation(sdbusplus::message_t& msg)
+ #endif
+ #ifdef HPM_FPGA_UPGRADE
+                         value == VersionPurpose::HPM_FPGA ||
++#endif
++#ifdef RETIMER_BUNDLE_UPGRADE
++                        value == VersionPurpose::RETIMER_BUNDLE ||
+ #endif
+                         value == VersionPurpose::System)
+                     {
+@@ -938,6 +941,75 @@ void ItemUpdater::createHPMFPGAObject()
+ }
+ #endif
+
++
++#ifdef RETIMER_BUNDLE_UPGRADE
++void ItemUpdater::readRetimerBundleInfoFromJson()
++{
++    auto path = fs::path(PERSIST_DIR) / RETIMER_BUNDLE_INFO_FILE;
++
++    if (fs::exists(path))
++    {
++        try
++        {
++            // deserialize JSON from text file
++            std::ifstream input(PERSIST_DIR RETIMER_BUNDLE_INFO_FILE);
++            cereal::JSONInputArchive archive(input);
++            archive(retimerBundleReadData);
++        }
++        catch (cereal::Exception& e)
++        {
++            sd_journal_print(LOG_ERR, "RetimerBundle: Error reading file %s \n",
++                             e.what());
++        }
++    }
++    else
++    {
++        error("RetimerBundle:retimerBundle.json file does not exist.");
++    }
++}
++
++void ItemUpdater::createRetimerBundleObject()
++{
++    std::string path = RETIMER_BUNDLE_OBJPATH;
++    // Get version id from last item in the path
++    auto pos = path.rfind("/");
++    if (pos == std::string::npos)
++    {
++        error("No version id found in object path {PATH}", "PATH", path);
++        return;
++    }
++
++    createActiveAssociation(path);
++    createFunctionalAssociation(path);
++    createUpdateableAssociation(path);
++
++    auto versionId = path.substr(pos + 1);
++    std::string version = "Unknown";
++    GET_VER(RETIMER_BUNDLE_VER_FILE);
++    readRetimerBundleInfoFromJson();
++
++    AssociationList assocs = {};
++    retimerBundleActivation = std::make_unique<Activation>(
++        bus, path, *this, versionId, server::Activation::Activations::Active,
++        assocs);
++    auto dummyErase = [](std::string /*entryId*/) {
++        // Do nothing;
++    };
++
++    retimerBundleVersion = std::make_unique<RetimerBundleVersionClass>(
++        bus, path, version, VersionPurpose::RETIMER_BUNDLE,
++        retimerBundleReadData.Checksum,
++        retimerBundleReadData.FirmwareID,
++        retimerBundleReadData.Riser,
++        retimerBundleReadData.SlaveAddress,
++        retimerBundleReadData.Status,
++        retimerBundleReadData.Versions,
++        std::bind(dummyErase, std::placeholders::_1));
++
++    info("ItemUpdater::createRetimerBundleObject()::Done\n");
++}
++#endif
++
+ void ItemUpdater::getRunningSlot()
+ {
+     // Check /run/media/slot to get the slot number
+diff --git a/item_updater.hpp b/item_updater.hpp
+index add9132..bf31631 100644
+--- a/item_updater.hpp
++++ b/item_updater.hpp
+@@ -24,6 +24,11 @@
+ #ifdef HPM_FPGA_UPGRADE
+ #define HPM_VER_FILE   "hpm_ver"
+ #endif
++#ifdef RETIMER_BUNDLE_UPGRADE
++#define RETIMER_BUNDLE_VER_FILE    "retimer_bundle_ver"
++#define RETIMER_BUNDLE_INFO_FILE    "retimerBundle.json"
++#endif
++
+ #define ACTIVE_VER_KEY "active"
+
+ namespace phosphor
+@@ -43,6 +48,7 @@ using MinimumVersionInherit = sdbusplus::server::object_t<
+
+ namespace MatchRules = sdbusplus::bus::match::rules;
+ using VersionClass = phosphor::software::manager::Version;
++using RetimerBundleVersionClass = phosphor::software::manager::RetimerBundleVersion;
+ using AssociationList =
+     std::vector<std::tuple<std::string, std::string, std::string>>;
+
+@@ -104,6 +110,10 @@ class ItemUpdater : public ItemUpdaterInherit
+ #ifdef HPM_FPGA_UPGRADE
+         createHPMFPGAObject();
+ #endif
++#ifdef RETIMER_BUNDLE_UPGRADE
++        createRetimerBundleObject();
++#endif
++
+         if (minimum_ship_level::enabled())
+         {
+             minimumVersionObject = std::make_unique<MinimumVersion>(bus, path);
+@@ -342,6 +352,29 @@ class ItemUpdater : public ItemUpdaterInherit
+     std::unique_ptr<VersionClass> hpmfpgaVersion;
+ #endif
+
++#ifdef RETIMER_BUNDLE_UPGRADE
++    /** @brief Create the Retimer object without knowing the version.
++     *
++     *  The object is created only to provide the DBus access so that an
++     *  external service could set the correct Retimer version.
++     *  On retimer code update, the version is updated accordingly.
++     */
++    void createRetimerBundleObject();
++
++    /** @brief Read Persistent Data from json file for Retimer bundle */
++    void readRetimerBundleInfoFromJson();
++
++    /** @brief Persistent Activation D-Bus object for Retimer bundle */
++    std::unique_ptr<Activation> retimerBundleActivation;
++  public:
++    /** @brief Persistent Version D-Bus object for Retimer bundle */
++    std::unique_ptr<RetimerBundleVersionClass> retimerBundleVersion;
++
++    /** @brief object for Retimer bundle */
++    RetimerBundleInfo retimerBundleReadData;
++
++#endif
++
+     /** @brief Get the slot number of running image */
+     void getRunningSlot();
+ };
+diff --git a/meson.build b/meson.build
+index be63533..079a416 100644
+--- a/meson.build
++++ b/meson.build
+@@ -41,6 +41,7 @@ conf.set_quoted('VERSION_BUSNAME', 'xyz.openbmc_project.Software.Version')
+ conf.set_quoted('VERSION_IFACE', 'xyz.openbmc_project.Software.Version')
+ conf.set_quoted('EXTENDED_VERSION_IFACE', 'xyz.openbmc_project.Software.ExtendedVersion')
+ conf.set_quoted('COMPATIBLE_IFACE', 'xyz.openbmc_project.Inventory.Decorator.Compatible')
++conf.set_quoted('RETIMER_BUNDLE_VERSION_IFACE', 'xyz.openbmc_project.Software.RetimerBundleVersion')
+
+ # Names of the forward and reverse associations
+ conf.set_quoted('ACTIVATION_FWD_ASSOCIATION', 'inventory')
+@@ -68,6 +69,7 @@ conf.set('MMC_LAYOUT', get_option('bmc-layout').contains('mmc'))
+ # Configurable features
+ conf.set('HOST_BIOS_UPGRADE', get_option('host-bios-upgrade').allowed())
+ conf.set('HPM_FPGA_UPGRADE', get_option('hpm-fpga-upgrade').allowed())
++conf.set('RETIMER_BUNDLE_UPGRADE', get_option('retimer-bundle-upgrade').allowed())
+ conf.set('WANT_SIGNATURE_VERIFY', get_option('verify-signature').allowed())
+
+ # Configurable variables
+@@ -98,6 +100,10 @@ if get_option('hpm-fpga-upgrade').allowed()
+     conf.set_quoted('HPM_FPGA_OBJPATH', get_option('hpm-fpga-object-path'))
+ endif
+
++if get_option('retimer-bundle-upgrade').allowed()
++    conf.set_quoted('RETIMER_BUNDLE_OBJPATH', get_option('retimer-bundle-object-path'))
++endif
++
+ if get_option('bmc-static-dual-image').allowed()
+   conf.set('BMC_STATIC_DUAL_IMAGE', get_option('bmc-static-dual-image').allowed())
+   conf.set_quoted('ALT_ROFS_DIR', get_option('alt-rofs-dir'))
+@@ -214,6 +220,10 @@ if get_option('hpm-fpga-upgrade').enabled()
+     unit_files += 'obmc-flash-hpm-fpga@.service.in'
+ endif
+
++if get_option('retimer-bundle-upgrade').allowed()
++      unit_files += 'obmc-flash-retimer-bundle@.service.in'
++endif
++
+ if get_option('bmc-static-dual-image').allowed()
+     unit_files += [
+         'static/obmc-flash-bmc-alt@.service.in',
+diff --git a/meson.options b/meson.options
+index fedefeb..dbd0659 100644
+--- a/meson.options
++++ b/meson.options
+@@ -21,6 +21,9 @@ option(
+ option('hpm-fpga-upgrade', type: 'feature',
+     description: 'Enable hpm fpga upgrade support.')
+
++option('retimer-bundle-upgrade', type: 'feature',
++    description: 'Enable retimer bundle upgrade support.')
++
+ option('sync-bmc-files', type: 'feature', value: 'enabled',
+     description: 'Enable sync of filesystem files.')
+
+@@ -128,6 +131,12 @@ option(
+     description: 'The BIOS DBus object path.',
+ )
+
++option(
++    'retimer-bundle-object-path', type: 'string',
++    value: '/xyz/openbmc_project/software/retimer_bundle_active',
++    description: 'The Retimer Bundle DBus object path.',
++)
++
+ option('bmc-static-dual-image', type: 'feature', value: 'enabled',
+     description: 'Enable the dual image support for static layout.')
+
+diff --git a/obmc-flash-retimer-bundle@.service.in b/obmc-flash-retimer-bundle@.service.in
+new file mode 100644
+index 0000000..339f346
+--- /dev/null
++++ b/obmc-flash-retimer-bundle@.service.in
+@@ -0,0 +1,7 @@
++[Unit]
++Description=Flash Retimer Bundle image %I to Retimer
++
++[Service]
++Type=oneshot
++RemainAfterExit=no
++ExecStart=/usr/sbin/bmc-retimer-update /tmp/images/%i
+diff --git a/version.hpp b/version.hpp
+index 8a85ba9..0e40d81 100644
+--- a/version.hpp
++++ b/version.hpp
+@@ -5,6 +5,7 @@
+ #include "xyz/openbmc_project/Object/Delete/server.hpp"
+ #include "xyz/openbmc_project/Software/ExtendedVersion/server.hpp"
+ #include "xyz/openbmc_project/Software/Version/server.hpp"
++#include "xyz/openbmc_project/Software/RetimerBundleVersion/server.hpp"
+
+ #include <sdbusplus/bus.hpp>
+
+@@ -29,7 +30,14 @@ using VersionInherit = sdbusplus::server::object_t<
+ using DeleteInherit = sdbusplus::server::object_t<
+     sdbusplus::server::xyz::openbmc_project::object::Delete>;
+
++using RetimerVersionInherit = sdbusplus::server::object::object<
++    sdbusplus::xyz::openbmc_project::Software::server::ExtendedVersion,
++    sdbusplus::xyz::openbmc_project::Software::server::RetimerBundleVersion,
++    sdbusplus::xyz::openbmc_project::Software::server::Version,
++    sdbusplus::xyz::openbmc_project::Common::server::FilePath>;
++
+ class Version;
++class RetimerBundleVersion;
+ class Delete;
+
+ /** @class Delete
+@@ -194,6 +202,57 @@ class Version : public VersionInherit
+     bool functional = false;
+ };
+
++class RetimerBundleVersion : public RetimerVersionInherit
++{
++  public:
++    /** @brief Constructs Version Software Manager
++     *
++     * @param[in] bus            - The D-Bus bus object
++     * @param[in] objPath        - The D-Bus object path
++     * @param[in] versionString  - The version string
++     * @param[in] versionPurpose - The version purpose
++     * @param[in] checksumArr    - The Checksum of retimerBundle
++     * @param[in] firmwareIDArr  - The FirmwareID of retimerBundle
++     * @param[in] riserArr       - The Riser of retimerBundle
++     * @param[in] slaveAddressArr- The SlaveAddress of retimerBundle
++     * @param[in] statusArr      - The Status of retimerBundle
++     * @param[in] versionsArr    - The Versions of retimerBundle
++     * @param[in] filePath       - The image filesystem path
++     * @param[in] callback       - The eraseFunc callback
++     */
++    RetimerBundleVersion(sdbusplus::bus::bus& bus, const std::string& objPath,
++            const std::string& versionString, VersionPurpose versionPurpose,
++            const std::vector<std::string>& checksumArr,
++            const std::vector<std::string>& firmwareIDArr,
++            const std::vector<std::string>& riserArr,
++            const std::vector<std::string>& slaveAddressArr,
++            const std::vector<std::string>& statusArr,
++            const std::vector<std::string>& versionsArr,
++            eraseFunc callback) :
++        RetimerVersionInherit(bus, (objPath).c_str(), RetimerVersionInherit::action::defer_emit),
++        eraseCallback(callback), versionStr(versionString)
++    {
++        // Set properties.
++        purpose(versionPurpose);
++        version(versionString);
++        checksum(checksumArr);
++        firmwareID(firmwareIDArr);
++        riser(riserArr);
++        slaveAddress(slaveAddressArr);
++        status(statusArr);
++        versions(versionsArr);
++
++        // Emit deferred signal.
++        emit_object_added();
++    }
++
++    /** @brief The parent's erase callback. */
++    eraseFunc eraseCallback;
++
++  private:
++    /** @brief This Version's version string */
++    const std::string versionStr;
++};
+ } // namespace manager
+ } // namespace software
+ } // namespace phosphor
+--
+2.34.1
+
