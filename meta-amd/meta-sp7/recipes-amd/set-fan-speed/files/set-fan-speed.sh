@@ -2,25 +2,25 @@
 
 set -e
 
-# Fan Controller Dev ID
-EMC2305_DEV=0x4D
-
-#Fan speed control Regs, for 1-5 fans
-FAN_SET_REG=("0x30" "0x40" "0x50" "0x60" "0x70")
-num_of_fans=${#FAN_SET_REG[@]}
-
-# Read i2c bus list from i2cdetect cmd
-mapfile -t i2c_bus_array < <(find /sys/bus/i2c/drivers | grep emc2305 | grep 004d | cut -d"/" -f 7 | cut -d"-" -f 1 | sort)
-
-# Get the number of emc2305 controllers
-num_of_emc2305_controller=${#i2c_bus_array[@]}
-
 #Speed Limit 20% (Range 0x0 to 0xFF)
 SPEED_LIMIT=0x32
 
 # Set all Fans speeds at argument passed by user
 set_emc2305_fan_speed()
 {
+    # Fan Controller Dev ID
+    EMC2305_DEV=0x4D
+
+    #Fan speed control Regs, for 1-5 fans
+    FAN_SET_REG=("0x30" "0x40" "0x50" "0x60" "0x70")
+    num_of_fans=${#FAN_SET_REG[@]}
+
+    # prepare a list of emc2305 controllers on the board
+    mapfile -t i2c_bus_array < <(find /sys/bus/i2c/drivers | grep emc2305 | grep 004d | cut -d"/" -f 7 | cut -d"-" -f 1 | sort)
+
+    # Get the number of emc2305 controllers
+    num_of_emc2305_controller=${#i2c_bus_array[@]}
+
     echo "Number of emc2305 controller = ${num_of_emc2305_controller}"
     # Write speed value to emc2305 controller Regs.
     echo "Setting all Fan speeds to $speed_val pwm"
@@ -47,5 +47,19 @@ else
     speed_val=$1
 fi
 
-# Call functions to set EMC2305  Fan speeds
-set_emc2305_fan_speed
+board_id=$(/sbin/fw_printenv -n board_id)
+case "$board_id" in
+    # Marley(79, 0x7A, 0x7B)
+    # Congo(0x80, 0x81, 0x86)
+    # Morocco(0x82, 0x83, 0x87)
+    "79" | "7A" | "7B" | "80" | "81" | "86" | "82" | "83" | "87")
+        # Call functions to set EMC2305  Fan speeds
+        set_emc2305_fan_speed
+        ;;
+    *)
+        echo " Unknown board_id $board_id"
+        echo " Please program board FRU EEPROM"
+        ;;
+esac
+
+exit 0
