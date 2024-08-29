@@ -1,0 +1,67 @@
+From da537b7992bf337ecb59b4b595bfa3ba4b75f590 Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Thu, 29 Aug 2024 11:14:05 -0500
+Subject: [PATCH] meta-amd: dbus: Add D-Bus support for VR bundle update
+
+Added a new D-Bus property VR_BUNDLE to the Version
+interface for the VR bundle firmware update.
+
+Added a new interface xyz.openbmc_project.Software.BundleVersion.
+
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ .../Software/BundleVersion.interface.yaml     | 27 +++++++++++++++++++
+ .../Software/Version.interface.yaml           |  3 +++
+ 2 files changed, 30 insertions(+)
+ create mode 100644 yaml/xyz/openbmc_project/Software/BundleVersion.interface.yaml
+
+diff --git a/yaml/xyz/openbmc_project/Software/BundleVersion.interface.yaml b/yaml/xyz/openbmc_project/Software/BundleVersion.interface.yaml
+new file mode 100644
+index 0000000..7ac0a8e
+--- /dev/null
++++ b/yaml/xyz/openbmc_project/Software/BundleVersion.interface.yaml
+@@ -0,0 +1,27 @@
++description: >
++    An extended version string for a xyz.openbmc_project.Software.BundleVersion.
++properties:
++    - name: FirmwareID
++      type: array[string]
++      description: >
++          Firmware IDs associated with each firmware.
++    - name: Versions
++      type: array[string]
++      description: >
++          Array of all firmware versions.
++    - name: Status
++      type: array[string]
++      description: >
++          Array consist status of all firmware flashed in Bundle.
++    - name: SlaveAddress
++      type: array[string]
++      description: >
++          Array of all slave address.
++    - name: Processor
++      type: array[string]
++      description: >
++          Array consist processor details of VR.
++    - name: Checksum
++      type: array[string]
++      description: >
++          Array consist checksum details of VR.
+diff --git a/yaml/xyz/openbmc_project/Software/Version.interface.yaml b/yaml/xyz/openbmc_project/Software/Version.interface.yaml
+index 3c9c544..1ff26e7 100644
+--- a/yaml/xyz/openbmc_project/Software/Version.interface.yaml
++++ b/yaml/xyz/openbmc_project/Software/Version.interface.yaml
+@@ -48,6 +48,9 @@ enumerations:
+           - name: HPM_FPGA
+             description: >
+                 The version is a version for a HPM FPGA.
++          - name: VR_BUNDLE
++            description: >
++                The version is a version for a VR BUNDLE.
+
+ associations:
+     - name: running
+--
+2.34.1
+
