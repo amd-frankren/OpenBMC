@@ -56,6 +56,7 @@ RDEPENDS:${PN}-system = " \
 RDEPENDS_PN_SYSTEM_EXTRAS = ""
 RDEPENDS_PN_SYSTEM_EXTRAS:amd-withhost = " \
         amd-apml \
+        amd-clear-cmos \
         amd-fpga \
         phosphor-hostlogger \
         phosphor-watchdog \
