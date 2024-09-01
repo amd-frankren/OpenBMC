@@ -1,0 +1,368 @@
+From f97f63c25222c2332980e8b7fbc40316e5737c0f Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Sun, 1 Sep 2024 11:34:28 -0500
+Subject: [PATCH] webui support for VR bundle update
+
+webui changes to support VR firmware bundle update
+
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ src/locales/en-US.json                        |  10 ++
+ src/store/index.js                            |   2 +
+ src/store/modules/Operations/FirmwareStore.js |  10 ++
+ src/store/modules/Operations/VRBundleStore.js |  45 +++++
+ src/views/Operations/Firmware/Firmware.vue    |   5 +
+ .../Firmware/FirmwareCardsVRBundle.vue        | 159 ++++++++++++++++++
+ 6 files changed, 231 insertions(+)
+ create mode 100644 src/store/modules/Operations/VRBundleStore.js
+ create mode 100644 src/views/Operations/Firmware/FirmwareCardsVRBundle.vue
+
+diff --git a/src/locales/en-US.json b/src/locales/en-US.json
+index c109e29..1d728e7 100644
+--- a/src/locales/en-US.json
++++ b/src/locales/en-US.json
+@@ -336,6 +336,8 @@
+         "sectionTitleRetimercardsBundle": "PCIe Retimer Bundle Firmware",
+         "viewRetimerBundleFirmware": "View Retimer Bundle Firmware versions",
+         "sectionTitleUpdateFirmware": "Update firmware",
++        "sectionTitleVrcardsBundle": "VR Bundle Firmware",
++        "viewVRBundleFirmware": "View VR Bundle Firmware versions",
+         "alert": {
+             "operationInProgress": "Server power operation in progress.",
+             "serverMustBePoweredOffTo": "Server must be powered off to:",
+@@ -376,6 +378,14 @@
+             "verifyUpdate": "Verify update",
+             "verifyUpdateMessage": "Refresh the application to verify firmware updated successfully"
+         },
++    "table":{
++      "firmwareID": "VR ID",
++      "processor": "Processor",
++      "firmwareversion": "Version",
++      "slaveAddress": "Slave Address",
++      "healthStatus": "Status",
++      "checkSum": "Checksum"
++    },
+        "tableRetimers":{
+             "firmwareID": "Retimer ID",
+             "riser": "Riser",
+diff --git a/src/store/index.js b/src/store/index.js
+index 6393ef8..ef335da 100644
+--- a/src/store/index.js
++++ b/src/store/index.js
+@@ -9,6 +9,7 @@ import UserManagementStore from './modules/SecurityAndAccess/UserManagementStore
+ import CertificatesStore from './modules/SecurityAndAccess/CertificatesStore';
+ import FirmwareStore from './modules/Operations/FirmwareStore';
+ import RetimerBundleStore from './modules/Operations/RetimerBundleStore.js';
++import VRBundleStore from './modules/Operations/VRBundleStore.js';
+ import BootSettingsStore from './modules/Operations/BootSettingsStore';
+ import ControlStore from './modules/Operations/ControlStore';
+ import PowerControlStore from './modules/ResourceManagement/PowerControlStore';
+@@ -65,6 +66,7 @@ export default new Vuex.Store({
+     memory: MemoryStore,
+     fan: FanStore,
+     retimerBundle: RetimerBundleStore,
++    vrBundle: VRBundleStore,
+     chassis: ChassisStore,
+     bmc: BmcStore,
+     processors: ProcessorStore,
+diff --git a/src/store/modules/Operations/FirmwareStore.js b/src/store/modules/Operations/FirmwareStore.js
+index 790bb44..17c2f27 100644
+--- a/src/store/modules/Operations/FirmwareStore.js
++++ b/src/store/modules/Operations/FirmwareStore.js
+@@ -8,6 +8,7 @@ const FirmwareStore = {
+     hostFirmware: [],
+     hpmFirmware: [],
+     retimerBundleFirmware: [],
++    vrBundleFirmware: [],
+     bmcActiveFirmwareId: null,
+     hostActiveFirmwareId: null,
+     hpmActiveFirmwareId: null,
+@@ -36,6 +37,9 @@ const FirmwareStore = {
+         (firmware) => firmware.id !== null,
+       );
+     },
++    activeVrBundleFirmware: (state) => {
++      return state.vrBundleFirmware.find((firmware) => firmware.id !== null);
++    },
+     backupBmcFirmware: (state) => {
+       return state.bmcFirmware.find(
+         (firmware) => firmware.id !== state.bmcActiveFirmwareId,
+@@ -56,6 +60,8 @@ const FirmwareStore = {
+     setHpmFirmware: (state, firmware) => (state.hpmFirmware = firmware),
+     setRetimerBundleFirmware: (state, firmware) =>
+       (state.retimerBundleFirmware = firmware),
++    setVrBundleFirmware: (state, firmware) =>
++      (state.vrBundleFirmware = firmware),
+     setApplyTime: (state, applyTime) => (state.applyTime = applyTime),
+     setHttpPushUri: (state, httpPushUri) => (state.httpPushUri = httpPushUri),
+     setTftpUploadAvailable: (state, tftpAvailable) =>
+@@ -101,6 +107,7 @@ const FirmwareStore = {
+           const hostFirmware = [];
+           const hpmFirmware = [];
+           const retimerBundleFirmware = [];
++          const vrBundleFirmware = [];
+           response.forEach(({ data }) => {
+             const firmwareType = data?.RelatedItem?.[0]?.['@odata.id']
+               .split('/')
+@@ -121,12 +128,15 @@ const FirmwareStore = {
+               hpmFirmware.push(item);
+             } else if (descType === 'RETIMER_BUNDLE image') {
+               retimerBundleFirmware.push(item);
++            } else if (descType === 'VR_BUNDLE image') {
++              vrBundleFirmware.push(item);
+             }
+           });
+           commit('setBmcFirmware', bmcFirmware);
+           commit('setHostFirmware', hostFirmware);
+           commit('setHpmFirmware', hpmFirmware);
+           commit('setRetimerBundleFirmware', retimerBundleFirmware);
++          commit('setVrBundleFirmware', vrBundleFirmware);
+         })
+         .catch((error) => {
+           console.log(error);
+diff --git a/src/store/modules/Operations/VRBundleStore.js b/src/store/modules/Operations/VRBundleStore.js
+new file mode 100644
+index 0000000..7823c63
+--- /dev/null
++++ b/src/store/modules/Operations/VRBundleStore.js
+@@ -0,0 +1,45 @@
++import api from '@/store/api';
++
++const VRBundleStore = {
++  namespaced: true,
++  state: {
++    vrbundledata: [],
++  },
++  getters: {
++    vrbundledata: (state) => state.vrbundledata,
++  },
++  mutations: {
++    setVRBundleInfo: (state, data) => {
++      state.vrbundledata = data.map((vrbundle) => {
++        const {
++          SlaveAddress,
++          FirmwareID,
++          FirmwareVersion,
++          Processor,
++          HealthStatus,
++          Checksum,
++        } = vrbundle;
++        return {
++          slaveAddress: SlaveAddress,
++          firmwareID: FirmwareID,
++          firmwareversion: FirmwareVersion,
++          processor: Processor,
++          healthStatus: HealthStatus,
++          checkSum: Checksum,
++        };
++      });
++    },
++  },
++  actions: {
++    async getVRbundleInfo({ commit }) {
++      return await api
++        .get('/redfish/v1/UpdateService/FirmwareInventory/vr_bundle_active')
++        .then(({ data: { VRBundle = [] } }) =>
++          commit('setVRBundleInfo', VRBundle),
++        )
++        .catch((error) => console.log(error));
++    },
++  },
++};
++
++export default VRBundleStore;
+diff --git a/src/views/Operations/Firmware/Firmware.vue b/src/views/Operations/Firmware/Firmware.vue
+index 9116aea..6ca243f 100644
+--- a/src/views/Operations/Firmware/Firmware.vue
++++ b/src/views/Operations/Firmware/Firmware.vue
+@@ -23,6 +23,9 @@
+
+         <!-- Retimer bundle Firmware -->
+         <retimer-bundle v-if="!isSingleFileUploadEnabled" />
++
++        <!-- VR bundle Firmware -->
++        <vr-bundle v-if="!isSingleFileUploadEnabled" />
+       </b-col>
+     </b-row>
+
+@@ -50,6 +53,7 @@ import FormUpdate from './FirmwareFormUpdate';
+ import HostCards from './FirmwareCardsHost';
+ import HpmCards from './FirmwareCardsHPM';
+ import RetimerBundle from './FirmwareCardsRetimerBundle';
++import VrBundle from './FirmwareCardsVRBundle';
+ import PageSection from '@/components/Global/PageSection';
+ import PageTitle from '@/components/Global/PageTitle';
+
+@@ -64,6 +68,7 @@ export default {
+     HostCards,
+     HpmCards,
+     RetimerBundle,
++    VrBundle,
+     PageSection,
+     PageTitle,
+   },
+diff --git a/src/views/Operations/Firmware/FirmwareCardsVRBundle.vue b/src/views/Operations/Firmware/FirmwareCardsVRBundle.vue
+new file mode 100644
+index 0000000..2c1d4f8
+--- /dev/null
++++ b/src/views/Operations/Firmware/FirmwareCardsVRBundle.vue
+@@ -0,0 +1,159 @@
++<template>
++  <page-section :section-title="$t('pageFirmware.sectionTitleVrcardsBundle')">
++    <b-card-group deck>
++      <!-- Running image -->
++      <b-card>
++        <template #header>
++          <p class="font-weight-bold m-0">
++            {{ $t('pageFirmware.cardTitleRunning') }}
++          </p>
++        </template>
++        <b-col>
++          <dl class="mb-0">
++            <dt>{{ $t('pageFirmware.cardBodyVersion') }}</dt>
++            <dd class="mb-0">{{ runningVersion }}</dd>
++          </dl>
++        </b-col>
++      </b-card>
++    </b-card-group>
++    <b-button
++      v-b-toggle.collapse-vrbundle-table
++      data-test-id="FirmwareCardsVRBundle-button-viewVRBundleFirmware"
++      variant="link"
++      class="mt-3"
++    >
++      <icon-chevron />
++      {{ $t('pageFirmware.viewVRBundleFirmware') }}
++    </b-button>
++    <b-collapse id="collapse-vrbundle-table" class="mt-3">
++      <b-table
++        sort-icon-left
++        no-sort-reset
++        hover
++        responsive="md"
++        show-empty
++        :items="vrbundledata"
++        :fields="fields"
++        :sort-desc="true"
++        :sort-compare="sortCompare"
++        :filter="searchFilter"
++        :empty-text="$t('global.table.emptyMessage')"
++        :empty-filtered-text="$t('global.table.emptySearchMessage')"
++        @filtered="onFiltered"
++      >
++        <!-- Health -->
++        <template #cell(healthStatus)="{ value }">
++          <status-icon :status="vrstatusIcon(value)" />
++          {{ value }}
++        </template>
++      </b-table>
++    </b-collapse>
++  </page-section>
++</template>
++
++<script>
++import PageSection from '@/components/Global/PageSection';
++import IconChevron from '@carbon/icons-vue/es/chevron--up/20';
++import StatusIcon from '@/components/Global/StatusIcon';
++import TableDataFormatterMixin from '@/components/Mixins/TableDataFormatterMixin';
++import TableSortMixin from '@/components/Mixins/TableSortMixin';
++import TableRowExpandMixin, {
++  expandRowLabel,
++} from '@/components/Mixins/TableRowExpandMixin';
++
++export default {
++  components: { IconChevron, PageSection, StatusIcon },
++  mixins: [TableRowExpandMixin, TableDataFormatterMixin, TableSortMixin],
++  data() {
++    return {
++      fields: [
++        {
++          key: 'expandRow',
++          label: '',
++          tdClass: 'table-row-expand',
++          sortable: false,
++        },
++        {
++          key: 'slaveAddress',
++          label: this.$t('pageFirmware.table.slaveAddress'),
++          formatter: this.tableFormatter,
++          sortable: true,
++        },
++        {
++          key: 'firmwareID',
++          label: this.$t('pageFirmware.table.firmwareID'),
++          formatter: this.tableFormatter,
++          sortable: true,
++        },
++        {
++          key: 'firmwareversion',
++          label: this.$t('pageFirmware.table.firmwareversion'),
++          formatter: this.tableFormatter,
++          sortable: true,
++        },
++        {
++          key: 'processor',
++          label: this.$t('pageFirmware.table.processor'),
++          formatter: this.tableFormatter,
++        },
++        {
++          key: 'checkSum',
++          label: this.$t('pageFirmware.table.checkSum'),
++          formatter: this.tableFormatter,
++        },
++        {
++          key: 'healthStatus',
++          label: this.$t('pageFirmware.table.healthStatus'),
++          formatter: this.tableFormatter,
++          tdClass: 'text-nowrap',
++        },
++      ],
++      expandRowLabel: expandRowLabel,
++    };
++  },
++  computed: {
++    vrbundledata() {
++      return this.$store.getters['vrBundle/vrbundledata'];
++    },
++    running() {
++      return this.$store.getters['firmware/activeVrBundleFirmware'];
++    },
++    runningVersion() {
++      return this.running?.version || '-1';
++    },
++  },
++  created() {
++    this.$store.dispatch('vrBundle/getVRbundleInfo');
++  },
++  methods: {
++    sortCompare(a, b, key) {
++      if (key === 'healthStatus') {
++        return this.sortStatus(a, b, key);
++      }
++    },
++    vrstatusIcon(status) {
++      switch (status) {
++        case 'Update Completed':
++          return 'success';
++        case 'Warning':
++          return 'warning';
++        case 'Update Failed':
++          return 'danger';
++        default:
++          return '';
++      }
++    },
++  },
++};
++</script>
++
++<style lang="scss" scoped>
++.btn.collapsed {
++  svg {
++    transform: rotate(180deg);
++  }
++  .page-section {
++    margin-top: -$spacer * 1.5;
++  }
++}
++</style>
