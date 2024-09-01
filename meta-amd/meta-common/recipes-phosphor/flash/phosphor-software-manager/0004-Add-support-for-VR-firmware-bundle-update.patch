@@ -1,0 +1,627 @@
+From 4e0a05afce51f1e48a0d94dd5477a4577b135bb0 Mon Sep 17 00:00:00 2001
+From: aasboddu <Aashray.Boddu@amd.com>
+Date: Wed, 4 Sep 2024 15:12:19 -0500
+Subject: [PATCH] Add support for VR firmware bundle update
+
+Enabled VR firmware bundle update framework for
+VR firmware updates.
+
+Signed-off-by: aasboddu <Aashray.Boddu@amd.com>
+---
+ activation.cpp                   | 200 +++++++++++++++++++++++++++++++
+ activation.hpp                   |  35 ++++++
+ item_updater.cpp                 |  66 ++++++++++
+ item_updater.hpp                 |  29 +++++
+ meson.build                      |   9 ++
+ meson.options                    |   9 ++
+ obmc-flash-vr-bundle@.service.in |   7 ++
+ version.hpp                      |  61 ++++++++++
+ 8 files changed, 416 insertions(+)
+ create mode 100644 obmc-flash-vr-bundle@.service.in
+
+diff --git a/activation.cpp b/activation.cpp
+index 702c588..41db115 100644
+--- a/activation.cpp
++++ b/activation.cpp
+@@ -186,6 +186,28 @@ auto Activation::activation(Activations value) -> Activations
+         }
+ #endif
+
++#ifdef VR_BUNDLE_UPGRADE
++        if (purpose == VersionPurpose::VR_BUNDLE)
++        {
++            if (!activationProgress)
++            {
++                activationProgress =
++                    std::make_unique<ActivationProgress>(bus, path);
++            }
++
++            // Enable systemd signals
++            subscribeToSystemdSignals();
++
++            // Set initial progress
++            activationProgress->progress(20);
++
++            // Initiate image writing to flash
++            flashWriteVRBundle();
++
++            return softwareServer::Activation::activation(value);
++        }
++#endif
++
+         activationProgress->progress(10);
+
+         parent.freeSpace(*this);
+@@ -377,6 +399,14 @@ void Activation::unitStateChange(sdbusplus::message_t& msg)
+     }
+ #endif
+
++#ifdef VR_BUNDLE_UPGRADE
++    if (purpose == VersionPurpose::VR_BUNDLE)
++    {
++        onStateChangesVrBundle(msg);
++        return;
++    }
++#endif
++
+     onStateChanges(msg);
+
+     return;
+@@ -756,6 +786,176 @@ void Activation::onStateChangesRetimerBundle(sdbusplus::message::message& msg)
+ }
+ #endif
+
++#ifdef VR_BUNDLE_UPGRADE
++void Activation::vrBundleDataSavetoFile()
++{
++    sdbusplus::bus::bus bus = sdbusplus::bus::new_default();
++    boost::system::error_code ec;
++    boost::asio::io_context io;
++    auto conn = std::make_shared<sdbusplus::asio::connection>(io);
++
++    try
++    {
++       conn->async_method_call(
++          [this](boost::system::error_code ec,
++                const boost::container::flat_map< std::string,
++                 std::variant<std::string, std::vector<std::string>>>& propertiesList ) {
++              if (ec)
++              {
++                  lg2::error("VRBunde: Failed to get vrbundle value from dbus interface \n");
++                  return;
++              }
++
++              VRBundleInfo vrBundleObject;
++              for (const auto& propertyPair : propertiesList)
++              {
++                 if (propertyPair.first == CHECKSUM)
++                 {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    vrBundleObject.Checksum = *fwvalue;
++                 }
++                 else if (propertyPair.first == FIRMWAREID)
++                 {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    vrBundleObject.FirmwareID = *fwvalue;
++                 }
++                 else if (propertyPair.first == SLAVEADDRESS)
++                 {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    vrBundleObject.SlaveAddress = *fwvalue;
++                 }
++                 else if (propertyPair.first == PROCESSOR)
++                 {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    vrBundleObject.Processor = *fwvalue;
++                 }
++                 else if (propertyPair.first == STATUS)
++                 {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    vrBundleObject.Status = *fwvalue;
++                 }
++                 else if (propertyPair.first == VERSIONS)
++                 {
++                    const std::vector<std::string>* fwvalue =
++                            std::get_if<std::vector<std::string>>(&propertyPair.second);
++
++                    vrBundleObject.Versions = *fwvalue;
++                 }
++
++              }//end of for loop
++             if (((vrBundleObject.FirmwareID.size() == vrBundleObject.SlaveAddress.size())
++                   == (vrBundleObject.Processor.size() == vrBundleObject.Status.size()))
++                   == (vrBundleObject.Checksum.size() == vrBundleObject.Versions.size()))
++             {
++                 std::ofstream os(PERSIST_DIR VRBUNDLE_INFO_FILE);
++                 cereal::JSONOutputArchive oarchive(os);
++
++                 oarchive(cereal::make_nvp("VRBundleInfo", vrBundleObject));
++             }
++             else
++             {
++                 lg2::info("VRBundle: Number of elements are not equal");
++             }
++
++          },
++          vrservice, vrpath,
++          dbusPropIntf, "GetAll",
++          vrinterface);
++    }
++    catch (sdbusplus::exception::SdBusError& e)
++    {
++       sd_journal_print(LOG_ERR, "VRBundle: Failed to get Dbus info %s \n", e.what());
++    }
++
++}
++void Activation::flashWriteVRBundle()
++{
++    auto method = bus.new_method_call(SYSTEMD_BUSNAME, SYSTEMD_PATH,
++                                      SYSTEMD_INTERFACE, "StartUnit");
++    auto vrBundleServiceFile = "obmc-flash-vr-bundle@" + versionId + ".service";
++    method.append(vrBundleServiceFile, "replace");
++    try
++    {
++        auto reply = bus.call(method);
++    }
++    catch (sdbusplus::exception_t& e)
++    {
++        error("Error in trying to upgrade VR bundle.");
++        report<InternalFailure>();
++    }
++}
++
++void Activation::onStateChangesVrBundle(sdbusplus::message::message& msg)
++{
++    uint32_t newStateID{};
++    sdbusplus::message::object_path newStateObjPath;
++    std::string newStateUnit{};
++    std::string newStateResult{};
++
++    // Read the msg and populate each variable
++    msg.read(newStateID, newStateObjPath, newStateUnit, newStateResult);
++
++    auto vrBundleServiceFile = "obmc-flash-vr-bundle@" + versionId + ".service";
++
++    if (newStateUnit == vrBundleServiceFile)
++    {
++        // unsubscribe to systemd signals
++        unsubscribeFromSystemdSignals();
++
++        if (newStateResult == "done")
++        {
++            // Remove version object from image manager
++            deleteImageManagerObject();
++
++            // Set activation progress to 100
++            activationProgress->progress(100);
++
++            // Set Activation value to active
++            activation(softwareServer::Activation::Activations::Active);
++
++            lg2::info("VR bundle upgrade completed successfully.");
++            parent.vrBundleVersion->version(
++                parent.versions.find(versionId)->second->version());
++            parent.versions.find(versionId)->second->version("--");
++
++            // Delete the uploaded activation
++            boost::asio::post(getIOContext(), [this]() {
++                this->parent.erase(this->versionId);
++            });
++
++        }
++        else if (newStateResult == "failed")
++        {
++            // Remove version object from image manager
++            deleteImageManagerObject();
++            // Delete the uploaded activation
++            boost::asio::post(getIOContext(), [this]() {
++                this->parent.erase(this->versionId);
++            });
++
++            // Set Activation value to Failed
++            activation(softwareServer::Activation::Activations::Failed);
++
++            lg2::error("VR bundle upgrade failed.");
++        }
++        //this call will save the VR Bundle from Dbus to file, even its failed save the entry
++        vrBundleDataSavetoFile();
++    }
++
++    return;
++}
++#endif
++
+ void Activation::rebootBmc()
+ {
+     auto method = bus.new_method_call(SYSTEMD_BUSNAME, SYSTEMD_PATH,
+diff --git a/activation.hpp b/activation.hpp
+index 94c5133..ed5effa 100644
+--- a/activation.hpp
++++ b/activation.hpp
+@@ -56,6 +56,9 @@ constexpr auto applyTimeProp = "RequestedApplyTime";
+ constexpr auto retimerpath = "/xyz/openbmc_project/software/retimer_bundle_active";
+ constexpr auto retimerinterface = "xyz.openbmc_project.Software.RetimerBundleVersion";
+ constexpr auto retimerservice = "xyz.openbmc_project.Software.BMC.Updater";
++constexpr auto vrpath = "/xyz/openbmc_project/software/vr_bundle_active";
++constexpr auto vrinterface = "xyz.openbmc_project.Software.BundleVersion";
++constexpr auto vrservice = "xyz.openbmc_project.Software.BMC.Updater";
+ constexpr auto FIRMWAREID = "FirmwareID";
+ constexpr auto SLAVEADDRESS = "SlaveAddress";
+ constexpr auto PROCESSOR = "Processor";
+@@ -87,6 +90,27 @@ void serialize(Archive& archive, RetimerBundleInfo& retimerBundle) {
+ }
+ #endif
+
++#ifdef VR_BUNDLE_UPGRADE
++struct VRBundleInfo {
++    std::vector<std::string> Checksum;
++    std::vector<std::string> FirmwareID;
++    std::vector<std::string> SlaveAddress;
++    std::vector<std::string> Processor;
++    std::vector<std::string> Status;
++    std::vector<std::string> Versions;
++};
++
++template <typename Archive>
++void serialize(Archive& archive, VRBundleInfo& vrBundle) {
++        archive(cereal::make_nvp(CHECKSUM, vrBundle.Checksum),
++                cereal::make_nvp(FIRMWAREID, vrBundle.FirmwareID),
++                cereal::make_nvp(SLAVEADDRESS, vrBundle.SlaveAddress),
++                cereal::make_nvp(PROCESSOR, vrBundle.Processor),
++                cereal::make_nvp(STATUS, vrBundle.Status),
++                cereal::make_nvp(VERSIONS, vrBundle.Versions));
++        }
++#endif
++
+ class ItemUpdater;
+ class Activation;
+ class RedundancyPriority;
+@@ -304,6 +328,17 @@ class Activation : public ActivationInherit, public Flash
+     void retimerBundleDataSavetoFile();
+ #endif
+
++#ifdef VR_BUNDLE_UPGRADE
++    /* @brief write to HPM FPGA flash function */
++    void flashWriteVRBundle();
++
++    /** @brief Function that acts on HPM FPGA upgrade service file state changes */
++    void onStateChangesVrBundle(sdbusplus::message::message&);
++
++    /** @brief Function that reads VR Bundle data from Dbus and save to json file*/
++    void vrBundleDataSavetoFile();
++#endif
++
+     /** @brief Overloaded function that acts on service file state changes */
+     void onStateChanges(sdbusplus::message_t&) override;
+
+diff --git a/item_updater.cpp b/item_updater.cpp
+index 0a21e38..d8673e8 100644
+--- a/item_updater.cpp
++++ b/item_updater.cpp
+@@ -94,6 +94,9 @@ void ItemUpdater::createActivation(sdbusplus::message_t& msg)
+ #endif
+ #ifdef RETIMER_BUNDLE_UPGRADE
+                         value == VersionPurpose::RETIMER_BUNDLE ||
++#endif
++#ifdef VR_BUNDLE_UPGRADE
++                        value == VersionPurpose::VR_BUNDLE ||
+ #endif
+                         value == VersionPurpose::System)
+                     {
+@@ -1010,6 +1013,69 @@ void ItemUpdater::createRetimerBundleObject()
+ }
+ #endif
+
++#ifdef VR_BUNDLE_UPGRADE
++void ItemUpdater::readVRBundleInfoFromJson()
++{
++     auto path = fs::path(PERSIST_DIR) / VRBUNDLE_INFO_FILE;
++     if (fs::exists(path))
++     {
++        try
++        {
++             // deserialize JSON from text file
++             std::ifstream input(PERSIST_DIR VRBUNDLE_INFO_FILE);
++             cereal::JSONInputArchive archive(input);
++             archive(vrBundleReadData);
++        }
++        catch (cereal::Exception& e)
++        {
++           sd_journal_print(LOG_ERR, "VRBundle: Error reading file %s \n", e.what());
++        }
++     }
++     else
++     {
++        lg2::error("VRBundle : vrbundle.json file does not exist");
++     }
++}
++
++void ItemUpdater::createVRBundleObject()
++{
++    std::string path = VR_BUNDLE_OBJPATH;
++    // Get version id from last item in the path
++    auto pos = path.rfind("/");
++    if (pos == std::string::npos)
++    {
++        lg2::error("No version id found in object path VR_BUNDLE_OBJPATH={PATH}",
++                        "PATH", path.c_str());
++        return;
++    }
++
++    createActiveAssociation(path);
++    createFunctionalAssociation(path);
++
++    auto versionId = path.substr(pos + 1);
++    std::string version = "Unknown";
++    readVRBundleInfoFromJson();
++
++    AssociationList assocs = {};
++    vrBundleActivation = std::make_unique<Activation>(
++        bus, path, *this, versionId, server::Activation::Activations::Active,
++        assocs);
++    auto dummyErase = [](std::string /*entryId*/) {
++        // Do nothing;
++    };
++
++    vrBundleVersion = std::make_unique<BundleVersionClass>(
++        bus, path, version, VersionPurpose::VR_BUNDLE,
++        vrBundleReadData.Checksum,
++        vrBundleReadData.FirmwareID,
++        vrBundleReadData.Processor,
++        vrBundleReadData.SlaveAddress,
++        vrBundleReadData.Status,
++        vrBundleReadData.Versions,
++        std::bind(dummyErase, std::placeholders::_1));
++}
++#endif
++
+ void ItemUpdater::getRunningSlot()
+ {
+     // Check /run/media/slot to get the slot number
+diff --git a/item_updater.hpp b/item_updater.hpp
+index bf31631..86051ea 100644
+--- a/item_updater.hpp
++++ b/item_updater.hpp
+@@ -28,6 +28,9 @@
+ #define RETIMER_BUNDLE_VER_FILE    "retimer_bundle_ver"
+ #define RETIMER_BUNDLE_INFO_FILE    "retimerBundle.json"
+ #endif
++#ifdef VR_BUNDLE_UPGRADE
++#define VRBUNDLE_INFO_FILE    "vrbundle.json"
++#endif
+
+ #define ACTIVE_VER_KEY "active"
+
+@@ -49,6 +52,7 @@ using MinimumVersionInherit = sdbusplus::server::object_t<
+ namespace MatchRules = sdbusplus::bus::match::rules;
+ using VersionClass = phosphor::software::manager::Version;
+ using RetimerBundleVersionClass = phosphor::software::manager::RetimerBundleVersion;
++using BundleVersionClass = phosphor::software::manager::BundleVersion;
+ using AssociationList =
+     std::vector<std::tuple<std::string, std::string, std::string>>;
+
+@@ -113,6 +117,9 @@ class ItemUpdater : public ItemUpdaterInherit
+ #ifdef RETIMER_BUNDLE_UPGRADE
+         createRetimerBundleObject();
+ #endif
++#ifdef VR_BUNDLE_UPGRADE
++        createVRBundleObject();
++#endif
+
+         if (minimum_ship_level::enabled())
+         {
+@@ -373,6 +380,28 @@ class ItemUpdater : public ItemUpdaterInherit
+     /** @brief object for Retimer bundle */
+     RetimerBundleInfo retimerBundleReadData;
+
++#endif
++
++#ifdef VR_BUNDLE_UPGRADE
++     /**
++     *  The object is created only to provide the DBus access so that an
++     *  external service could set the correct VR Bundle version.
++     *  On VR bundle app code update, the version is updated accordingly.
++     */
++    void createVRBundleObject();
++
++    /** @brief Read Persistent Data from json file for VR BUNDLE */
++    void readVRBundleInfoFromJson();
++
++    /** @brief Persistent Activation D-Bus object for VR BUNDLE */
++    std::unique_ptr<Activation> vrBundleActivation;
++  public:
++    /** @brief Persistent Version, VRBundle info D-Bus object for VR BUNDLE */
++    std::unique_ptr<BundleVersionClass> vrBundleVersion;
++
++    /** @brief object for VR BUNDLE */
++    VRBundleInfo vrBundleReadData;
++
+ #endif
+
+     /** @brief Get the slot number of running image */
+diff --git a/meson.build b/meson.build
+index 079a416..e309525 100644
+--- a/meson.build
++++ b/meson.build
+@@ -70,6 +70,7 @@ conf.set('MMC_LAYOUT', get_option('bmc-layout').contains('mmc'))
+ conf.set('HOST_BIOS_UPGRADE', get_option('host-bios-upgrade').allowed())
+ conf.set('HPM_FPGA_UPGRADE', get_option('hpm-fpga-upgrade').allowed())
+ conf.set('RETIMER_BUNDLE_UPGRADE', get_option('retimer-bundle-upgrade').allowed())
++conf.set('VR_BUNDLE_UPGRADE', get_option('vr-bundle-upgrade').allowed())
+ conf.set('WANT_SIGNATURE_VERIFY', get_option('verify-signature').allowed())
+
+ # Configurable variables
+@@ -104,6 +105,10 @@ if get_option('retimer-bundle-upgrade').allowed()
+     conf.set_quoted('RETIMER_BUNDLE_OBJPATH', get_option('retimer-bundle-object-path'))
+ endif
+
++if get_option('vr-bundle-upgrade').allowed()
++    conf.set_quoted('VR_BUNDLE_OBJPATH', get_option('vr-bundle-object-path'))
++endif
++
+ if get_option('bmc-static-dual-image').allowed()
+   conf.set('BMC_STATIC_DUAL_IMAGE', get_option('bmc-static-dual-image').allowed())
+   conf.set_quoted('ALT_ROFS_DIR', get_option('alt-rofs-dir'))
+@@ -224,6 +229,10 @@ if get_option('retimer-bundle-upgrade').allowed()
+       unit_files += 'obmc-flash-retimer-bundle@.service.in'
+ endif
+
++if get_option('vr-bundle-upgrade').allowed()
++    unit_files += 'obmc-flash-vr-bundle@.service.in'
++endif
++
+ if get_option('bmc-static-dual-image').allowed()
+     unit_files += [
+         'static/obmc-flash-bmc-alt@.service.in',
+diff --git a/meson.options b/meson.options
+index dbd0659..3f7a19e 100644
+--- a/meson.options
++++ b/meson.options
+@@ -24,6 +24,9 @@ option('hpm-fpga-upgrade', type: 'feature',
+ option('retimer-bundle-upgrade', type: 'feature',
+     description: 'Enable retimer bundle upgrade support.')
+
++option('vr-bundle-upgrade', type: 'feature',
++    description: 'Enable vr bundle upgrade support.')
++
+ option('sync-bmc-files', type: 'feature', value: 'enabled',
+     description: 'Enable sync of filesystem files.')
+
+@@ -137,6 +140,12 @@ option(
+     description: 'The Retimer Bundle DBus object path.',
+ )
+
++option(
++    'vr-bundle-object-path', type: 'string',
++    value: '/xyz/openbmc_project/software/vr_bundle_active',
++    description: 'The VR Bundle DBus object path.',
++)
++
+ option('bmc-static-dual-image', type: 'feature', value: 'enabled',
+     description: 'Enable the dual image support for static layout.')
+
+diff --git a/obmc-flash-vr-bundle@.service.in b/obmc-flash-vr-bundle@.service.in
+new file mode 100644
+index 0000000..86386e6
+--- /dev/null
++++ b/obmc-flash-vr-bundle@.service.in
+@@ -0,0 +1,7 @@
++[Unit]
++Description=Flash Retimer Bundle image %I to Retimer
++
++[Service]
++Type=oneshot
++RemainAfterExit=no
++ExecStart=/usr/sbin/vr-update /tmp/images/%i
+diff --git a/version.hpp b/version.hpp
+index 0e40d81..b732c4d 100644
+--- a/version.hpp
++++ b/version.hpp
+@@ -6,6 +6,7 @@
+ #include "xyz/openbmc_project/Software/ExtendedVersion/server.hpp"
+ #include "xyz/openbmc_project/Software/Version/server.hpp"
+ #include "xyz/openbmc_project/Software/RetimerBundleVersion/server.hpp"
++#include "xyz/openbmc_project/Software/BundleVersion/server.hpp"
+
+ #include <sdbusplus/bus.hpp>
+
+@@ -24,12 +25,19 @@ typedef std::function<void(std::string)> eraseFunc;
+
+ using VersionInherit = sdbusplus::server::object_t<
+     sdbusplus::server::xyz::openbmc_project::software::ExtendedVersion,
++    sdbusplus::xyz::openbmc_project::Software::server::BundleVersion,
+     sdbusplus::server::xyz::openbmc_project::software::Version,
+     sdbusplus::server::xyz::openbmc_project::common::FilePath,
+     sdbusplus::server::xyz::openbmc_project::inventory::decorator::Compatible>;
+ using DeleteInherit = sdbusplus::server::object_t<
+     sdbusplus::server::xyz::openbmc_project::object::Delete>;
+
++using BundleVersionInherit = sdbusplus::server::object::object<
++    sdbusplus::xyz::openbmc_project::Software::server::ExtendedVersion,
++    sdbusplus::xyz::openbmc_project::Software::server::BundleVersion,
++    sdbusplus::xyz::openbmc_project::Software::server::Version,
++    sdbusplus::xyz::openbmc_project::Common::server::FilePath>;
++
+ using RetimerVersionInherit = sdbusplus::server::object::object<
+     sdbusplus::xyz::openbmc_project::Software::server::ExtendedVersion,
+     sdbusplus::xyz::openbmc_project::Software::server::RetimerBundleVersion,
+@@ -38,6 +46,7 @@ using RetimerVersionInherit = sdbusplus::server::object::object<
+
+ class Version;
+ class RetimerBundleVersion;
++class BundleVersion;
+ class Delete;
+
+ /** @class Delete
+@@ -253,6 +262,58 @@ class RetimerBundleVersion : public RetimerVersionInherit
+     /** @brief This Version's version string */
+     const std::string versionStr;
+ };
++
++class BundleVersion : public BundleVersionInherit
++{
++  public:
++    /** @brief Constructs Version Software Manager
++     *
++     * @param[in] bus            - The D-Bus bus object
++     * @param[in] objPath        - The D-Bus object path
++     * @param[in] versionString  - The version string
++     * @param[in] versionPurpose - The version purpose
++     * @param[in] checksumArr    - The Checksum of vrBundle
++     * @param[in] firmwareIDArr  - The FirmwareID of vrBundle
++     * @param[in] processorArr   - The Processor of vrBundle
++     * @param[in] slaveAddressArr- The SlaveAddress of vrBundle
++     * @param[in] statusArr      - The Status of vrBundle
++     * @param[in] versionsArr    - The Versions of vrBundle
++     * @param[in] filePath       - The image filesystem path
++     * @param[in] callback       - The eraseFunc callback
++     */
++    BundleVersion(sdbusplus::bus::bus& bus, const std::string& objPath,
++            const std::string& versionString, VersionPurpose versionPurpose,
++            const std::vector<std::string>& checksumArr,
++            const std::vector<std::string>& firmwareIDArr,
++            const std::vector<std::string>& processorArr,
++            const std::vector<std::string>& slaveAddressArr,
++            const std::vector<std::string>& statusArr,
++            const std::vector<std::string>& versionsArr,
++            eraseFunc callback) :
++        BundleVersionInherit(bus, (objPath).c_str(), BundleVersionInherit::action::defer_emit),
++        eraseCallback(callback), versionStr(versionString)
++    {
++        // Set properties.
++        purpose(versionPurpose);
++        version(versionString);
++        checksum(checksumArr);
++        firmwareID(firmwareIDArr);
++        processor(processorArr);
++        slaveAddress(slaveAddressArr);
++        status(statusArr);
++        versions(versionsArr);
++        // Emit deferred signal.
++        emit_object_added();
++    }
++
++    /** @brief The parent's erase callback. */
++    eraseFunc eraseCallback;
++
++  private:
++    /** @brief This Version's version string */
++    const std::string versionStr;
++};
++
+ } // namespace manager
+ } // namespace software
+ } // namespace phosphor
+--
+2.34.1
+
