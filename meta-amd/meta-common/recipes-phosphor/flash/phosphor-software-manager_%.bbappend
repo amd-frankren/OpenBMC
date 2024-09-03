@@ -10,6 +10,7 @@ RDEPENDS:${PN} += "bash"
 SRC_URI += "file://bios-update.sh \
             file://hpm-fpga-update.sh \
             file://0001-Add-support-for-HPM-FPGA-firmware-update.patch \
+            file://0002-meta-amd-flash-Save-version-info-to-persistent-stora.patch \
             "
 
 do_install:append() {
