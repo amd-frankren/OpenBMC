@@ -2,22 +2,20 @@
 
 set +e
 
-# Below are the BMC GPIO settings to access BIOS SPI flash
-# P0 flash : GPIOV1,V2 = HIGH , Remaining GPIOVx = LOW
-# P1 flash : GPIOV1,V3 = HIGH , Remaining GPIOVx = LOW
-
 IMAGE_DIR=$1
 
-#gpiochip512 + V1
-GPIOV1=681
+#gpiochip512 + AB[3] (219)
+GPIOAB3=731
 
-#gpiochip512 + V2
-GPIOV2=682
+#gpiochip512 + AB[4] (220)
+GPIOAB4=732
 
-#gpiochip512 + V3
-GPIOV3=683
+#gpiochip512 + AB[5] (221)
+GPIOAB5=733
 
-SPI_DEV="14010000.spi"
+SPI_DEVICE_1="14020000.spi"
+SPI_DEV_1="14020000.spi/spi_master/spi2/spi2.0/mtd/"
+
 SPI_PATH="/sys/bus/platform/drivers/spi-aspeed-smc"
 
 power_off() {
@@ -38,9 +36,10 @@ power_status() {
 }
 
 get_mtd_info() {
-    if spi_part=$(basename "$(find "$SPI_PATH/$1/spi_master/spi1/spi1.0/mtd/" -type d -maxdepth 1 | grep "mtd[6-9]$")") ; then
+    if spi_part=$(basename "$(find "$SPI_PATH/$1" -type d -maxdepth 1 | grep "mtd[6-9]$")") ; then
         logger -t bios-update "Partition found: $spi_part"
-        mbsize=$(( $(cat "$SPI_PATH/$1/spi_master/spi1/spi1.0/mtd/*/size") / 1048576 )) # convert to MB (divide by 1024*1024)
+        # shellcheck disable=SC2003,SC2046,SC2006
+        mbsize=$(expr `cat "$SPI_PATH/$1"/*/size` / 1048576) # convert to MB (divide by 1024*1024)
         logger -t bios-update "SPI size: $mbsize MB"
         mtd_num=$spi_part
     else
@@ -53,22 +52,22 @@ bind_spi_dev() {
 
     GPIO0=$2
     GPIO1=$3
+    GPIO2=$4
+ 
+    logger -t bios-update "unbinding $1 to aspeed-smc spi driver"
+    echo -n "$1" > $SPI_PATH/unbind
 
-    if [ ! -d "$SPI_PATH/$1/spi_master/spi1/spi1.0/mtd" ] ; then
-        logger -t bios-update "unbinding $1 to aspeed-smc spi driver"
-        echo -n "$1" > $SPI_PATH/unbind
-
-        logger -t bios-update "binding $1 to aspeed-smc spi driver"
-        if echo -n "$1" > $SPI_PATH/bind; then
-            logger -t bios-update "SPI Driver Bind Successful"
-        else
-            logger -t bios-update "SPI Driver Bind Failed."
-            set_gpio_to_host "$GPIO0"
-            set_gpio_to_host "$GPIO1"
-            exit 1
-        fi
+    logger -t bios-update "binding $1 to aspeed-smc spi driver"
+    if echo -n "$1" > $SPI_PATH/bind; then
+        logger -t bios-update "SPI Driver Bind Successful"
     else
-        logger -t bios-update "Partition already mounted"
+        logger -t bios-update "SPI Driver Bind Failed."
+        set_gpio_to_host "$GPIO0"
+        set_gpio_to_host "$GPIO1"
+        if [ -n "$GPIO2" ]; then
+            set_gpio_to_host "$GPIO2"
+        fi
+        exit 1
     fi
 }
 
@@ -89,6 +88,7 @@ power_status() {
 set_gpio_to_bmc()
 {
     GPIO=$1
+    value=$2
 
     logger -t bios-update "switch bios GPIO $GPIO to bmc"
 
@@ -105,7 +105,7 @@ set_gpio_to_bmc()
     fi
     data=$(cat value)
     if [ "$data" == "0" ]; then
-        echo 1 > value
+        echo "$value" > value
     fi
 
     return 0
@@ -171,34 +171,41 @@ flash_image_to_mtd()
     popd || return
 }
 
-trigger_bios_update()
+trigger_local_bios_update()
 {
     GPIO0=$1
     GPIO1=$2
+    GPIO2=$3
+
+    value0=$4
+    value1=$5
+    value2=$6
 
     #Flip GPIO to access SPI flash used by host.
     logger -t bios-update "Set GPIO $GPIO0 and $GPIO1 to access BIOS flash from BMC used by host"
-    set_gpio_to_bmc "$GPIO0"
-    set_gpio_to_bmc "$GPIO1"
+    set_gpio_to_bmc "$GPIO0" "$value0"
+    set_gpio_to_bmc "$GPIO1" "$value1"
+    set_gpio_to_bmc "$GPIO2" "$value2"
 
     #Bind spi driver to access flash
-    bind_spi_dev $SPI_DEV "$GPIO0" "$GPIO1"
+    bind_spi_dev $SPI_DEVICE_1 "$GPIO0" "$GPIO1" "$GPIO2"
     sleep 1
 
     #Flashcp image to device.
-    get_mtd_info $SPI_DEV
+    get_mtd_info $SPI_DEV_1
     sleep 1
     flash_image_to_mtd
 
     #Unbind spi driver
     sleep 1
-    unbind_spi_dev $SPI_DEV
+    unbind_spi_dev $SPI_DEVICE_1
     sleep 1
 
     #Flip GPIO back for host to access SPI flash
-    logger -t bios-update "Set GPIO $GPIO0 and $GPIO1 back for host to access SPI flash"
+    logger -t bios-update "Set GPIO $GPIO0, $GPIO1, $GPIO2 back for host to access SPI flash"
     set_gpio_to_host "$GPIO0"
     set_gpio_to_host "$GPIO1"
+    set_gpio_to_host "$GPIO2"
     sleep 1
 }
 
@@ -218,11 +225,10 @@ then
 fi
 logger -t bios-update "Host server powered off"
 
-#Trigger bios update for P0 flash
-trigger_bios_update "$GPIOV1" "$GPIOV2"
-
-#Trigger bios update for P1 flash
-trigger_bios_update "$GPIOV1" "$GPIOV3"
+#Trigger local bios update for P0 flash
+# [001] = P0 Local BIOS
+logger -t bios-update "Updating P0 local BIOS flash"
+trigger_local_bios_update "$GPIOAB3" "$GPIOAB4" "$GPIOAB5" 1 0 0
 
 if [ "$st" == "On\"" ]; then
     logger -t bios-update "Power on host server"
