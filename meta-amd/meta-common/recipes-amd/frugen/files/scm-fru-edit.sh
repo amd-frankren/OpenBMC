@@ -71,6 +71,27 @@ echo "SOC vendor:      $SOCvendor"
 echo "SOC model:       $SOCmodel"
 echo "SOC silicon Rev: $SOCsilrev"
 echo ""
+read -p "Do you want to override HW detected fields? [y/n] : " -n 1 -r
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+	echo ""
+	read -r -p "Enter SCM name: " SCMboard
+	read -r -p "Enter SCM Board Rev: " SCMboardrev
+	read -r -p "Enter SCM Type: " SCMtype
+	read -r -p "Enter SoC vendor: " SOCvendor
+	read -r -p "Enter SoC model: " SOCmodel
+	read -r -p "Enter SoC silicon rev: " SOCsilrev
+	echo ""
+	echo "New SCM information"
+	echo "------------------------"
+	echo "SCM Name:        $SCMboard"
+	echo "SCM Board Rev:   $SCMboardrev"
+	echo "SCM Type:        $SCMtype"
+	echo "SOC vendor:      $SOCvendor"
+	echo "SOC model:       $SOCmodel"
+	echo "SOC silicon Rev: $SOCsilrev"
+fi
+echo ""
 echo "Enter custom fields:"
 echo "(default values are within [])"
 echo
