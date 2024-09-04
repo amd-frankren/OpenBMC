@@ -1,5 +1,5 @@
 BRANCH="integ_sp7"
 SRC_URI = "git://github.com/AMDESE/u-boot.git;protocol=https;branch=${BRANCH}"
 
-SRCREV = "e510122248d7d831531bfa862bd56d5cdaca8dc8"
+SRCREV = "f2a217e5769d10e8c870b22fd09351e4f659b9fd"
 
