@@ -1,7 +1,7 @@
 SUMMARY = "VR config files for Venice"
 
 SRC_URI = "git://git@github.com:/AMDESE/vr-firmware-update.git;branch=integ_sp7;protocol=ssh"
-SRCREV = "16612809593d1f4afdc8d9edcf557c00c13c40eb"
+SRCREV = "8856818d19e14a109f13c690d9c4ff5d265f5596"
 
 do_install:append() {
     install -m 0755 ${S}/config/congo-vr.json ${D}/${sbindir}/
