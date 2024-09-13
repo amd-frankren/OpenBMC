@@ -1,11 +1,8 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-OBMC_CONSOLE_HOST_TTY = "ttyS0"
-
 SRC_URI:remove = "file://${BPN}.conf"
 
 SRC_URI:append = "\
-        file://server.ttyS0.conf \
         file://server.ttyVUART0.conf \
         file://client.2200.conf \
         file://client.2201.conf \
