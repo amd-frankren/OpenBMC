@@ -15,17 +15,24 @@ do_install:append() {
         # Install the server configuration
         install -m 0755 -d ${D}${sysconfdir}/${BPN}
         install -m 0644 ${WORKDIR}/*.conf ${D}${sysconfdir}/${BPN}/
+
+        # install dropbear environment file from upstream
+        if ${@bb.utils.contains('PACKAGECONFIG', 'ssh', 'true', 'false', d)} ; then
+                install -m 0644 ${WORKDIR}/dropbear.env ${D}${sysconfdir}/${BPN}/
+        fi
 }
+
+PACKAGECONFIG:append = " concurrent-servers"
 
 EXTRA_OECONF:append = " --enable-concurrent-servers"
 
-SYSTEMD_SERVICE_${PN}:remove = "obmc-console-ssh.socket"
+SYSTEMD_SERVICE:${PN}:remove = "obmc-console-ssh.socket"
 
-SYSTEMD_SERVICE_${PN}:append = " obmc-console-ssh@2200.service \
+SYSTEMD_SERVICE:${PN}:append = " obmc-console-ssh@2200.service \
         obmc-console-ssh@2201.service \
 "
 
-REGISTERED_SERVICES_${PN}:append = " obmc_console_host0:tcp:2200: \
+REGISTERED_SERVICES:${PN}:append = " obmc_console_host0:tcp:2200: \
         obmc_console_host1:tcp:2201: \
 "
 
