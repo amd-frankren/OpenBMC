@@ -53,7 +53,7 @@ bind_spi_dev() {
     GPIO0=$2
     GPIO1=$3
     GPIO2=$4
- 
+
     logger -t bios-update "unbinding $1 to aspeed-smc spi driver"
     echo -n "$1" > $SPI_PATH/unbind
 
@@ -229,6 +229,9 @@ logger -t bios-update "Host server powered off"
 # [001] = P0 Local BIOS
 logger -t bios-update "Updating P0 local BIOS flash"
 trigger_local_bios_update "$GPIOAB3" "$GPIOAB4" "$GPIOAB5" 1 0 0
+
+logger -t bios-update "Updating P1 local BIOS flash"
+trigger_local_bios_update "$GPIOAB3" "$GPIOAB4" "$GPIOAB5" 1 0 1
 
 if [ "$st" == "On\"" ]; then
     logger -t bios-update "Power on host server"
