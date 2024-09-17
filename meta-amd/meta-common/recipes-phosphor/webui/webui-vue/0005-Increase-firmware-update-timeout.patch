@@ -1,0 +1,27 @@
+From b62abda98ce96550388a542f5d57a6ffa226ef07 Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Tue, 17 Sep 2024 12:21:22 -0500
+Subject: [PATCH] meta-amd : webui-vue: Increase firmware update timeout to 600
+ seconds
+
+Changed timout of firmware update progess and completion
+from 7 minutes to 10 minutes.
+
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ src/views/Operations/Firmware/FirmwareFormUpdate.vue | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/views/Operations/Firmware/FirmwareFormUpdate.vue b/src/views/Operations/Firmware/FirmwareFormUpdate.vue
+index 51075c9..272ab12 100644
+--- a/src/views/Operations/Firmware/FirmwareFormUpdate.vue
++++ b/src/views/Operations/Firmware/FirmwareFormUpdate.vue
+@@ -157,7 +157,7 @@ export default {
+         this.endLoader();
+         this.errorToast(this.$t('pageFirmware.toast.updateAborted'));
+       } else {
+-        if (this.informProgress.overalltimeout > 420000) {
++        if (this.informProgress.overalltimeout > 600000) {
+           this.informProgress.overalltimeout = 0;
+           this.endLoader();
+           this.infoToast(this.$t('pageFirmware.toast.verifyUpdateMessage'), {
