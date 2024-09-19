@@ -17,6 +17,7 @@ SRC_URI += "file://bios-update.sh \
             file://0002-meta-amd-flash-Save-version-info-to-persistent-stora.patch \
             file://0003-phosphor-software-manager-Enable-Retimer-framework.patch \
             file://0004-Add-support-for-VR-firmware-bundle-update.patch \
+            file://0005-meta-amd-Flash-Delete-stale-objects-for-HPM-FPGA.patch \
            "
 
 do_install:append() {

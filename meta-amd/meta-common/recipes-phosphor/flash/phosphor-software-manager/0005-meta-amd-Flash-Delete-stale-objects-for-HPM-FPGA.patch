@@ -1,0 +1,101 @@
+From 041f8bd4cf5995b0e63d35c85b96350936e947b3 Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Thu, 19 Sep 2024 06:38:03 -0500
+Subject: [PATCH] meta-amd: Flash: Delete stale objects for HPM FPGA after
+ update
+
+1. Delete the stale objects for HPM FPGA after update.
+2. Change backup version as invalid after activation.
+3. Code cleanup
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ activation.cpp   | 14 +++++++++++++-
+ item_updater.cpp |  4 ++--
+ item_updater.hpp |  3 ---
+ 3 files changed, 15 insertions(+), 6 deletions(-)
+
+diff --git a/activation.cpp b/activation.cpp
+index 41db115..ac383ee 100644
+--- a/activation.cpp
++++ b/activation.cpp
+@@ -526,6 +526,7 @@ void Activation::onStateChangesBios(sdbusplus::message_t& msg)
+             parent.biosVersion->version(
+                 parent.versions.find(versionId)->second->version());
+             SET_VER(BIOS_VER_FILE);
++            parent.versions.find(versionId)->second->version("--");
+
+             // Delete the uploaded activation
+             boost::asio::post(getIOContext(), [this]() {
+@@ -583,6 +584,10 @@ void Activation::onStateChangesHpmFpga(sdbusplus::message::message& msg)
+
+        if (newStateResult == "done")
+         {
++
++            // Remove version object from image manager
++            deleteImageManagerObject();
++
+             // Set activation progress to 100
+             activationProgress->progress(100);
+
+@@ -594,6 +599,8 @@ void Activation::onStateChangesHpmFpga(sdbusplus::message::message& msg)
+                 parent.versions.find(versionId)->second->version());
+             SET_VER(HPM_VER_FILE);
+
++            parent.versions.find(versionId)->second->version("--");
++
+             // Delete the uploaded activation
+             boost::asio::post(getIOContext(), [this]() {
+                 this->parent.erase(this->versionId);
+@@ -602,7 +609,12 @@ void Activation::onStateChangesHpmFpga(sdbusplus::message::message& msg)
+         }
+         else if (newStateResult == "failed")
+         {
+-
++            // Remove version object from image manager
++            deleteImageManagerObject();
++            // Delete the uploaded activation
++            boost::asio::post(getIOContext(), [this]() {
++                this->parent.erase(this->versionId);
++            });
+
+             // Set Activation value to Failed
+             activation(softwareServer::Activation::Activations::Failed);
+diff --git a/item_updater.cpp b/item_updater.cpp
+index d8673e8..4f487d5 100644
+--- a/item_updater.cpp
++++ b/item_updater.cpp
+@@ -888,7 +888,7 @@ void ItemUpdater::createBIOSObject()
+     createUpdateableAssociation(path);
+
+     auto versionId = path.substr(pos + 1);
+-    auto version = "Unknown";
++    std::string version = "Unknown";
+     GET_VER(BIOS_VER_FILE);
+     AssociationList assocs = {};
+     biosActivation = std::make_unique<Activation>(
+@@ -924,7 +924,7 @@ void ItemUpdater::createHPMFPGAObject()
+      createUpdateableAssociation(path);
+
+     auto versionId = path.substr(pos + 1);
+-    auto version = "Unknown";
++    std::string version = "Unknown";
+     GET_VER(HPM_VER_FILE);
+
+     AssociationList assocs = {};
+diff --git a/item_updater.hpp b/item_updater.hpp
+index 86051ea..833dc10 100644
+--- a/item_updater.hpp
++++ b/item_updater.hpp
+@@ -18,9 +18,6 @@
+ #ifdef HOST_BIOS_UPGRADE
+ #define BIOS_VER_FILE  "bios_ver"
+ #endif
+-#ifdef SCM_FPGA_UPGRADE
+-#define SCM_VER_FILE   "scm_ver"
+-#endif
+ #ifdef HPM_FPGA_UPGRADE
+ #define HPM_VER_FILE   "hpm_ver"
+ #endif
+--
+2.34.1
+

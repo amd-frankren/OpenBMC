@@ -71,8 +71,20 @@ get_mtd_info() {
     if spi_part=$(basename "$(find "$SPI_PATH/$1/spi_master/spi2/spi2.0/mtd/" -type d -maxdepth 1 | grep "mtd[6-9]$")") ; then
         logger -t hpm-fpga-update "Partition found: $spi_part"
         mtd_num=$spi_part
+
+        if [ -z "$mtd_num" ]; then
+            update_fail=1
+        fi
     else
         logger -t hpm-fpga-update "MTD part not found for $1"
+        update_fail=1
+    fi
+
+    if [ "$update_fail" -eq 1 ]; then
+        unbind_spi_dev $SPI_DEV
+        set_gpio_to_host "$GPIO0"
+        set_gpio_to_host "$GPIO1"
+        set_gpio_to_host "$GPIO2"
         exit 1
     fi
 }
