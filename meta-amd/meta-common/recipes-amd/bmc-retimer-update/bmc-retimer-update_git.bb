@@ -5,7 +5,7 @@ LICENSE = "CLOSED"
 FILESEXTRAPATHS:prepend := "${THISDIR}:"
 
 SRC_URI="git://git@github.com:/AMDESE/bmc-retimer-update.git;branch=integ_sp7;protocol=ssh"
-SRCREV = "72f6d2f539e4d70953da9455106d6797cfc197e6"
+SRCREV = "3f9961fc706188bf31016048ce43debfcb4064d6"
 S = "${WORKDIR}/git"
 
 DEPENDS += " \
