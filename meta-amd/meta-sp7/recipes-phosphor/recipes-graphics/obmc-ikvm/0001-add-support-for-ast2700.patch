@@ -1,0 +1,35 @@
+diff --git a/create_usbhid.sh b/create_usbhid.sh
+index 58e4034..5f234fb 100644
+--- a/create_usbhid.sh
++++ b/create_usbhid.sh
+@@ -1,7 +1,7 @@
+ #!/bin/sh
+
+ hid_conf_directory="/sys/kernel/config/usb_gadget/obmc_hid"
+-dev_name="1e6a0000.usb-vhub"
++dev_name="12011000.usb-vhub"
+
+ create_hid() {
+     # create gadget
+@@ -127,7 +127,7 @@ create_hid() {
+ connect_hid() {
+     if ! grep -q "${dev_name}:p" UDC; then
+         i=0
+-        num_ports=5
++        num_ports=7
+         base_usb_dir="/sys/bus/platform/devices/${dev_name}/${dev_name}:p"
+         while [ "${i}" -lt "${num_ports}" ]; do
+             port=$(("${i}" + 1))
+diff --git a/ikvm_input.hpp b/ikvm_input.hpp
+index 00d8e7f..139505c 100644
+--- a/ikvm_input.hpp
++++ b/ikvm_input.hpp
+@@ -83,7 +83,7 @@ class Input
+         "/sys/kernel/config/usb_gadget/obmc_hid/UDC";
+     /* @brief Path to the USB virtual hub */
+     static constexpr const char* usbVirtualHubPath =
+-        "/sys/bus/platform/devices/1e6a0000.usb-vhub";
++        "/sys/bus/platform/devices/12011000.usb-vhub";
+     /* @brief Retry limit for writing an HID report */
+     static constexpr int HID_REPORT_RETRY_MAX = 5;
+     /*
