@@ -230,8 +230,21 @@ logger -t bios-update "Host server powered off"
 logger -t bios-update "Updating P0 local BIOS flash"
 trigger_local_bios_update "$GPIOAB3" "$GPIOAB4" "$GPIOAB5" 1 0 0
 
-logger -t bios-update "Updating P1 local BIOS flash"
-trigger_local_bios_update "$GPIOAB3" "$GPIOAB4" "$GPIOAB5" 1 0 1
+# check for local bios update for P1 flash
+# [101] = P1 Local BIOS
+board_id=$(/sbin/fw_printenv -n board_id)
+case "$board_id" in
+    # 1P systems
+    # Congo(0x80, 0x81, 0x86)
+    # Kenya(0x84)
+    "80" | "81" | "84" | "86")
+        logger -t bios-update "1P system, skip P1 BIOS update"
+        ;;
+    *)
+        logger -t bios-update "Updating P1 local BIOS flash"
+        trigger_local_bios_update "$GPIOAB3" "$GPIOAB4" "$GPIOAB5" 1 0 1
+        ;;
+esac
 
 if [ "$st" == "On\"" ]; then
     logger -t bios-update "Power on host server"
