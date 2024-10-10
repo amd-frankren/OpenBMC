@@ -1,0 +1,76 @@
+#! /bin/bash
+
+declare -rx HUB0="/dev/bus/i3c/8-4cc00000000"
+declare -rx HUB1="/dev/bus/i3c/8-4cc00000001"
+
+# i3chub-init -r to run this in reboot mode
+declare -x option=$1
+
+# Define your array
+commands=(
+    "$HUB0 -w 0x10,0x69"
+    "$HUB0 -r 1"
+    "$HUB0 -w 0x7E,0xE3"
+    "$HUB1 -w 0x10,0x69"
+    "$HUB1 -r 1"
+    "$HUB1 -w 0x12,0x00"
+    "$HUB1 -r 1"
+    "$HUB1 -w 0x16,0x5F"
+    "$HUB1 -r 1"
+    "$HUB1 -w 0x19,0xAF"
+    "$HUB1 -r 1"
+    "$HUB1 -w 0x12,0x01"
+    "$HUB1 -r 1"
+    "$HUB1 -w 0x51,0x01"
+    "$HUB1 -r 1"
+    "$HUB1 -w 0x17,0x00"
+    "$HUB1 -r 1"
+    "$HUB1 -w 0x10,0x00"
+    "$HUB1 -r 1"
+    "$HUB0 -w 0x10,0x69"
+    "$HUB0 -r 1"
+    "$HUB0 -w 0x12,0x00"
+    "$HUB0 -r 1"
+    "$HUB0 -w 0x16,0x55"
+    "$HUB0 -r 1"
+    "$HUB0 -w 0x19,0xAF"
+    "$HUB0 -r 1"
+    "$HUB0 -w 0x12,0xFF"
+    "$HUB0 -r 1"
+    "$HUB0 -w 0x51,0xFF"
+    "$HUB0 -r 1"
+    "$HUB0 -w 0x17,0x00"
+    "$HUB0 -r 1"
+    "$HUB0 -w 0x10,0x00"
+    "$HUB0 -r 1"
+)
+
+function main()
+{
+    if [ "$option" != "reboot" ]; then
+        echo "Initilization started"
+        # Loop through the array
+        for cmd in "${commands[@]}"
+        do
+            echo "$cmd"
+            # Disable false warning from shellcheck
+            # shellcheck disable=SC2086
+            /usr/bin/i3ctransfer -d $cmd
+            sleep 1
+        done
+        echo "Initilization completed"
+    fi
+
+    echo "unload modules apml_sbrmi, apml_sbtsi, mipi_i3c_hci"
+    rmmod apml_sbrmi apml_sbtsi mipi_i3c_hci
+    sleep 1
+    echo "load modules apml_sbrmi, apml_sbtsi"
+    modprobe apml_sbrmi
+    modprobe apml_sbtsi
+
+    echo "load modules mipi_i3c_hci with ccc enabled"
+    modprobe mipi_i3c_hci i3c_device_power=1
+}
+
+main #main program
+exit $?
