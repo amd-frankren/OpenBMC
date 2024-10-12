@@ -2,7 +2,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/linux-aspeed:"
 LINUX_VERSION:amd ?= "6.6.36"
 
 KSRC:amd ?= "git://git@github.com:/AMDESE/linux-aspeed.git;branch=integ_sp7;protocol=ssh"
-SRCREV = "c637f63c5ca5cf83d69c7e14bfa02fd1635355a3"
+SRCREV = "d46525b9d795d9856a8207a277fc02f8ebb24a5e"
 
 SRC_URI:append = "file://amd-bmc-baseline.cfg \
                   "
