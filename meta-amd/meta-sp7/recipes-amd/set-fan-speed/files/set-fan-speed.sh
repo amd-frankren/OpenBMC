@@ -2,8 +2,92 @@
 
 set -e
 
-#Speed Limit 20% (Range 0x0 to 0xFF)
+# Speed Limit 20% (Range 0x0 to 0xFF)
 SPEED_LIMIT=0x32
+
+init_nct7363_fan_controller()
+{
+    # Define platform specific nct7363 controller registers
+    if [[ "$board_id" == "84" ]]; then
+        echo "Initializing fans for Kenya"
+        FAN_SET_REG=(
+            # PWM initilization Regs, for 3-channel PWM
+            "0x2A 0x00"        # Disable WDT for no-fan testing
+            "0x38 0x01"        # Enable PWM0
+            "0x39 0x81"        # Enable PWM8 and PWM15
+            "0x41 0x7E"        # Enable FANIN1-6
+            "0x42 0xF6"        # Enable FANIN9-10 & FANIN12-15
+            "0x20 0x29"        # Set FANIN10 FANIN9 PWM0
+            "0x21 0xAA"        # Set FANIN15 FANIN4 FANIN13 FANIN12
+            "0x22 0xA9"        # Set FANIN3 FANIN2 FANIN1 PWM8
+            "0x23 0x6A"        # Set PWM15 FANIN6 FANIN5 FANIN4
+
+            # Fan speed control Regs, for 1-6 fans
+            "0x90 $speed_val"  # Set PWM0 FSCPxDUTY
+            "0xA0 $speed_val"  # Set PWM8 FSCPxDUTY
+            "0xAE $speed_val"  # Set PWM15 FSCPxDUTY
+        )
+    elif [[ "$board_id" == "85" ]]; then
+        echo "Initializing fans for Nigeria"
+        FAN_SET_REG=(
+            # PWM initilization Regs, for 1-channel PWM
+            "0x2A 0x00"        # Disable WDT for no-fan testing
+            "0x38 0x01"        # Enable PWM0
+            "0x42 0x1E"        # Enable FANIN9-12
+            "0x20 0xA9"        # Set FANIN11 FANIN10 FANIN9 PWM0
+            "0x21 0x02"        # Set FANIN12
+            "0x22 0x00"        # Set GPIO10-13
+            "0x23 0x00"        # Set GPIO14-17
+
+            # Fan speed control Regs, for 1-2 fans
+            "0x90 $speed_val"  # Set PWM0 FSCPxDUTY
+        )
+    else
+        echo "Error: Unsupported board ID $board_id for nct7363 fan controller"
+        return 1
+    fi
+
+    return 0
+}
+
+set_nct7363_fan_speed()
+{
+    # Fan Controller Dev ID
+    NCT7363_DEV=0x20
+
+    # prepare nct7363 controller registers
+    init_nct7363_fan_controller || retval=$?
+    if [[ "$retval" -ne 0 ]]; then
+        echo "Error: init_nct7363_fan_controller failed."
+        return 1
+    fi
+
+    # prepare a list of nct7363 controllers on the board
+    mapfile -t i2c_bus_array < <(find /sys/bus/i2c/drivers \
+            | grep nct7363 | grep 0020 | cut -d"/" -f 7 | cut -d"-" -f 1 | sort)
+
+    # Get the number of nct7363 controllers
+    num_of_nct7363_controller=${#i2c_bus_array[@]}
+    echo "Number of NCT7363 controllers: ${num_of_nct7363_controller}"
+    echo "Setting all Fan speeds to $speed_val pwm"
+
+    # Set nct7363 fan controller registers
+    for ((i=0; i<num_of_nct7363_controller; i++)); do
+        local bus=${i2c_bus_array[i]}
+
+        for reg_val in "${FAN_SET_REG[@]}"; do
+            local register="${reg_val%% *}"
+            local value="${reg_val##* }"
+            i2cset -f -y "$bus" "$NCT7363_DEV" "$register" "$value" || retval=$?
+
+            if [[ "$retval" -ne 0 ]]; then
+                echo "Error: set_nct7363_fan_controller failed" \
+                        "bus:$bus dev:$NCT7363_DEV reg:$register val:$value"
+                break
+            fi
+        done
+    done
+}
 
 # Set all Fans speeds at argument passed by user
 set_emc2305_fan_speed()
@@ -41,7 +125,7 @@ set_emc2305_fan_speed()
 #---------
 # Verify that input speed is not below Limit value.
 if [[ $1 -lt $SPEED_LIMIT ]]; then
-    echo "Error : You can not set Fan speed less then 20% (0x32)"
+    echo "Error : You cannot set Fan speed less than 20% (0x32)"
     exit 1
 else
     speed_val=$1
@@ -53,8 +137,14 @@ case "$board_id" in
     # Congo(0x80, 0x81, 0x86)
     # Morocco(0x82, 0x83, 0x87)
     "79" | "7A" | "7B" | "80" | "81" | "86" | "82" | "83" | "87")
-        # Call functions to set EMC2305  Fan speeds
+        # Call functions to set EMC2305 Fan speeds
         set_emc2305_fan_speed
+        ;;
+    # Kenya(0x84)
+    # Nigeria(0x85)
+    "84" | "85")
+        # Call functions to set NCT7363 Fan speeds
+        set_nct7363_fan_speed
         ;;
     *)
         echo " Unknown board_id $board_id"
