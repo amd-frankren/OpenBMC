@@ -1,76 +1,125 @@
 #! /bin/bash
 
-declare -rx HUB0="/dev/bus/i3c/8-4cc00000000"
-declare -rx HUB1="/dev/bus/i3c/8-4cc00000001"
+# Disable false warning from shellcheck
+# shellcheck disable=SC2086
+
+declare -r HUB0_0="/dev/bus/i3c/8-4cc00000000"
+declare -r HUB0_1="/dev/bus/i3c/8-4cc00000001"
+declare -r HUB1_0="/dev/bus/i3c/9-4cc00000000"
+declare -r HUB1_1="/dev/bus/i3c/9-4cc00000001"
+
+declare HUB0=""
+declare HUB1=""
 
 # i3chub-init -r to run this in reboot mode
 declare -x option=$1
 
 # Define your array
-commands=(
-    "$HUB0 -w 0x10,0x69"
-    "$HUB0 -r 1"
-    "$HUB0 -w 0x7E,0xE3"
-    "$HUB1 -w 0x10,0x69"
-    "$HUB1 -r 1"
-    "$HUB1 -w 0x12,0x00"
-    "$HUB1 -r 1"
-    "$HUB1 -w 0x16,0x5F"
-    "$HUB1 -r 1"
-    "$HUB1 -w 0x19,0xAF"
-    "$HUB1 -r 1"
-    "$HUB1 -w 0x12,0x01"
-    "$HUB1 -r 1"
-    "$HUB1 -w 0x51,0x01"
-    "$HUB1 -r 1"
-    "$HUB1 -w 0x17,0x00"
-    "$HUB1 -r 1"
-    "$HUB1 -w 0x10,0x00"
-    "$HUB1 -r 1"
-    "$HUB0 -w 0x10,0x69"
-    "$HUB0 -r 1"
-    "$HUB0 -w 0x12,0x00"
-    "$HUB0 -r 1"
-    "$HUB0 -w 0x16,0x55"
-    "$HUB0 -r 1"
-    "$HUB0 -w 0x19,0xAF"
-    "$HUB0 -r 1"
-    "$HUB0 -w 0x12,0xFF"
-    "$HUB0 -r 1"
-    "$HUB0 -w 0x51,0xFF"
-    "$HUB0 -r 1"
-    "$HUB0 -w 0x17,0x00"
-    "$HUB0 -r 1"
-    "$HUB0 -w 0x10,0x00"
-    "$HUB0 -r 1"
+# Change 1st Hub Addr to 0x71
+cmd0=(
+    " -w 0x10,0x69"
+    " -w 0x7E,0xE3"
 )
+# Initialize 1st Hub and enable 2nd Hub
+cmd1=(
+    " -w 0x10,0x69"
+    " -w 0x12,0x00"
+    " -w 0x16,0x5F"
+    " -w 0x19,0xAF"
+    " -w 0x12,0x01"
+    " -w 0x51,0x01"
+    " -w 0x17,0x00"
+    " -w 0x10,0x00"
+)
+# Initialize 1st Hub and enable 3rd Hub
+cmd2=(
+    " -w 0x10,0x69"
+    " -w 0x12,0x00"
+    " -w 0x16,0x5F"
+    " -w 0x19,0xAF"
+    " -w 0x12,0x02"
+    " -w 0x51,0x02"
+    " -w 0x17,0x00"
+    " -w 0x10,0x00"
+)
+# Initialize 2nd or 3rd Hub
+cmd3=(
+    " -w 0x10,0x69"
+    " -w 0x12,0x00"
+    " -w 0x16,0x55"
+    " -w 0x19,0xAF"
+    " -w 0x12,0xFF"
+    " -w 0x51,0xFF"
+    " -w 0x17,0x00"
+    " -w 0x10,0x00"
+)
+
+function init_hub()
+{
+    if [[ $1 -eq 0 ]]; then
+        HUB0=$HUB0_0
+        HUB1=$HUB0_1
+    else
+        HUB0=$HUB1_0
+        HUB1=$HUB1_1
+    fi
+
+    # Change 1st Hub addr to 0x71
+    for cmd in "${cmd0[@]}"
+    do
+        echo ${HUB0}$cmd
+        /usr/bin/i3ctransfer -d ${HUB0}$cmd
+        sleep 10
+        /usr/bin/i3ctransfer -d ${HUB0} -r 1
+    done
+    # initialize the 1st Hub
+    for cmd in "${cmd1[@]}"
+    do
+        echo ${HUB1}$cmd
+        /usr/bin/i3ctransfer -d ${HUB1}$cmd
+        sleep 10
+        /usr/bin/i3ctransfer -d ${HUB1} -r 1
+    done
+    # initialize the 2nd Hub
+    for cmd in "${cmd3[@]}"
+    do
+        echo ${HUB0}$cmd
+        /usr/bin/i3ctransfer -d ${HUB0}$cmd
+        sleep 10
+        /usr/bin/i3ctransfer -d ${HUB0} -r 1
+    done
+}
 
 function main()
 {
+    echo "unload modules apml_sbrmi, apml_sbtsi"
+    rmmod apml_sbrmi
+    rmmod apml_sbtsi
     if [ "$option" != "reboot" ]; then
-        echo "Initilization started"
-        # Loop through the array
-        for cmd in "${commands[@]}"
-        do
-            echo "$cmd"
-            # Disable false warning from shellcheck
-            # shellcheck disable=SC2086
-            /usr/bin/i3ctransfer -d $cmd
-            sleep 1
-        done
-        echo "Initilization completed"
+        echo "Initilization of P0 started"
+        init_hub 0
+        echo "Initilization of P0 completed"
+        board_id=$(/sbin/fw_printenv -n board_id)
+        case "$board_id" in
+        # 2P systems
+        # Morocco (0x82, 0x83, 0x87)
+        # Nigeria (0x85)
+        "82" | "83" | "85" | "87")
+            echo "Initialization of P1 started"
+            init_hub 1
+            echo "Initialization of P1 completed"
+            ;;
+        *)
+            ;;
+        esac
     fi
-
-    echo "unload modules apml_sbrmi, apml_sbtsi, mipi_i3c_hci"
-    rmmod apml_sbrmi apml_sbtsi mipi_i3c_hci
+    echo "unload module mipi_i3c_hci"
+    rmmod mipi_i3c_hci
     sleep 1
-    echo "load modules apml_sbrmi, apml_sbtsi"
-    modprobe apml_sbrmi
-    modprobe apml_sbtsi
-
     echo "load modules mipi_i3c_hci with ccc enabled"
     modprobe mipi_i3c_hci i3c_device_power=1
 }
 
-main #main program
+#main program
+main
 exit $?
