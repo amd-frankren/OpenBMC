@@ -80,7 +80,7 @@ get_mtd_info() {
         update_fail=1
     fi
 
-    if [ "$update_fail" -eq 1 ]; then
+    if [[ $update_fail -eq 1 ]]; then
         unbind_spi_dev $SPI_DEV
         set_gpio_to_host "$GPIO0"
         set_gpio_to_host "$GPIO1"
