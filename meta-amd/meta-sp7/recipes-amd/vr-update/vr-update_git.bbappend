@@ -7,5 +7,5 @@ do_install:append() {
     install -m 0755 ${S}/config/congo-vr.json ${D}/${sbindir}/
     install -m 0755 ${S}/config/morocco-vr.json ${D}/${sbindir}/
     install -m 0755 ${S}/config/kenya-vr.json ${D}/${sbindir}/
-	install -m 0755 ${S}/config/nigeria-vr.json ${D}/${sbindir}/
+    install -m 0755 ${S}/config/nigeria-vr.json ${D}/${sbindir}/
 }
