@@ -849,6 +849,374 @@
         }
       ],
       "Type": "I2CFan"
+    },
+    {
+        "Address": "0x40",
+        "Bus": 102,
+        "Labels": [
+            "iout1",
+            "pout1",
+            "temp1",
+            "vout1"
+        ],
+        "Name": "P0_VDD_CORE_0",
+        "Thresholds": [
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper critical",
+                "Severity": 1,
+                "Value": 100
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower critical",
+                "Severity": 1,
+                "Value": 0
+            },
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper non critical",
+                "Severity": 0,
+                "Value": 90
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower non critical",
+                "Severity": 0,
+                "Value": 15
+            }
+        ],
+        "Type": "RAA229126",
+        "iout1_Name": "P0_VDD_CORE_0_CURR_A",
+        "pout1_Name": "P0_VDD_CORE_0_PWR_W",
+        "temp1_Name": "P0_VDD_CORE_0_TEMP_C",
+        "vout1_Name": "P0_VDD_CORE_0_VOLT_V"
+    },
+    {
+        "Address": "0x41",
+        "Bus": 102,
+        "Labels": [
+            "iout1",
+            "pout1",
+            "temp1",
+            "vout1"
+        ],
+        "Name": "P0_VDD_CORE_1",
+        "Thresholds": [
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper critical",
+                "Severity": 1,
+                "Value": 100
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower critical",
+                "Severity": 1,
+                "Value": 0
+            },
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper non critical",
+                "Severity": 0,
+                "Value": 90
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower non critical",
+                "Severity": 0,
+                "Value": 15
+            }
+        ],
+        "Type": "RAA229126",
+        "iout1_Name": "P0_VDD_CORE_1_CURR_A",
+        "pout1_Name": "P0_VDD_CORE_1_PWR_W",
+        "temp1_Name": "P0_VDD_CORE_1_TEMP_C",
+        "vout1_Name": "P0_VDD_CORE_1_VOLT_V"
+    },
+    {
+        "Address": "0x42",
+        "Bus": 102,
+        "Labels": [
+            "iout1",
+            "pout1",
+            "temp1",
+            "vout1"
+        ],
+        "Name": "P0_VDD_VDDIO",
+        "Thresholds": [
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper critical",
+                "Severity": 1,
+                "Value": 100
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower critical",
+                "Severity": 1,
+                "Value": 0
+            },
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper non critical",
+                "Severity": 0,
+                "Value": 90
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower non critical",
+                "Severity": 0,
+                "Value": 15
+            }
+        ],
+        "Type": "RAA229126",
+        "iout1_Name": "P0_VDD_VDDIO_CURR_A",
+        "pout1_Name": "P0_VDD_VDDIO_PWR_W",
+        "temp1_Name": "P0_VDD_VDDIO_TEMP_C",
+        "vout1_Name": "P0_VDD_VDDIO_VOLT_V"
+    },
+    {
+        "Address": "0x46",
+        "Bus": 102,
+        "Labels": [
+            "iout1",
+            "pout1",
+            "temp1",
+            "vout1"
+        ],
+        "Name": "P0_VDD_33_S5_RUN",
+        "Thresholds": [
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper critical",
+                "Severity": 1,
+                "Value": 100
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower critical",
+                "Severity": 1,
+                "Value": 0
+            },
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper non critical",
+                "Severity": 0,
+                "Value": 90
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower non critical",
+                "Severity": 0,
+                "Value": 15
+            }
+        ],
+        "Type": "pmbus",
+        "iout1_Name": "P0_VDD_33_S5_RUN_CURR_A",
+        "pout1_Name": "P0_VDD_33_S5_RUN_PWR_W",
+        "temp1_Name": "P0_VDD_33_S5_RUN_TEMP_C",
+        "vout1_Name": "P0_VDD_33_S5_RUN_VOLT_V"
+    },
+    {
+        "Address": "0x47",
+        "Bus": 102,
+        "Labels": [
+            "iout1",
+            "pout1",
+            "temp1",
+            "vout1"
+        ],
+        "Name": "P0_VDD_18_S5_RUN",
+        "Thresholds": [
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper critical",
+                "Severity": 1,
+                "Value": 100
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower critical",
+                "Severity": 1,
+                "Value": 0
+            },
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper non critical",
+                "Severity": 0,
+                "Value": 90
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower non critical",
+                "Severity": 0,
+                "Value": 15
+            }
+        ],
+        "Type": "pmbus",
+        "iout1_Name": "P0_VDD_18_S5_RUN_CURR_A",
+        "pout1_Name": "P0_VDD_18_S5_RUN_PWR_W",
+        "temp1_Name": "P0_VDD_18_S5_RUN_TEMP_C",
+        "vout1_Name": "P0_VDD_18_S5_RUN_VOLT_V"
+    },
+    {
+        "Address": "0x43",
+        "Bus": 120,
+        "Labels": [
+            "iout1",
+            "pout1",
+            "temp1",
+            "vout1"
+        ],
+        "Name": "VDD_33_DUAL",
+        "Thresholds": [
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper critical",
+                "Severity": 1,
+                "Value": 100
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower critical",
+                "Severity": 1,
+                "Value": 0
+            },
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper non critical",
+                "Severity": 0,
+                "Value": 90
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower non critical",
+                "Severity": 0,
+                "Value": 15
+            }
+        ],
+        "Type": "pmbus",
+        "iout1_Name": "VDD_33_DUAL_CURR_A",
+        "pout1_Name": "VDD_33_DUAL_PWR_W",
+        "temp1_Name": "VDD_33_DUAL_TEMP_C",
+        "vout1_Name": "VDD_33_DUAL_VOLT_V"
+    },
+    {
+        "Address": "0x45",
+        "Bus": 120,
+        "Labels": [
+            "iout1",
+            "pout1",
+            "temp1",
+            "vout1"
+        ],
+        "Name": "VDD_33_RUN",
+        "Thresholds": [
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper critical",
+                "Severity": 1,
+                "Value": 100
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower critical",
+                "Severity": 1,
+                "Value": 0
+            },
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper non critical",
+                "Severity": 0,
+                "Value": 90
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower non critical",
+                "Severity": 0,
+                "Value": 15
+            }
+        ],
+        "Type": "pmbus",
+        "iout1_Name": "VDD_33_RUN_CURR_A",
+        "pout1_Name": "VDD_33_RUN_PWR_W",
+        "temp1_Name": "VDD_33_RUN_TEMP_C",
+        "vout1_Name": "VDD_33_RUN_VOLT_V"
+    },
+    {
+        "Address": "0x48",
+        "Bus": 120,
+        "Labels": [
+            "iout1",
+            "pout1",
+            "temp1",
+            "vout1"
+        ],
+        "Name": "VDD_5_DUAL",
+        "Thresholds": [
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper critical",
+                "Severity": 1,
+                "Value": 100
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower critical",
+                "Severity": 1,
+                "Value": 0
+            },
+            {
+                "Direction": "greater than",
+                "Label": "temp1",
+                "Name": "upper non critical",
+                "Severity": 0,
+                "Value": 90
+            },
+            {
+                "Direction": "less than",
+                "Label": "temp1",
+                "Name": "lower non critical",
+                "Severity": 0,
+                "Value": 15
+            }
+        ],
+        "Type": "pmbus",
+        "iout1_Name": "VDD_5_DUAL_CURR_A",
+        "pout1_Name": "VDD_5_DUAL_PWR_W",
+        "temp1_Name": "VDD_5_DUAL_TEMP_C",
+        "vout1_Name": "VDD_5_DUAL_VOLT_V"
     }
   ],
   "Name": "1P HPM",
