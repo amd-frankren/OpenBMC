@@ -1,0 +1,15 @@
+[Unit]
+Description=Phosphor-Pid-Control Margin-based Fan Control Daemon
+After=xyz.openbmc_project.FanSensor.service
+
+[Service]
+Restart=always
+ExecStartPre=/usr/bin/set-platform-json-config.sh
+ExecStart=/usr/bin/swampd
+ExecReload=/bin/kill -HUP $MAINPID
+RestartSec=5
+StartLimitInterval=0
+Type=simple
+
+[Install]
+WantedBy=basic.target
