@@ -1,0 +1,216 @@
+{
+    "version" : "AMD-Morocco-Stepwise-v01",
+    "sensors" : [
+        {
+            "name": "CENTER_FAN_0",
+            "type": "fan",
+            "readPath": "/xyz/openbmc_project/sensors/fan_tach/CENTER_FAN_0",
+            "writePath": "/sys/devices/platform/soc@14000000/soc@14000000:bus@14c0f000/14c0fb00.i2c-bus/i2c-10/i2c-122/122-004d/hwmon/hwmon2/pwm1",
+            "min": 0,
+            "max": 255,
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true
+        },
+        {
+            "name": "CENTER_FAN_1",
+            "type": "fan",
+            "readPath": "/xyz/openbmc_project/sensors/fan_tach/CENTER_FAN_1",
+            "writePath": "/sys/devices/platform/soc@14000000/soc@14000000:bus@14c0f000/14c0fb00.i2c-bus/i2c-10/i2c-122/122-004d/hwmon/hwmon2/pwm2",
+            "min": 0,
+            "max": 255,
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true
+        },
+        {
+            "name": "CENTER_FAN_2",
+            "type": "fan",
+            "readPath": "/xyz/openbmc_project/sensors/fan_tach/CENTER_FAN_2",
+            "writePath": "/sys/devices/platform/soc@14000000/soc@14000000:bus@14c0f000/14c0fb00.i2c-bus/i2c-10/i2c-122/122-004d/hwmon/hwmon2/pwm3",
+            "min": 0,
+            "max": 255,
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true
+        },
+        {
+            "name": "CENTER_FAN_3",
+            "type": "fan",
+            "readPath": "/xyz/openbmc_project/sensors/fan_tach/CENTER_FAN_3",
+            "writePath": "/sys/devices/platform/soc@14000000/soc@14000000:bus@14c0f000/14c0fb00.i2c-bus/i2c-10/i2c-122/122-004d/hwmon/hwmon2/pwm4",
+            "min": 0,
+            "max": 255,
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true
+        },
+        {
+            "name": "CENTER_FAN_4",
+            "type": "fan",
+            "readPath": "/xyz/openbmc_project/sensors/fan_tach/CENTER_FAN_4",
+            "writePath": "/sys/devices/platform/soc@14000000/soc@14000000:bus@14c0f000/14c0fb00.i2c-bus/i2c-10/i2c-122/122-004d/hwmon/hwmon2/pwm5",
+            "min": 0,
+            "max": 255,
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true
+        },
+        {
+            "name": "P0_FAN_0",
+            "type": "fan",
+            "readPath": "/xyz/openbmc_project/sensors/fan_tach/P0_FAN_0",
+            "writePath": "/sys/devices/platform/soc@14000000/soc@14000000:bus@14c0f000/14c0fb00.i2c-bus/i2c-10/i2c-123/123-004d/hwmon/hwmon3/pwm1",
+            "min": 0,
+            "max": 255,
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true
+        },
+        {
+            "name": "P0_FAN_1",
+            "type": "fan",
+            "readPath": "/xyz/openbmc_project/sensors/fan_tach/P0_FAN_1",
+            "writePath": "/sys/devices/platform/soc@14000000/soc@14000000:bus@14c0f000/14c0fb00.i2c-bus/i2c-10/i2c-123/123-004d/hwmon/hwmon3/pwm2",
+            "min": 0,
+            "max": 255,
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true
+        },
+        {
+            "name": "P0_FAN_2",
+            "type": "fan",
+            "readPath": "/xyz/openbmc_project/sensors/fan_tach/P0_FAN_2",
+            "writePath": "/sys/devices/platform/soc@14000000/soc@14000000:bus@14c0f000/14c0fb00.i2c-bus/i2c-10/i2c-123/123-004d/hwmon/hwmon3/pwm3",
+            "min": 0,
+            "max": 255,
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true
+        },
+        {
+            "name": "P0_FAN_3",
+            "type": "fan",
+            "readPath": "/xyz/openbmc_project/sensors/fan_tach/P0_FAN_3",
+            "writePath": "/sys/devices/platform/soc@14000000/soc@14000000:bus@14c0f000/14c0fb00.i2c-bus/i2c-10/i2c-123/123-004d/hwmon/hwmon3/pwm4",
+            "min": 0,
+            "max": 255,
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true
+        },
+        {
+            "name": "P0_FAN_4",
+            "type": "fan",
+            "readPath": "/xyz/openbmc_project/sensors/fan_tach/P0_FAN_4",
+            "writePath": "/sys/devices/platform/soc@14000000/soc@14000000:bus@14c0f000/14c0fb00.i2c-bus/i2c-10/i2c-123/123-004d/hwmon/hwmon3/pwm5",
+            "min": 0,
+            "max": 255,
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true
+        },
+        {
+            "name": "LM75_48",
+            "type": "temp",
+            "readPath": "/xyz/openbmc_project/sensors/temperature/LM75_48",
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true,
+            "timeout": 0
+        },
+        {
+            "name": "LM75_4C",
+            "type": "temp",
+            "readPath": "/xyz/openbmc_project/sensors/temperature/LM75_4C",
+            "ignoreDbusMinMax": true,
+            "unavailableAsFailed": true,
+            "timeout": 0
+        }
+    ],
+    "zones": [
+        {
+            "id": 1,
+            "minThermalOutput": 10.0,
+            "failsafePercent": 30.0,
+            "pids": [
+                {
+                    "name": "fans",
+                    "type": "fan",
+                    "inputs": ["CENTER_FAN_0",
+                               "CENTER_FAN_1",
+                               "CENTER_FAN_2",
+                               "CENTER_FAN_3",
+                               "CENTER_FAN_4",
+                               "P0_FAN_0",
+                               "P0_FAN_1",
+                               "P0_FAN_2",
+                               "P0_FAN_3",
+                               "P0_FAN_4"
+                    ],
+                    "setpoint": 20.0,
+                    "pid": {
+                        "samplePeriod": 1.0,
+                        "proportionalCoeff": 0.0,
+                        "integralCoeff": 0.0,
+                        "feedFwdOffsetCoeff": 0.0,
+                        "feedFwdGainCoeff": 1.0,
+                        "integralLimit_min": 0.0,
+                        "integralLimit_max": 0.0,
+                        "outLim_min": 30.0,
+                        "outLim_max": 100.0,
+                        "slewNeg": 0.0,
+                        "slewPos": 0.0
+                    }
+                },
+                {
+                    "name": "LM75",
+                    "type": "stepwise",
+                    "inputs": ["LM75_48",
+                               "LM75_4C"],
+                    "setpoint": 20.0,
+                    "pid": {
+                        "samplePeriod": 1.0,
+                        "positiveHysteresis": 0.0,
+                        "negativeHysteresis": 5.0,
+                        "isCeiling": false,
+                        "reading": {
+                            "0": 10,
+                            "1": 20,
+                            "2": 25,
+                            "3": 30,
+                            "4": 35,
+                            "5": 40,
+                            "6": 45,
+                            "7": 50,
+                            "8": 55,
+                            "9": 60,
+                            "10": 70,
+                            "11": 80,
+                            "12": 90,
+                            "13": 95,
+                            "14": 100,
+                            "15": 105,
+                            "16": 110,
+                            "17": 115,
+                            "18": 120,
+                            "19": 125
+                        },
+                        "output": {
+                            "0": 30,
+                            "1": 30,
+                            "2": 40,
+                            "3": 50,
+                            "4": 60,
+                            "5": 70,
+                            "6": 80,
+                            "7": 90,
+                            "8": 100,
+                            "9": 100,
+                            "10": 100,
+                            "11": 100,
+                            "12": 100,
+                            "13": 100,
+                            "14": 100,
+                            "15": 100,
+                            "16": 100,
+                            "17": 100,
+                            "18": 100,
+                            "19": 100
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
