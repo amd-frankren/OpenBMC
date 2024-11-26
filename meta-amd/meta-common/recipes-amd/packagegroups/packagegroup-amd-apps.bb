@@ -60,6 +60,7 @@ RDEPENDS_PN_SYSTEM_EXTRAS:amd-withhost = " \
         amd-clear-cmos \
         amd-fpga \
         phosphor-hostlogger \
+        phosphor-sel-logger \
         phosphor-watchdog \
         phosphor-host-postd \
         phosphor-post-code-manager \
