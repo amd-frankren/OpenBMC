@@ -1,0 +1,159 @@
+#!/bin/bash
+help()
+{
+    # Display Help
+    echo "Configure MCTP interfaces and discover MCTP end points."
+    echo
+    echo "Usage: $0 [-d][-h][-u]"
+    echo "Options:"
+    echo "-d Trigger the MCTP discovery process"
+    echo "-u Bring up the MCTP interfaces"
+    echo "-h Display this help message"
+    echo
+}
+
+#get the array of mctp i2c interfaces
+mapfile -t MCTP_I2C_INTF_LIST < <(ifconfig -a|cut -d' ' -f 1|grep mctpi2c)
+
+#get the root i2c bus number if the mctp i2c interfaces are behind a switch
+ROOT_I2C_NUM=
+mctp_i2c_root_intf_get()
+{
+    shopt -s extglob
+    for F in /sys/bus/i2c/devices/i2c-*/of_node/mctp@10
+    do
+        if test -d "$F"; then
+            ROOT_I2C_NUM=$(echo "$F"|cut -d'-' -f 2 | cut -d'/' -f 1)
+        fi
+    done
+}
+
+mctp_i2c_local_endpoint_id_set()
+{
+    MCTP_I2C_INTF=$1
+    ENDPOINT_ID=$2
+
+    if ! mctp addr add "${ENDPOINT_ID}" dev "${MCTP_I2C_INTF}" 2>&1 |
+            logger -t amd-mctp-config; then
+        #log the error and continue configuring
+        logger -t amd-mctp-config \
+            "mctp addr add ${ENDPOINT_ID} dev ${MCTP_I2C_INTF} failed."
+    fi
+}
+
+#Configure the MCTP i2c interfaces
+# - link up the mctpi2c* interfaces
+mctp_i2c_intf_config()
+{
+    MCTP_NETWORK_ID=1
+
+    if [ "${#MCTP_I2C_INTF_LIST[@]}" -eq 0 ]; then
+        logger -t amd-mctp-config \
+            "No MCTP I2C interfaces are configured on the system."
+        return
+    fi
+    for MCTP_I2C_INTF in "${MCTP_I2C_INTF_LIST[@]}"
+    do
+        #bring up the interface
+        if ! mctp link set "${MCTP_I2C_INTF}" up net "${MCTP_NETWORK_ID}" 2>&1 |
+                logger -t amd-mctp-config; then
+            #log the error and continue bring up the next interface
+            logger -t amd-mctp-config \
+                "mctp link set ${MCTP_I2C_INTF} up net ${MCTP_NETWORK_ID} failed."
+        fi
+    done
+
+    # add the following log informaiton to journalctl
+    # will be helpful for system debug
+    mctp link show 2>&1 | logger -t amd-mctp-config
+}
+
+mctp_i2c_discover()
+{
+    MCTP_LOCAL_ENDPOINT_ID=8
+
+    #prepare list of mctp i2c interfaces
+    if [ "${#MCTP_I2C_INTF_LIST[@]}" -eq 0 ]; then
+        logger -t amd-mctp-config \
+            "No MCTP I2C interfaces are configured on the system."
+        return
+    fi
+
+    # do the i2c MCTP endpoint discovery for each interface
+    mctp_i2c_root_intf_get
+    for MCTP_I2C_INTF in "${MCTP_I2C_INTF_LIST[@]}"
+    do
+        #skip the discovery for the root bus number
+        if [ mctpi2c"${ROOT_I2C_NUM}" == "${MCTP_I2C_INTF}" ]; then
+            continue
+        fi
+
+    	mctp_i2c_local_endpoint_id_set "${MCTP_I2C_INTF}" "${MCTP_LOCAL_ENDPOINT_ID}"
+
+        logger -t amd-mctp-config \
+            "Discovering MCTP endpoints on the $MCTP_I2C_INTF..."
+
+        # prepare a list of i2c devices that are seen on the bus and are not
+        # associated with any driver and issue the endpoint assignment command
+        # to them.
+        #I2C_BUS_NUM=$(echo "$MCTP_I2C_INTF"|sed 's/mctpi2c//g')
+        I2C_BUS_NUM=${MCTP_I2C_INTF//mctpi2c/}
+        I2C_ADDRS=$(i2cdetect -y "${I2C_BUS_NUM}" | cut -d':' -f 2 |
+                    grep -v "    0"|tr -dc '[0-9][a-f] ')
+        for I2C_ADDR in $I2C_ADDRS
+        do
+            busctl call xyz.openbmc_project.MCTP \
+                /xyz/openbmc_project/mctp \
+                au.com.CodeConstruct.MCTP \
+                AssignEndpoint \
+                say "${MCTP_I2C_INTF}" 1 0x"${I2C_ADDR}" 2>&1 |
+                    logger -t amd-mctp-config
+                logger -t amd-mctp-config "for 0x${I2C_ADDR}"
+        done
+        logger -t amd-mctp-config \
+            "Discovering MCTP endpoints on the $MCTP_I2C_INTF... Done."
+
+        # configure the local endpoint id for this interface if needed.
+        # On all the AMD boards, all the PCIe slots are behind a switch and the
+        # local endpoint id is configured for the root bus as part of
+        # mctpi2c interface configuration.
+    done
+
+    #add the mctp route and neighbor informaiton to journalctl.
+    logger -t amd-mctp-config "mctp route show:"
+    mctp route show 2>&1 | logger -t amd-mctp-config
+    logger -t amd-mctp-config ""
+    logger -t amd-mctp-config "mctp neighbor show:"
+    mctp neigh show | logger -t amd-mctp-config
+    logger -t amd-mctp-config ""
+    logger -t amd-mctp-config "busctl tree xyz.openbmc_project.MCTP:"
+    busctl tree xyz.openbmc_project.MCTP | logger -t amd-mctp-config
+}
+
+# print help if no arguments are given
+if [ $# -eq 0 ]; then
+    help
+    exit 1
+fi
+
+# Only MCTP Over I2C is supported
+while getopts ":dhu" OPTION; do
+    case $OPTION in
+        d) # trigger the discovery process
+            mctp_i2c_discover
+            ;;
+
+        h) # display Help
+            help
+            exit 0;;
+
+        u) # type of interface
+            mctp_i2c_intf_config
+            ;;
+
+        *) # display Help
+            help
+            exit 0;;
+    esac
+done
+exit $?
