@@ -1,0 +1,8 @@
+[Unit]
+Description=AMD MCTP Local Configuration
+
+[Service]
+Type=oneshot
+RemainAfterExit=no
+ExecStart=/usr/sbin/amd-mctp-config -u
+ExecStart=/usr/sbin/amd-mctp-config -d
