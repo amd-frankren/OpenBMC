@@ -1,0 +1,116 @@
+From 68ea007515a4ab4f2f3c88afd5e05b9f88896a7d Mon Sep 17 00:00:00 2001
+From: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
+Date: Thu, 19 Dec 2024 10:23:39 -0600
+Subject: [PATCH] add support for build type and boot variant
+
+Signed-off-by: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
+---
+ fru.h    | 11 +++++++----
+ frugen.c | 26 +++++++++++++++++++++++---
+ 2 files changed, 30 insertions(+), 7 deletions(-)
+
+diff --git a/fru.h b/fru.h
+index 25d8775ed677..a39da4c68bfe 100644
+--- a/fru.h
++++ b/fru.h
+@@ -202,8 +202,10 @@ typedef struct fru_internal_use_area_s {
+ #define MAC_ADDR_PAD_LEN    2
+ #define SER_NUM_LEN         24
+ #define SER_NUM_EXP_LEN     8
+-#define ECO_INTF_LEN        7
+-
++#define ECO_NUM_LEN         6
++#define INTF_CONFIG         1
++#define SCM_BLD_TYPE_SHIFT  4     /* [7:4] SCM release/build type */
++#define INTF_BOOT_TYPE_MASK 0x03  /* [3:2] Rsvd [1:0] Boot type - QSPI/eSPI */
+ #define ROT_ID_RUM          0x22  /* Fixed for Venice */
+
+ typedef struct amd_internal_use_data_s {
+@@ -223,8 +225,9 @@ typedef struct amd_internal_use_data_s {
+ 	char    serial_no[SER_NUM_LEN];
+ 	char    serial_no_exp[SER_NUM_EXP_LEN];
+ 	uint8_t bom_rev;
+-	char    eco_intf_config[ECO_INTF_LEN];
+-} amd_internal_use_data_t;
++	char    eco_num[ECO_NUM_LEN];
++	uint8_t intf_config;
++} __attribute__((packed)) amd_internal_use_data_t;
+ #endif
+
+ typedef fru_info_area_t fru_chassis_area_t;
+diff --git a/frugen.c b/frugen.c
+index 165bc971ce41..4cf3b087eb98 100644
+--- a/frugen.c
++++ b/frugen.c
+@@ -60,7 +60,7 @@ volatile int debug_level = 0;
+ 		memset(padding, '0', sizeof padding);                \
+ 		userstring[strcspn(userstring,"\r\n")] = 0;          \
+ 		ulen = strlen(userstring);                           \
+-		if (ulen < flen)                                     \
++		if (ulen <= flen)                                    \
+ 		memcpy(padding + (flen - ulen), userstring, ulen);   \
+ 		strncpy(eafield, padding, flen);                     \
+ 	}                                                        \
+@@ -89,6 +89,17 @@ volatile int debug_level = 0;
+ 	}                                                       \
+ }
+
++#define FRU_LOADFIELD_USER_INT_MASK(eafield, def_value, mask) { \
++	char userstring[64] = {0};                              \
++	fgets(userstring, sizeof userstring, stdin);            \
++	if(userstring[0] == '\n') {                             \
++		eafield |= (mask & atoi(def_value));            \
++	}                                                       \
++	else {                                                  \
++		eafield |= (mask & atoi(userstring));           \
++	}                                                       \
++}
++
+ #define FRU_LOADFIELD_USER_HEXSTR(eafield, def_value) {    \
+ 	char userstring[64] = {0};                              \
+ 	fgets(userstring, sizeof userstring, stdin);            \
+@@ -470,9 +481,11 @@ int get_amd_internal_use_area(char *encoded_data, int *datalen, amd_internal_use
+ 	printf("SCM BoM Rev [%s]:", "0");
+ 	FRU_LOADFIELD_USER_INT(amd_ia_data->bom_rev, "0");
+
+-	printf("ECO/Intf Config [%s]:", "0000000");
+-	FRU_LOADFIELD_USER_STR(amd_ia_data->eco_intf_config, "0000000", sizeof amd_ia_data->eco_intf_config);
++	printf("ECO No [%s]:", "000000");
++	FRU_LOADFIELD_USER_STR(amd_ia_data->eco_num, "000000", sizeof amd_ia_data->eco_num);
+
++	printf("Boot type [%s] (0-> QSPI, 1-> eSPI):", "0");
++	FRU_LOADFIELD_USER_INT_MASK(amd_ia_data->intf_config, "0", INTF_BOOT_TYPE_MASK);
+ 	/* Update AMD Internal Area with user fields */
+ 	memcpy(encoded_data, amd_ia_data, sizeof(amd_internal_use_data_t));
+ 	*datalen = sizeof(amd_internal_use_data_t);
+@@ -570,6 +583,7 @@ int main(int argc, char *argv[])
+ 		{ .name = "scm-soc-vndr",  .val = 'w', .has_arg = true },
+ 		{ .name = "scm-soc-mdl",   .val = 'W', .has_arg = true },
+ 		{ .name = "scm-soc-rev",   .val = 'y', .has_arg = true },
++		{ .name = "scm-bld-rel",   .val = 'Y', .has_arg = true },
+ #endif
+ 	};
+
+@@ -619,6 +633,7 @@ int main(int argc, char *argv[])
+ 		['w'] = "BMC SoC Vendor [1->Aspeed]",
+ 		['W'] = "BMC SoC Model [1->AST2600, 2->AST2700, 3->AST2750]",
+ 		['y'] = "BMC SoC silicon rev [0->A0,1->A1]",
++		['Y'] = "Board release build [0->Beta, 1->RevA]", /* 0x10 -> RevA */
+ #endif
+ 	};
+
+@@ -915,6 +930,11 @@ int main(int argc, char *argv[])
+ 				debug(2, "Custom SoC silicon rev field [%s]", optarg);
+ 				FRU_LOADFIELD_INT(amd_ia_data.soc_rev, optarg);
+ 				break;
++			case 'Y':
++				debug(2, "Custom SCM build type field [%s]", optarg);
++				FRU_LOADFIELD_INT(amd_ia_data.intf_config, optarg);
++				amd_ia_data.intf_config = amd_ia_data.intf_config << SCM_BLD_TYPE_SHIFT;
++				break;
+ #endif
+ 			case '?':
+ 				exit(1);
+--
+2.34.1
+

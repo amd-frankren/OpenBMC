@@ -13,6 +13,7 @@ SRC_URI += " \
            file://SCM_v1.json \
            file://scm-fru-edit.sh \
            file://0001-Support-for-AMD-Internal-use-area.patch \
+           file://0002-add-support-for-build-type-and-boot-variant.patch \
            "
 
 inherit pkgconfig cmake
