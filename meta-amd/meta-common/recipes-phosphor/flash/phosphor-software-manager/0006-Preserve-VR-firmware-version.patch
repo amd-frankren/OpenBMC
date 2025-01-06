@@ -1,0 +1,48 @@
+From 91e84535983c4ae40dbadde2a6498caf8f2f8121 Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Mon, 6 Jan 2025 00:57:01 -0600
+Subject: [PATCH] meta-amd: flash: Preserve VR firmware version
+
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ activation.cpp   | 1 +
+ item_updater.cpp | 1 +
+ item_updater.hpp | 1 +
+ 3 files changed, 3 insertions(+)
+
+diff --git a/activation.cpp b/activation.cpp
+index ac383ee..e8450bf 100644
+--- a/activation.cpp
++++ b/activation.cpp
+@@ -938,6 +938,7 @@ void Activation::onStateChangesVrBundle(sdbusplus::message::message& msg)
+             lg2::info("VR bundle upgrade completed successfully.");
+             parent.vrBundleVersion->version(
+                 parent.versions.find(versionId)->second->version());
++            SET_VER(VRBUNDLE_VER_FILE);
+             parent.versions.find(versionId)->second->version("--");
+
+             // Delete the uploaded activation
+diff --git a/item_updater.cpp b/item_updater.cpp
+index 4f487d5..7225c7b 100644
+--- a/item_updater.cpp
++++ b/item_updater.cpp
+@@ -1054,6 +1054,7 @@ void ItemUpdater::createVRBundleObject()
+
+     auto versionId = path.substr(pos + 1);
+     std::string version = "Unknown";
++    GET_VER(VRBUNDLE_VER_FILE);
+     readVRBundleInfoFromJson();
+
+     AssociationList assocs = {};
+diff --git a/item_updater.hpp b/item_updater.hpp
+index 833dc10..d9b7439 100644
+--- a/item_updater.hpp
++++ b/item_updater.hpp
+@@ -26,6 +26,7 @@
+ #define RETIMER_BUNDLE_INFO_FILE    "retimerBundle.json"
+ #endif
+ #ifdef VR_BUNDLE_UPGRADE
++#define VRBUNDLE_VER_FILE    "vrbundle_ver"
+ #define VRBUNDLE_INFO_FILE    "vrbundle.json"
+ #endif
+

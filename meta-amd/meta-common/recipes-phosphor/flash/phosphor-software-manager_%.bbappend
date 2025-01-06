@@ -18,7 +18,8 @@ SRC_URI += "file://bios-update.sh \
             file://0003-phosphor-software-manager-Enable-Retimer-framework.patch \
             file://0004-Add-support-for-VR-firmware-bundle-update.patch \
             file://0005-meta-amd-Flash-Delete-stale-objects-for-HPM-FPGA.patch \
-           "
+            file://0006-Preserve-VR-firmware-version.patch \
+            "
 
 do_install:append() {
     install -d ${D}/${sbindir}
