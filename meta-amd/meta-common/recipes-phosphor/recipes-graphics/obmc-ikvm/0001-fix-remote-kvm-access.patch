@@ -1,0 +1,30 @@
+From 8531d2898e684d1f850858c9fc6f502e12c885d8 Mon Sep 17 00:00:00 2001
+From: don owens <Donald.Owens@amd.com>
+Date: Mon, 6 Jan 2025 13:20:42 -0600
+Subject: [PATCH] fix remote kvm access
+
+This patch allows remote vnc clients (such as tightVNC client) to
+connect to the BMC KVM rather than only through the BMC GUI.
+
+Upstream Status: Pending
+Signed-off-by: Don Owens (donald.owens@amd.com)
+
+---
+ ikvm_server.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ikvm_server.cpp b/ikvm_server.cpp
+index 6a6cd06..4388e8a 100644
+--- a/ikvm_server.cpp
++++ b/ikvm_server.cpp
+@@ -18,7 +18,7 @@ using namespace sdbusplus::xyz::openbmc_project::Common::Error;
+ Server::Server(const Args& args, Input& i, Video& v) :
+     pendingResize(false), frameCounter(0), numClients(0), input(i), video(v)
+ {
+-    std::string ip("localhost");
++    std::string ip("any");
+     const Args::CommandLine& commandLine = args.getCommandLine();
+     int argc = commandLine.argc;
+
+--
+2.34.1
