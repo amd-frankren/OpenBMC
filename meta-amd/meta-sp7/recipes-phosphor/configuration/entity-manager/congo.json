@@ -588,7 +588,7 @@
     },
     {
       "Address": "0x4D",
-      "Bus": "201",
+      "Bus": "203",
       "Index": 0,
       "Name": "PICPWR_FAN_PESTI_0",
       "Thresholds": [
@@ -621,7 +621,7 @@
     },
     {
       "Address": "0x4D",
-      "Bus": "201",
+      "Bus": "203",
       "Index": 1,
       "Name": "PICPWR_FAN_PWREN_0",
       "Thresholds": [
@@ -654,7 +654,7 @@
     },
     {
       "Address": "0x4D",
-      "Bus": "201",
+      "Bus": "203",
       "Index": 2,
       "Name": "PICPWR_FAN_PG_0",
       "Thresholds": [
@@ -687,7 +687,7 @@
     },
     {
       "Address": "0x4D",
-      "Bus": "201",
+      "Bus": "203",
       "Index": 3,
       "Name": "PICPWR_FAN_0",
       "Thresholds": [
@@ -720,7 +720,7 @@
     },
     {
       "Address": "0x4D",
-      "Bus": "202",
+      "Bus": "204",
       "Index": 0,
       "Name": "PICPWR_FAN_PESTI_1",
       "Thresholds": [
@@ -753,7 +753,7 @@
     },
     {
       "Address": "0x4D",
-      "Bus": "202",
+      "Bus": "204",
       "Index": 1,
       "Name": "PICPWR_FAN_PWREN_1",
       "Thresholds": [
@@ -786,7 +786,7 @@
     },
     {
       "Address": "0x4D",
-      "Bus": "202",
+      "Bus": "204",
       "Index": 2,
       "Name": "PICPWR_FAN_PG_1",
       "Thresholds": [
@@ -819,7 +819,7 @@
     },
     {
       "Address": "0x4D",
-      "Bus": "202",
+      "Bus": "204",
       "Index": 3,
       "Name": "PICPWR_FAN_1",
       "Thresholds": [
@@ -852,7 +852,7 @@
     },
     {
         "Address": "0x40",
-        "Bus": 102,
+        "Bus": 118,
         "Labels": [
             "iout1",
             "pout1",
@@ -898,7 +898,7 @@
     },
     {
         "Address": "0x41",
-        "Bus": 102,
+        "Bus": 118,
         "Labels": [
             "iout1",
             "pout1",
@@ -944,7 +944,7 @@
     },
     {
         "Address": "0x42",
-        "Bus": 102,
+        "Bus": 118,
         "Labels": [
             "iout1",
             "pout1",
@@ -990,7 +990,7 @@
     },
     {
         "Address": "0x46",
-        "Bus": 102,
+        "Bus": 118,
         "Labels": [
             "iout1",
             "pout1",
@@ -1036,7 +1036,7 @@
     },
     {
         "Address": "0x47",
-        "Bus": 102,
+        "Bus": 118,
         "Labels": [
             "iout1",
             "pout1",
