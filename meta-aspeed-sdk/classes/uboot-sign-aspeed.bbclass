@@ -88,15 +88,28 @@ UBOOT_FIT_ADDRESS_CELLS ?= "1"
 # This is only necessary for determining the signing configuration
 KERNEL_PN = "${PREFERRED_PROVIDER_virtual/kernel}"
 
-# Trusted Firmware-A (TF-A) provides a reference implementation of secure world software for Armv7-A and Armv8-A,
-# including a Secure Monitor executing at Exception Level 3 (EL3)
-# ATF is used as the initial start code on ARMv8-A cores for all K3 platforms
-UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A ?= "0"
-UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A_IMAGE ?= "bl31.bin"
+# ARM Trusted Firmware(ATF) is a reference implementation of secure world
+# software for Arm A-Profile architectures, (Armv8-A and Armv7-A), including
+# an Exception Level 3 (EL3) Secure Monitor.
+UBOOT_FIT_ARM_TRUSTED_FIRMWARE ?= "0"
+UBOOT_FIT_ARM_TRUSTED_FIRMWARE_IMAGE ?= "bl31.bin"
 
-# OP-TEE is a Trusted Execution Environment (TEE) designed as companion to a non-secure Linux kernel running on Arm
-UBOOT_FIT_OPTEE_OS ?= "0"
-UBOOT_FIT_OPTEE_OS_IMAGE ?= "tee-raw.bin"
+# A Trusted Execution Environment (TEE) is an environment for executing code,
+# in which those executing the code can have high levels of trust in the asset
+# management of that surrounding environment.
+UBOOT_FIT_TEE ?= "0"
+UBOOT_FIT_TEE_IMAGE ?= "tee-raw.bin"
+
+# It is searched first. If not found, "loadables" is used to identify images
+# to be loaded into memory.
+UBOOT_FIT_CONF_FIRMWARE ?= ""
+
+# User specific image
+UBOOT_FIT_USER_IMAGE ?= "0"
+
+# Unit name containing a list of users additional binaries to be loaded.
+# It is a comma-separated list of strings.
+UBOOT_FIT_CONF_USER_LOADABLES ?= ''
 
 UBOOT_FIT_UBOOT_LOADADDRESS ?= "${UBOOT_LOADADDRESS}"
 UBOOT_FIT_UBOOT_ENTRYPOINT ?= "${UBOOT_ENTRYPOINT}"
@@ -122,6 +135,10 @@ concat_dtb() {
 			-K "${UBOOT_DTB_BINARY}" \
 			-r ${B}/fitImage-linux \
 			${UBOOT_MKIMAGE_SIGN_ARGS}
+		# Verify the kernel image and u-boot dtb
+		${UBOOT_FIT_CHECK_SIGN} \
+			-k "${UBOOT_DTB_BINARY}" \
+			-f ${B}/fitImage-linux
 		cp ${UBOOT_DTB_BINARY} ${UBOOT_DTB_SIGNED}
 	fi
 
@@ -240,23 +257,70 @@ do_uboot_generate_rsa_keys() {
 
 addtask uboot_generate_rsa_keys before do_uboot_assemble_fitimage after do_compile
 
+# Create a ITS file for the user specific image. It is an empty function and
+# users should create a bbappend to overwrite this function
+uboot_fitimage_user_image() {
+	bbwarn "Please add your specific image ITS settings for u-boot FIT image generation."
+}
+
+# Create a ITS file for the atf
+uboot_fitimage_atf() {
+	cat << EOF >> ${UBOOT_ITS}
+        atf {
+            description = "ARM Trusted Firmware";
+            data = /incbin/("${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_IMAGE}");
+            type = "firmware";
+            arch = "${UBOOT_ARCH}";
+            os = "arm-trusted-firmware";
+            load = <${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_LOADADDRESS}>;
+            entry = <${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_ENTRYPOINT}>;
+            compression = "none";
+EOF
+	if [ "${SPL_SIGN_ENABLE}" = "1" ] ; then
+		cat << EOF >> ${UBOOT_ITS}
+            signature {
+                algo = "${UBOOT_FIT_HASH_ALG},${UBOOT_FIT_SIGN_ALG}";
+                key-name-hint = "${SPL_SIGN_KEYNAME}";
+            };
+EOF
+	fi
+
+	cat << EOF >> ${UBOOT_ITS}
+        };
+EOF
+}
+
+# Create a ITS file for the tee
+uboot_fitimage_tee() {
+	cat << EOF >> ${UBOOT_ITS}
+        tee {
+            description = "Trusted Execution Environment";
+            data = /incbin/("${UBOOT_FIT_TEE_IMAGE}");
+            type = "tee";
+            arch = "${UBOOT_ARCH}";
+            os = "tee";
+            load = <${UBOOT_FIT_TEE_LOADADDRESS}>;
+            entry = <${UBOOT_FIT_TEE_ENTRYPOINT}>;
+            compression = "none";
+EOF
+	if [ "${SPL_SIGN_ENABLE}" = "1" ] ; then
+		cat << EOF >> ${UBOOT_ITS}
+            signature {
+                algo = "${UBOOT_FIT_HASH_ALG},${UBOOT_FIT_SIGN_ALG}";
+                key-name-hint = "${SPL_SIGN_KEYNAME}";
+            };
+EOF
+	fi
+
+	cat << EOF >> ${UBOOT_ITS}
+        };
+EOF
+}
+
 # Create a ITS file for the U-boot FIT, for use when
 # we want to sign it so that the SPL can verify it
 uboot_fitimage_assemble() {
 	conf_loadables="\"uboot\""
-	conf_firmware=""
-
-	if [ "${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A}" = "1" ]; then
-		conf_firmware="\"atf\""
-		if [ "${UBOOT_FIT_OPTEE_OS}" = "1" ]; then
-			conf_loadables="\"uboot\", \"optee\""
-		fi
-	else
-		if [ "${UBOOT_FIT_OPTEE_OS}" = "1" ]; then
-			conf_firmware="\"optee\""
-		fi
-	fi
-
 	rm -f ${UBOOT_ITS} ${UBOOT_FITIMAGE_BINARY}
 
 	# First we create the ITS script
@@ -310,60 +374,22 @@ EOF
 	cat << EOF >> ${UBOOT_ITS}
         };
 EOF
-	if [ "${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A}" = "1" ] ; then
-		cat << EOF >> ${UBOOT_ITS}
-        atf {
-            description = "ARM Trusted Firmware-A";
-            data = /incbin/("${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A_IMAGE}");
-            type = "firmware";
-            arch = "${UBOOT_ARCH}";
-            os = "arm-trusted-firmware";
-            load = <${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A_LOADADDRESS}>;
-            entry = <${UBOOT_FIT_ARM_TRUSTED_FIRMWARE_A_ENTRYPOINT}>;
-            compression = "none";
-EOF
-
-		if [ "${SPL_SIGN_ENABLE}" = "1" ] ; then
-			cat << EOF >> ${UBOOT_ITS}
-            signature {
-                algo = "${UBOOT_FIT_HASH_ALG},${UBOOT_FIT_SIGN_ALG}";
-                key-name-hint = "${SPL_SIGN_KEYNAME}";
-            };
-EOF
-		fi
-
-	cat << EOF >> ${UBOOT_ITS}
-        };
-EOF
+	if [ "${UBOOT_FIT_TEE}" = "1" ] ; then
+		conf_loadables="\"tee\", ${conf_loadables}"
+		uboot_fitimage_tee
 	fi
 
-	if [ "${UBOOT_FIT_OPTEE_OS}" = "1" ] ; then
-		cat << EOF >> ${UBOOT_ITS}
-        optee {
-            description = "OPTEE OS Image";
-            data = /incbin/("${UBOOT_FIT_OPTEE_OS_IMAGE}");
-            type = "tee";
-            arch = "${UBOOT_ARCH}";
-            os = "tee";
-            load = <${UBOOT_FIT_OPTEE_OS_LOADADDRESS}>;
-            entry = <${UBOOT_FIT_OPTEE_OS_ENTRYPOINT}>;
-            compression = "none";
-EOF
-
-		if [ "${SPL_SIGN_ENABLE}" = "1" ] ; then
-			cat << EOF >> ${UBOOT_ITS}
-            signature {
-                algo = "${UBOOT_FIT_HASH_ALG},${UBOOT_FIT_SIGN_ALG}";
-                key-name-hint = "${SPL_SIGN_KEYNAME}";
-            };
-EOF
-		fi
-
-	cat << EOF >> ${UBOOT_ITS}
-        };
-EOF
+	if [ "${UBOOT_FIT_ARM_TRUSTED_FIRMWARE}" = "1" ] ; then
+		conf_loadables="\"atf\", ${conf_loadables}"
+		uboot_fitimage_atf
 	fi
 
+	if [ "${UBOOT_FIT_USER_IMAGE}" = "1" ] ; then
+		if [ -n "${UBOOT_FIT_CONF_USER_LOADABLES}" ] ; then
+			conf_loadables="${conf_loadables}${UBOOT_FIT_CONF_USER_LOADABLES}"
+		fi
+		uboot_fitimage_user_image
+	fi
 	cat << EOF >> ${UBOOT_ITS}
     };
 
@@ -372,9 +398,9 @@ EOF
         conf {
             description = "Boot with signed U-Boot FIT";
 EOF
-	if [ -n "${conf_firmware}" ]; then
-	cat << EOF >> ${UBOOT_ITS}
-            firmware = ${conf_firmware};
+	if [ -n "${UBOOT_FIT_CONF_FIRMWARE}" ] ; then
+		cat << EOF >> ${UBOOT_ITS}
+            firmware = "${UBOOT_FIT_CONF_FIRMWARE}";
 EOF
 	fi
 	cat << EOF >> ${UBOOT_ITS}
@@ -403,9 +429,15 @@ EOF
 			-K "${SPL_DIR}/${SPL_DTB_BINARY}" \
 			-r ${UBOOT_FITIMAGE_BINARY} \
 			${SPL_MKIMAGE_SIGN_ARGS}
+		#
+		# Verify the U-boot FIT image and SPL dtb
+		#
+		${UBOOT_FIT_CHECK_SIGN} \
+			-k "${SPL_DIR}/${SPL_DTB_BINARY}" \
+			-f ${UBOOT_FITIMAGE_BINARY}
 	fi
 
-	if [ -f "${SPL_DIR}/${SPL_NODTB_BINARY}" ]; then
+	if [ -e "${SPL_DIR}/${SPL_DTB_BINARY}" ]; then
 		cp ${SPL_DIR}/${SPL_DTB_BINARY} ${SPL_DIR}/${SPL_DTB_SIGNED}
 	fi
 }

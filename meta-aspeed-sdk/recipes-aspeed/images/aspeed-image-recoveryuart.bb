@@ -22,8 +22,10 @@ RECOVERY_OUTPUT_IMAGE ?=  "recovery_${SPL_IMAGE}"
 OUTPUT_IMAGE_DIR ?= "${S}/output"
 SOURCE_IMAGE_DIR ?= "${S}/source"
 
+IS_AST2700_A0 ?= "${@bb.utils.contains('MACHINE_FEATURES', 'ast2700-a0', 'yes', 'no', d)}" 
+
 do_deploy () {
-    if [ "${SOC_FAMILY}" = "aspeed-g7" ]; then
+    if [ "${IS_AST2700_A0}" = "yes" ]; then
         if [ -z ${BOOTMCU_FW_BINARY} ]; then
             bbfatal "Boot from UART mode only support BootMCU SPL"
         fi
@@ -61,7 +63,7 @@ do_deploy () {
 do_deploy[depends] += " \
     virtual/kernel:do_deploy \
     virtual/bootloader:do_deploy \
-    ${@bb.utils.contains('MACHINE_FEATURES', 'ast-bootmcu', 'bootmcu-fw:do_deploy', '', d)} \
+    ${@bb.utils.contains('MACHINE_FEATURES', 'ast-bootmcu', 'virtual/bootmcu:do_deploy', '', d)} \
     "
 
 addtask deploy before do_build after do_compile

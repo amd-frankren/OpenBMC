@@ -6,8 +6,10 @@ PREFERRED_PROVIDER_u-boot-fw-utils ?= "u-boot-fw-utils-aspeed-sdk"
 # Build a FIT image and stuff core-image-minimal in it by default.
 KERNEL_IMAGETYPE ?= "fitImage"
 KERNEL_CLASSES ?= "kernel-fitimage"
+INITRAMFS_IMAGE ?= "aspeed-image-initramfs"
 INITRAMFS_FSTYPES ?= "cpio.xz"
 
+WKS_FILE ?= "ast2600-emmc.wks.in"
 WKS_FILE_DEPENDS ?= " \
     phosphor-hostfw-image \
     virtual/bootloader \
