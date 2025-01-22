@@ -19,7 +19,8 @@ SRC_URI += "file://bios-update.sh \
             file://0004-Add-support-for-VR-firmware-bundle-update.patch \
             file://0005-meta-amd-Flash-Delete-stale-objects-for-HPM-FPGA.patch \
             file://0006-Preserve-VR-firmware-version.patch \
-            "
+            file://0007-fix-clear-cmos.patch \
+           "
 
 do_install:append() {
     install -d ${D}/${sbindir}
