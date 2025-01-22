@@ -1,0 +1,37 @@
+From 0e20d3dad5a25cd3bd5a4a33bb694f9b1499fb57 Mon Sep 17 00:00:00 2001
+From: don owens <Donald.Owens@amd.com>
+Date: Wed, 22 Jan 2025 13:28:28 -0600
+Subject: [PATCH] fix redfish lib call to clear cmos
+
+This commit adds in call to reset cmos script from both BMC GUI and
+redfish calls.
+
+Upstream Status: Pending
+
+Signed-off-by: don owens <Donald.Owens@amd.com>
+---
+ redfish-core/lib/bios.hpp | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/redfish-core/lib/bios.hpp b/redfish-core/lib/bios.hpp
+index 1ec967b6..c57fcb15 100644
+--- a/redfish-core/lib/bios.hpp
++++ b/redfish-core/lib/bios.hpp
+@@ -93,8 +93,12 @@ inline void
+         [asyncResp](const boost::system::error_code& ec) {
+         if (ec)
+         {
+-            BMCWEB_LOG_ERROR("Failed to reset bios: {}", ec);
+-            messages::internalError(asyncResp->res);
++            int systemRet = system("/sbin/amd-clear-cmos.sh Y  &");
++            if (systemRet == -1)
++            {
++                BMCWEB_LOG_ERROR("Failed to clear CMOS");
++                messages::internalError(asyncResp->res);
++            }
+             return;
+         }
+     },
+--
+2.34.1
+
