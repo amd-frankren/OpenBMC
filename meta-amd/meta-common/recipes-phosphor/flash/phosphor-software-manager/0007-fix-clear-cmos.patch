@@ -1,0 +1,47 @@
+From 42d6c357094a219e178c4c5b9f183e4ea49ccbe1 Mon Sep 17 00:00:00 2001
+From: don owens <Donald.Owens@amd.com>
+Date: Fri, 3 Jan 2025 09:35:25 -0600
+Subject: [PATCH] fix clear cmos and factory reset
+
+This commit patches in support for clear cmos when calling for a
+combined factory reset and clear cmos when called from redfish
+or BMC GUI
+
+Upstream Status: Pending
+
+Signed-off-by: Don Owens <donald.owens@amd.com>
+
+---
+ static/item_updater_helper.cpp | 2 ++
+ ubi/item_updater_helper.cpp    | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/static/item_updater_helper.cpp b/static/item_updater_helper.cpp
+index 38de972..faa2004 100644
+--- a/static/item_updater_helper.cpp
++++ b/static/item_updater_helper.cpp
+@@ -26,6 +26,8 @@ void Helper::cleanup()
+
+ void Helper::factoryReset()
+ {
++    utils::execute("/usr/sbin/amd-clear-cmos.sh", "Y");
++
+     // Set openbmconce=factory-reset env in U-Boot.
+     // The init will cleanup rwfs during boot.
+     utils::execute("/sbin/fw_setenv", "openbmconce", "factory-reset");
+diff --git a/ubi/item_updater_helper.cpp b/ubi/item_updater_helper.cpp
+index 486577a..b58554a 100644
+--- a/ubi/item_updater_helper.cpp
++++ b/ubi/item_updater_helper.cpp
+@@ -47,6 +47,8 @@ void Helper::cleanup()
+
+ void Helper::factoryReset()
+ {
++    utils::execute("/usr/sbin/amd-clear-cmos.sh", "Y");
++
+     // Mark the read-write partition for recreation upon reboot.
+     utils::execute("/sbin/fw_setenv", "rwreset", "true");
+ }
+--
+2.34.1
+
