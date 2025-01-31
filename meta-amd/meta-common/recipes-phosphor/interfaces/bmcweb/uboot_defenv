@@ -1,0 +1,10 @@
+# HPM fields
+board_conf=
+board_id=
+board_rev=
+bootargs=console=ttyS12,115200n8 root=/dev/ram rw earlycon
+# SCM fields
+ethaddr=
+eth1addr=
+eth2addr=
+
