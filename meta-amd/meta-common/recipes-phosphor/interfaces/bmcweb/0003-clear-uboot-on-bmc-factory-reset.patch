@@ -1,0 +1,38 @@
+From dab1a25a728c06617c390af43e0e0775b47214af Mon Sep 17 00:00:00 2001
+From: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
+Date: Thu, 30 Jan 2025 10:42:00 -0600
+Subject: [PATCH] clear uboot on bmc factory reset
+
+clear amd uboot variables that track platform info when
+user performs a factory reset
+
+Signed-off-by: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
+---
+ redfish-core/lib/managers.hpp | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/redfish-core/lib/managers.hpp b/redfish-core/lib/managers.hpp
+index f0a4e0ab2154..e1a831f7b469 100644
+--- a/redfish-core/lib/managers.hpp
++++ b/redfish-core/lib/managers.hpp
+@@ -233,6 +233,17 @@ inline void requestRoutesManagerResetToDefaultsAction(App& app)
+             return;
+         }
+
++        /* Reset AMD u-boot variables,
++           Factory reset doesnt operate on uboot env partition
++        */
++        int systemRet = system("/usr/sbin/fw_setenv -s /etc/uboot_defenv ");
++        if (systemRet == -1)
++        {
++            BMCWEB_LOG_ERROR("Failed to clear u-boot configurations");
++            messages::internalError(asyncResp->res);
++            return;
++        }
++
+         crow::connections::systemBus->async_method_call(
+             [asyncResp](const boost::system::error_code& ec) {
+             if (ec)
+--
+2.34.1
+
