@@ -33,6 +33,17 @@
           IPMIFruSection: Board
 
 0x01:
+  /system:
+    entityID: 7
+    entityInstance: 1
+    interfaces:
+      xyz.openbmc_project.Inventory.Decorator.Asset:
+        Model:
+          IPMIFruProperty: Part Number
+          IPMIFruSection: Chassis
+        SerialNumber:
+          IPMIFruProperty: Serial Number
+          IPMIFruSection: Chassis
   /system/chassis/hpm:
     entityID: 16
     entityInstance: 1
