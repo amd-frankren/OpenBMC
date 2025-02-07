@@ -1,0 +1,102 @@
+From 6f5a14598c8c5aebc5abac115eabde1ffcb095df Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Fri, 28 Feb 2025 05:44:25 -0600
+Subject: [PATCH] meta-amd: dbus: Addition of Sdu interface
+
+Addition of Sdu interface which has MDC SDU methods
+(GetMdcSduState, GetMdcSduPpin, GetMdcSduNonce,
+MdcSduUnlock) defined.
+
+Upstream-Status: Inappropriate
+
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ yaml/com/amd/Sdu/Manager.interface.yaml | 79 +++++++++++++++++++++++++
+ 1 file changed, 79 insertions(+)
+ create mode 100644 yaml/com/amd/Sdu/Manager.interface.yaml
+
+diff --git a/yaml/com/amd/Sdu/Manager.interface.yaml b/yaml/com/amd/Sdu/Manager.interface.yaml
+new file mode 100644
+index 0000000..41e9c69
+--- /dev/null
++++ b/yaml/com/amd/Sdu/Manager.interface.yaml
+@@ -0,0 +1,79 @@
++description: >
++    Methods to perform the MDC (Mega Data Center) SDU (Secure Debug Unlock) flow
++    over existing Management Interfaces.
++
++methods:
++    - name: GetMdcSduState
++      description: >
++          This method retrieves if the system is locked or unlocked before
++          performing any MDC SDU actions.
++      returns:
++          - name: SduState
++            type: enum[self.State]
++            description: >
++                The current MDC SDU state of the system, indicating whether it is in
++                locked or unlocked state.
++            errors:
++                - xyz.openbmc_project.Common.Error.Unavailable
++
++    - name: GetMdcSduPpin
++      description: >
++          Method to get the PPIN (Processor Package Identification Number) value
++          from the system which is used by an external debug tool to generate unlock
++          string to perform MDC SDU actions.
++      returns:
++          - name: Ppin
++            type: string
++            description: >
++                The PPIN value, which is a unique identifier for the processor
++                package.
++            errors:
++                - xyz.openbmc_project.Common.Error.Unavailable
++
++    - name: GetMdcSduNonce
++      description: >
++          This method retrieves the NONCE value, which is a unique number used
++          once in cryptographic communication and fed to an external debug tool
++          to generate unlock string to perform MDC SDU actions.
++      returns:
++          - name: Nonce
++            type: string
++            description: >
++                string corresponding to the NONCE value.
++            errors:
++                - xyz.openbmc_project.Common.Error.Unavailable
++
++    - name: MdcSduUnlock
++      description: >
++          This method unlocks the device using the MDC SDU process. It requires
++          a passphrase to complete the operation.
++      parameters:
++          - name: SduPayload
++            type: string
++            description: >
++                The method expects a passphrase to unlock the system to perform
++                any MDC SDU actions.
++      returns:
++          - name: UnlockStatus
++            type: boolean
++            description: >
++                A boolean value to check if the unlock of the system is success
++                or not.
++      errors:
++          - xyz.openbmc_project.Common.Error.InternalFailure
++
++enumerations:
++    - name: State
++      description: >
++          The current MDC SDU state of the system.
++      values:
++          - name: "Locked"
++            description: >
++                The system is in locked state. The user needs to unlock to
++                perform and SDU operations.
++          - name: "Unlocked"
++            description: >
++                The system is in unlocked state and can execute SDU operations.
++          - name: "Unknown"
++            description: >
++                Unable to retrieve the current state of the system.
