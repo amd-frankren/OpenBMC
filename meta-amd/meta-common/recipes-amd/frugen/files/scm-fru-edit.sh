@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Board Info GPIOs
-GPIO_Z0=$(gpioget 0 $(((25*8) + 0)))
-GPIO_Z1=$(gpioget 0 $(((25*8) + 1)))
-GPIO_Z4=$(gpioget 0 $(((25*8) + 4)))
-GPIO_Z5=$(gpioget 0 $(((25*8) + 5)))
-GPIO_Z6=$(gpioget 0 $(((25*8) + 6)))
-GPIO_Z7=$(gpioget 0 $(((25*8) + 7)))
+GPIO_Z0=$(gpioget 1 $(((25*8) + 0)))
+GPIO_Z1=$(gpioget 1 $(((25*8) + 1)))
+GPIO_Z4=$(gpioget 1 $(((25*8) + 4)))
+GPIO_Z5=$(gpioget 1 $(((25*8) + 5)))
+GPIO_Z6=$(gpioget 1 $(((25*8) + 6)))
+GPIO_Z7=$(gpioget 1 $(((25*8) + 7)))
 
 # HW fields
 SCMboard=""
@@ -57,7 +57,7 @@ function soc_sil_rev() {
 	elif [ "$GPIO_Z4" == "0" ] && [ "$GPIO_Z5" == "1" ] ; then
 		# A1
 		# 0x10 [7:4] => 1 for RevA build release
-		echo 'SCMbuild="1";SOCsilrev="0"'
+		echo 'SCMbuild="1";SOCsilrev="1"'
 	else
 		echo "ÿ" # 0xFF in ASCII
 	fi
