@@ -35,8 +35,10 @@ sudo dnf install git python3 gcc g++ gawk which bzip2 chrpath cpio \
 ### 2) Download the source
 
 ```sh
-git clone https://github.com/openbmc/openbmc
-cd openbmc
+mkdir OpenBMC
+cd OpenBMC
+git clone https://github.com/AMDESE/OpenBMC.git .
+git checkout SP7
 ```
 
 ### 3) Target your hardware
@@ -52,33 +54,13 @@ supported hardware targets, see the following example:
 
 ```text
 $ . setup <machine> [build_dir]
-Target machine must be specified. Use one of:
-
-ahe50dc                 harma                   s7106
-bletchley               kudo                    s8036
-daytonax                lannister               sbp1
-dl360-g11               minerva                 spc621d8hm3
-dl360poc                mori                    starscream
-dl385-g11               mtjade                  system1
-e3c246d4i               mtmitchell              tatlin-archive-x86
-e3c256d4i               ncplite                 tiogapass
-ethanolx                nicole                  transformers
-evb-ast2500             olympus-nuvoton         vegman-n110
-evb-ast2600             p10bmc                  vegman-rx20
-evb-npcm750             palmetto                vegman-sx20
-evb-npcm845             qcom-dc-scm-v1          witherspoon
-f0b                     quanta-q71l             witherspoon-tacoma
-fp5280g3                rl300-g11               x11spi
-g220a                   romed8hm3               yosemite4
-gbs                     romulus                 yosemitev2
-genesis3                s2600wf                 zaius
-greatlakes              s6q
+Target machine must be specified.
 ```
 
 Once you know the target (e.g. romulus), source the `setup` script as follows:
 
 ```sh
-. setup romulus
+. setup sp7
 ```
 
 ### 4) Build
@@ -174,7 +156,7 @@ running continuously at full throttle) are likely.
 
 ### Feature List
 
-- Host management: Power, Cooling, LEDs, Inventory, Events, Watchdog
+- Host management: Power, Cooling
 - Full IPMI 2.0 Compliance with DCMI
 - Code Update Support for multiple BMC/BIOS images
 - Web-based user interface
@@ -182,15 +164,16 @@ running continuously at full throttle) are likely.
 - D-Bus based interfaces
 - SSH based SOL
 - Remote KVM
-- Hardware Simulation
-- Automated Testing
 - User management
-- Virtual media
 
 ### Features In Progress
 
+- Hardware Simulation
+- Automated Testing
+- Virtual media
 - OpenCompute Redfish Compliance
 - Verified Boot
+- PLDM
 
 ### Features Requested but need help
 
