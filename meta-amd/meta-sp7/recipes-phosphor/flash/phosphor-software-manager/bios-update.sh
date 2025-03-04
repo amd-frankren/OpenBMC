@@ -4,17 +4,17 @@ set +e
 
 IMAGE_DIR=$1
 
-#gpiochip512 + AB[3] (219)
-GPIOAB3=731
+#gpiochip1012 + AB[3] (25)
+GPIOAB3=1037
 
-#gpiochip512 + AB[4] (220)
-GPIOAB4=732
+#gpiochip1012 + AB[4] (27)
+GPIOAB4=1039
 
-#gpiochip512 + AB[5] (221)
-GPIOAB5=733
+#gpiochip1012 + AB[5] (29)
+GPIOAB5=1041
 
-SPI_DEVICE_1="14020000.spi"
-SPI_DEV_1="14020000.spi/spi_master/spi2/spi2.0/mtd/"
+SPI_DEVICE_1="14030000.spi"
+SPI_DEV_1="14030000.spi/spi_master/spi3/spi3.0/mtd/"
 
 SPI_PATH="/sys/bus/platform/drivers/spi-aspeed-smc"
 
@@ -87,52 +87,47 @@ power_status() {
 
 set_gpio_to_bmc()
 {
-    GPIO=$1
-    value=$2
+    GPIOs=($GPIOAB3 $GPIOAB4 $GPIOAB5)
+    values=(0 0 1)
 
     logger -t bios-update "switch bios GPIO $GPIO to bmc"
 
-    if [ ! -d "/sys/class/gpio/gpio$GPIO" ]; then
+    for i in "${!GPIOs[@]}"; do
+        GPIO=${GPIOs[$i]}
+        value=${values[$i]}
 
-        echo "$GPIO" > /sys/class/gpio/export
-        cd "/sys/class/gpio/gpio$GPIO" || exit 1
-    else
-        cd "/sys/class/gpio/gpio$GPIO" || exit 1
-    fi
-    direc=$(cat direction)
-    if [ "$direc" == "in" ]; then
-        echo "out" > direction
-    fi
-    data=$(cat value)
-    if [ "$data" == "0" ]; then
+        if [ ! -d "/sys/class/gpio/gpio$GPIO" ]; then
+            echo "$GPIO" > /sys/class/gpio/export
+            cd "/sys/class/gpio/gpio$GPIO" || exit 1
+        else
+            cd "/sys/class/gpio/gpio$GPIO" || exit 1
+        fi
+
         echo "$value" > value
-    fi
+    done
 
     return 0
 }
 
 set_gpio_to_host()
 {
-    GPIO0=$1
+    GPIOs=($GPIOAB3 $GPIOAB4 $GPIOAB5)
 
     logger -t bios-update "switch bios GPIO $GPIO0 to host"
 
-    if [ ! -d "/sys/class/gpio/gpio$GPIO0" ]; then
-        echo "$GPIO0" > /sys/class/gpio/export
-        cd "/sys/class/gpio/gpio$GPIO0" || exit 1
-    else
-        cd "/sys/class/gpio/gpio$GPIO0" || exit 1
-    fi
-    direc="cat direction"
-    if [ "$direc" == "in" ]; then
-        echo "out" > direction
-    fi
-    data="cat value"
-    if [ "$data" == "1" ]; then
-        echo 0 > value
-    fi
-    echo "in" > direction
-    echo "$GPIO0" > /sys/class/gpio/unexport
+    for i in "${!GPIOs[@]}"; do
+        GPIO=${GPIOs[$i]}
+
+        if [ ! -d "/sys/class/gpio/gpio$GPIO" ]; then
+            echo "$GPIO" > /sys/class/gpio/export
+            cd "/sys/class/gpio/gpio$GPIO" || exit 1
+        else
+            cd "/sys/class/gpio/gpio$GPIO" || exit 1
+        fi
+
+        echo 1 > value
+	echo "$GPIO" > /sys/class/gpio/unexport
+    done
 
     return 0
 }
@@ -173,19 +168,9 @@ flash_image_to_mtd()
 
 trigger_local_bios_update()
 {
-    GPIO0=$1
-    GPIO1=$2
-    GPIO2=$3
-
-    value0=$4
-    value1=$5
-    value2=$6
-
     #Flip GPIO to access SPI flash used by host.
     logger -t bios-update "Set GPIO $GPIO0 and $GPIO1 to access BIOS flash from BMC used by host"
-    set_gpio_to_bmc "$GPIO0" "$value0"
-    set_gpio_to_bmc "$GPIO1" "$value1"
-    set_gpio_to_bmc "$GPIO2" "$value2"
+    set_gpio_to_bmc
 
     #Bind spi driver to access flash
     bind_spi_dev $SPI_DEVICE_1 "$GPIO0" "$GPIO1" "$GPIO2"
@@ -203,9 +188,7 @@ trigger_local_bios_update()
 
     #Flip GPIO back for host to access SPI flash
     logger -t bios-update "Set GPIO $GPIO0, $GPIO1, $GPIO2 back for host to access SPI flash"
-    set_gpio_to_host "$GPIO0"
-    set_gpio_to_host "$GPIO1"
-    set_gpio_to_host "$GPIO2"
+    set_gpio_to_host
     sleep 1
 }
 
@@ -228,7 +211,7 @@ logger -t bios-update "Host server powered off"
 #Trigger local bios update for P0 flash
 # [001] = P0 Local BIOS
 logger -t bios-update "Updating P0 local BIOS flash"
-trigger_local_bios_update "$GPIOAB3" "$GPIOAB4" "$GPIOAB5" 1 0 0
+trigger_local_bios_update
 
 # check for local bios update for P1 flash
 # [101] = P1 Local BIOS
@@ -242,7 +225,7 @@ case "$board_id" in
         ;;
     *)
         logger -t bios-update "Updating P1 local BIOS flash"
-        trigger_local_bios_update "$GPIOAB3" "$GPIOAB4" "$GPIOAB5" 1 0 1
+        trigger_local_bios_update
         ;;
 esac
 
@@ -253,3 +236,4 @@ if [ "$st" == "On\"" ]; then
 fi
 
 exit 0
+
