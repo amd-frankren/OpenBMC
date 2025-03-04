@@ -4,40 +4,38 @@ set +e
 
 IMAGE_DIR=$1
 
-#gpiochip512 + AB[3] (219)
-GPIOAB3=731
+#gpiochip1012 + 25
+GPIOAB3=1037
 
-#gpiochip512 + AB[4] (220)
-GPIOAB4=732
+#gpiochip1012 + 27
+GPIOAB4=1039
 
-#gpiochip512 + AB[5] (221)
-GPIOAB5=733
+#gpiochip1012 + 29
+GPIOAB5=1041
 
-SPI_DEV="14020000.spi"
+SPI_DEV="14030000.spi"
 SPI_PATH="/sys/bus/platform/drivers/spi-aspeed-smc"
 
 set_gpio_to_bmc()
 {
-    GPIO=$1
-    value=$2
+    GPIOs=($GPIOAB3 $GPIOAB4 $GPIOAB5)
+    values=(0 1 0)
 
     logger -t hpm-fpga-update "switch HPM FPGA GPIO $GPIO to bmc"
 
-    if [ ! -d "/sys/class/gpio/gpio$GPIO" ]; then
+    for i in "${!GPIOs[@]}"; do
+        GPIO=${GPIOs[$i]}
+        value=${values[$i]}
 
-        echo "$GPIO" > /sys/class/gpio/export
-        cd "/sys/class/gpio/gpio$GPIO" || exit 1
-    else
-        cd "/sys/class/gpio/gpio$GPIO" || exit 1
-    fi
-    direc=$(cat direction)
-    if [ "$direc" == "in" ]; then
-        echo "out" > direction
-    fi
-    data=$(cat value)
-    if [ "$data" == "0" ]; then
+        if [ ! -d "/sys/class/gpio/gpio$GPIO" ]; then
+            echo "$GPIO" > /sys/class/gpio/export
+            cd "/sys/class/gpio/gpio$GPIO" || exit 1
+        else
+            cd "/sys/class/gpio/gpio$GPIO" || exit 1
+        fi
+
         echo "$value" > value
-    fi
+    done
 
     return 0
 }
@@ -48,7 +46,7 @@ bind_spi_dev() {
     GPIO1=$3
     GPIO2=$4
 
-    if [ ! -d "$SPI_PATH/$1/spi_master/spi2/spi2.0/mtd" ] ; then
+    if [ ! -d "$SPI_PATH/$1/spi_master/spi3/spi3.0/mtd" ] ; then
         logger -t hpm-fpga-update "unbinding $1 to aspeed-smc spi driver"
         echo -n "$1" > $SPI_PATH/unbind
 
@@ -68,7 +66,7 @@ bind_spi_dev() {
 }
 
 get_mtd_info() {
-    if spi_part=$(basename "$(find "$SPI_PATH/$1/spi_master/spi2/spi2.0/mtd/" -type d -maxdepth 1 | grep "mtd[6-9]$")") ; then
+    if spi_part=$(basename "$(find "$SPI_PATH/$1/spi_master/spi3/spi3.0/mtd/" -type d -maxdepth 1 | grep "mtd[6-9]$")") ; then
         logger -t hpm-fpga-update "Partition found: $spi_part"
         mtd_num=$spi_part
 
@@ -124,26 +122,23 @@ flash_image_to_mtd()
 
 set_gpio_to_host()
 {
-    GPIO0=$1
+    GPIOs=($GPIOAB3 $GPIOAB4 $GPIOAB5)
 
     logger -t hpm-fpga-update "switch HPM FPGA GPIO $GPIO0 to host"
 
-    if [ ! -d "/sys/class/gpio/gpio$GPIO0" ]; then
-        echo "$GPIO0" > /sys/class/gpio/export
-        cd "/sys/class/gpio/gpio$GPIO0" || exit 1
-    else
-        cd "/sys/class/gpio/gpio$GPIO0" || exit 1
-    fi
-    direc="cat direction"
-    if [ "$direc" == "in" ]; then
-        echo "out" > direction
-    fi
-    data="cat value"
-    if [ "$data" == "1" ]; then
-        echo 0 > value
-    fi
-    echo "in" > direction
-    echo "$GPIO0" > /sys/class/gpio/unexport
+    for i in "${!GPIOs[@]}"; do
+        GPIO=${GPIOs[$i]}
+
+        if [ ! -d "/sys/class/gpio/gpio$GPIO" ]; then
+            echo "$GPIO" > /sys/class/gpio/export
+            cd "/sys/class/gpio/gpio$GPIO" || exit 1
+        else
+            cd "/sys/class/gpio/gpio$GPIO" || exit 1
+        fi
+
+        echo 1 > value
+        echo "$GPIO" > /sys/class/gpio/unexport
+    done
 
     return 0
 }
@@ -160,9 +155,7 @@ logger -t hpm-fpga-update "Set GPIO $GPIO0, $GPIO1, $GPIO2 to access BIOS flash 
 #Flip GPIO to access SPI flash used by HPM FPGA.
 # Set MGMT_UPDATE_FLASH[0] = 0, MGMT_UPDATE_FLASH[1]  = 1, MGMT_UPDATE_FLASH[1] = 0
 
-set_gpio_to_bmc "$GPIOAB3" 0
-set_gpio_to_bmc "$GPIOAB4" 1
-set_gpio_to_bmc "$GPIOAB5" 0
+set_gpio_to_bmc
 
 #Bind spi driver to access flash
 bind_spi_dev $SPI_DEV "$GPIOAB3" "$GPIOAB4" "$GPIOAB5"
@@ -180,9 +173,7 @@ sleep 1
 
 #Flip GPIO back for host to access SPI flash
 logger -t hpm-fpga-update "Set GPIO $GPIOAB3, $GPIOAB4, $GPIOAB5 back for host to access SPI flash"
-set_gpio_to_host "$GPIOAB3"
-set_gpio_to_host "$GPIOAB4"
-set_gpio_to_host "$GPIOAB5"
+set_gpio_to_host
 sleep 5
 
 #reboot HOST
