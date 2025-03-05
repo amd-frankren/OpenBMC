@@ -35,8 +35,10 @@ sudo dnf install git python3 gcc g++ gawk which bzip2 chrpath cpio \
 ### 2) Download the source
 
 ```sh
-git clone https://github.com/openbmc/openbmc
-cd openbmc
+mkdir OpenBMC
+cd OpenBMC
+git clone https://github.com/AMDESE/OpenBMC.git .
+git checkout SP7
 ```
 
 ### 3) Target your hardware
@@ -52,33 +54,13 @@ supported hardware targets, see the following example:
 
 ```text
 $ . setup <machine> [build_dir]
-Target machine must be specified. Use one of:
-
-ahe50dc                 harma                   s7106
-bletchley               kudo                    s8036
-daytonax                lannister               sbp1
-dl360-g11               minerva                 spc621d8hm3
-dl360poc                mori                    starscream
-dl385-g11               mtjade                  system1
-e3c246d4i               mtmitchell              tatlin-archive-x86
-e3c256d4i               ncplite                 tiogapass
-ethanolx                nicole                  transformers
-evb-ast2500             olympus-nuvoton         vegman-n110
-evb-ast2600             p10bmc                  vegman-rx20
-evb-npcm750             palmetto                vegman-sx20
-evb-npcm845             qcom-dc-scm-v1          witherspoon
-f0b                     quanta-q71l             witherspoon-tacoma
-fp5280g3                rl300-g11               x11spi
-g220a                   romed8hm3               yosemite4
-gbs                     romulus                 yosemitev2
-genesis3                s2600wf                 zaius
-greatlakes              s6q
+Target machine must be specified.
 ```
 
 Once you know the target (e.g. romulus), source the `setup` script as follows:
 
 ```sh
-. setup romulus
+. setup sp7
 ```
 
 ### 4) Build
@@ -95,6 +77,34 @@ repository.
 The OpenBMC community maintains a set of tutorials new users can go through to
 get up to speed on OpenBMC development out
 [here](https://github.com/openbmc/docs/blob/master/development/README.md)
+
+The QEMU for Aspeed 2700 A1 is available [here](https://github.com/AMDESE/qemu-openbmc/tree/dev-a1)
+
+QEMU command to run aspeed-2700 A1 CRB
+
+```
+BUILDDIR=<sandbox>/openbmc/build/sp7
+IMGDIR=${BUILDDIR}/tmp/deploy/images/sp7
+DEPLOYDIR=${BUILDDIR}/tmp/work/sp7-openbmc-linux/u-boot-aspeed-sdk/v2023.10+git/build
+UBOOT_SIZE=$(stat --format=%s -L ${DEPLOYDIR}/u-boot-nodtb.bin)
+UBOOT_DTB_ADDR=$((0x400000000 + ${UBOOT_SIZE}))
+./build/qemu-system-aarch64 -m 2G -M congo-bmc -nographic\
+ -device loader,addr=0x400000000,file=${DEPLOYDIR}/u-boot-nodtb.bin,force-raw=on\
+ -device loader,addr=${UBOOT_DTB_ADDR},file=${DEPLOYDIR}/u-boot.dtb,force-raw=on\
+ -device loader,addr=0x430000000,file=${IMGDIR}/bl31.bin,force-raw=on\
+ -device loader,addr=0x430080000,file=${IMGDIR}/optee/tee-raw.bin,force-raw=on\
+ -device loader,addr=0x430000000,cpu-num=0\
+ -device loader,addr=0x430000000,cpu-num=1\
+ -device loader,addr=0x430000000,cpu-num=2\
+ -device loader,addr=0x430000000,cpu-num=3\
+ -smp 4\
+ -drive file=${IMGDIR}/image-bmc,format=raw,if=mtd\
+ -serial stdio\
+ -snapshot \
+ -monitor telnet:127.0.0.1:1234,server,nowait \
+ -net nic \
+ -net user,hostfwd=:127.0.0.1:2222-:22,hostfwd=:127.0.0.1:2443-:443,hostfwd=udp:127.0.0.1:2623-:623,hostname=qemu \
+```
 
 ## Build Validation and Testing
 
@@ -174,21 +184,22 @@ running continuously at full throttle) are likely.
 
 ### Feature List
 
-- Host management: Power, Cooling, LEDs, Inventory, Events, Watchdog
+- Host management: Power, Cooling
 - Full IPMI 2.0 Compliance with DCMI
 - Code Update Support for multiple BMC/BIOS images
 - Web-based user interface
 - REST interfaces
 - D-Bus based interfaces
+
+
+### Features In Progress
+
 - SSH based SOL
 - Remote KVM
 - Hardware Simulation
 - Automated Testing
 - User management
 - Virtual media
-
-### Features In Progress
-
 - OpenCompute Redfish Compliance
 - Verified Boot
 
