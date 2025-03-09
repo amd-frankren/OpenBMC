@@ -2,10 +2,10 @@
 #
 # BMC GPIO setting for BIOS Clear CMOS
 set -e
-GPIOCHIP=512
+GPIOCHIP=1012
 
 # TODO : revisit and fix this for SP5 (pin 218)  in the future
-GPIOOFFSET=217
+GPIOOFFSET=3
 
 GPIO_CLR_CMOS=$((GPIOCHIP + GPIOOFFSET))
 choice=$1
@@ -33,11 +33,6 @@ clear_cmos()
     else
         cd /sys/class/gpio/gpio$GPIO_CLR_CMOS
     fi
-    # check direction
-    direction=$(cat direction)
-    if [ "$direction" = "in" ]; then
-        echo "out" > direction
-    fi
     # Toggle the CLR_CMOS gpio for 5 sec.
     data=$(cat value)
     if [ "$data" = '0' ]; then
@@ -49,7 +44,6 @@ clear_cmos()
         echo "Clear CMOS failed.."
     fi
     #reset GPIO
-    echo "in" > direction
     cd /sys/class/gpio
     echo $GPIO_CLR_CMOS > unexport
 }
