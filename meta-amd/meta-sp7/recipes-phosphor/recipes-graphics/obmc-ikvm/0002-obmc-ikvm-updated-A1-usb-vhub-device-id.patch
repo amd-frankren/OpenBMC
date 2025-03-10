@@ -1,0 +1,46 @@
+From 5cd8cb601cd8019af720f7c8863dfba2ee9c120c Mon Sep 17 00:00:00 2001
+From: ashok2ku <Ashok2.Kumar@amd.com>
+Date: Mon, 10 Mar 2025 02:01:24 -0500
+Subject: [PATCH] obmc-ikvm: updated A1 2700 usb-vhub device id
+
+Node0 KVM and VM use 0x12060000 (PCIe-EHCI-vHUB + PCIe-XHCI-PHY)
+To support Node-1 KVM needs USB, phy and vhub driver
+and DTS changes.
+
+Upstream-Status: Not Applicable
+
+Signed-off-by: ashok2ku <Ashok2.Kumar@amd.com>
+---
+ create_usbhid.sh | 2 +-
+ ikvm_input.hpp   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/create_usbhid.sh b/create_usbhid.sh
+index 5f234fb..896eff9 100644
+--- a/create_usbhid.sh
++++ b/create_usbhid.sh
+@@ -1,7 +1,7 @@
+ #!/bin/sh
+
+ hid_conf_directory="/sys/kernel/config/usb_gadget/obmc_hid"
+-dev_name="12011000.usb-vhub"
++dev_name="12060000.usb-vhub"
+
+ create_hid() {
+     # create gadget
+diff --git a/ikvm_input.hpp b/ikvm_input.hpp
+index 139505c..6decd42 100644
+--- a/ikvm_input.hpp
++++ b/ikvm_input.hpp
+@@ -83,7 +83,7 @@ class Input
+         "/sys/kernel/config/usb_gadget/obmc_hid/UDC";
+     /* @brief Path to the USB virtual hub */
+     static constexpr const char* usbVirtualHubPath =
+-        "/sys/bus/platform/devices/12011000.usb-vhub";
++        "/sys/bus/platform/devices/12060000.usb-vhub";
+     /* @brief Retry limit for writing an HID report */
+     static constexpr int HID_REPORT_RETRY_MAX = 5;
+     /*
+--
+2.34.1
+
