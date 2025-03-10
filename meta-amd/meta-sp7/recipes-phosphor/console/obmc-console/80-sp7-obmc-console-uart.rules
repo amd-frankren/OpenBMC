@@ -1,1 +1,1 @@
-SUBSYSTEM=="tty", ATTRS{iomem_base}=="0x14C33800", ENV{SYSTEMD_WANTS}="obmc-console@ttyS9", TAG+="systemd"
+SUBSYSTEM=="tty", ATTRS{iomem_base}=="0x14C33C00", ENV{SYSTEMD_WANTS}="obmc-console@ttyS13", TAG+="systemd"

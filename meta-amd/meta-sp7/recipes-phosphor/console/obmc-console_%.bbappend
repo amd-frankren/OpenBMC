@@ -1,9 +1,9 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-OBMC_CONSOLE_HOST_TTY:sp7 = "ttyS9"
+OBMC_CONSOLE_HOST_TTY:sp7 = "ttyS13"
 
 SRC_URI:append:sp7 = "\
-        file://server.ttyS9.conf \
+        file://server.ttyS13.conf \
         file://80-sp7-obmc-console-uart.rules \
 "
 
