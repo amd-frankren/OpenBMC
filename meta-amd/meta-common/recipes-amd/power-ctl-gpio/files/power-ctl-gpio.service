@@ -1,0 +1,11 @@
+[Unit]
+Description=Set Power Control GPIO values
+Before=xyz.openbmc_project.Chassis.Control.Power@0.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=no
+ExecStart=/usr/sbin/power-ctl-gpio.sh
+
+[Install]
+WantedBy=multi-user.target
