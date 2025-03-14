@@ -144,7 +144,12 @@ case "$board_id" in
     # Nigeria(0x85)
     "84" | "85")
         # Call functions to set NCT7363 Fan speeds
-        set_nct7363_fan_speed
+        # TDB: remove the loop. once after CPLD fix
+        while :
+        do
+            set_nct7363_fan_speed
+            sleep 3
+        done
         ;;
     *)
         echo " Unknown board_id $board_id"
