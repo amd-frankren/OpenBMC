@@ -20,6 +20,7 @@ SRC_URI += "file://bios-update.sh \
             file://0005-meta-amd-Flash-Delete-stale-objects-for-HPM-FPGA.patch \
             file://0006-Preserve-VR-firmware-version.patch \
             file://0007-fix-clear-cmos.patch \
+            file://0008-meta-amd-flash-read-FPGA-ver-from-i2c.patch \
            "
 
 do_install:append() {

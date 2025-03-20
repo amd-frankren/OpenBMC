@@ -1,0 +1,59 @@
+From 3710ca6e8e3e530a9d857adda0e12a39c9566fc9 Mon Sep 17 00:00:00 2001
+From: modolaty <mohsen.dolaty@amd.com>
+Date: Thu, 20 Mar 2025 09:24:02 -0500
+Subject: [PATCH 1/1] meta-amd: flash: read FPGA ver from i2c
+
+Read HPM FPGA version from FPGA i2c registers (2-5)
+based on the changes in Turin/SP5
+
+tested in Congo and Morocco platforms
+
+Signed-off-by: modolaty <mohsen.dolaty@amd.com>
+---
+ item_updater.cpp | 21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/item_updater.cpp b/item_updater.cpp
+index 7225c7b..1ab2904 100644
+--- a/item_updater.cpp
++++ b/item_updater.cpp
+@@ -908,9 +908,16 @@ void ItemUpdater::createBIOSObject()
+ #endif
+
+ #ifdef HPM_FPGA_UPGRADE
++
++#define PLAT_GET_HPM_FPGA_VER    ("amd-plat-info get_hpm_fpga_ver")
++#define BUFFLEN                  (64)
++
+ void ItemUpdater::createHPMFPGAObject()
+ {
+     std::string path = HPM_FPGA_OBJPATH;
++    FILE *pf;
++    char buff[BUFFLEN] = {0};
++
+     // Get version id from last item in the path
+     auto pos = path.rfind("/");
+     if (pos == std::string::npos)
+@@ -925,7 +932,19 @@ void ItemUpdater::createHPMFPGAObject()
+
+     auto versionId = path.substr(pos + 1);
+     std::string version = "Unknown";
+-    GET_VER(HPM_VER_FILE);
++    // read from FPGA slave first
++    pf = popen(PLAT_GET_HPM_FPGA_VER, "r");
++    if (pf)
++    {
++        if (fgets(buff, BUFFLEN, pf) != NULL)
++            version = std::string(buff);
++        fclose(pf);
++    }
++    // read from persistent store if slave returned unknown
++    log<level::ERR>("version from slave ",
++                   entry("v=%s", version.c_str()));
++    if (version.compare("Unknown") == 0)
++        GET_VER(HPM_VER_FILE);
+
+     AssociationList assocs = {};
+     hpmfpgaActivation = std::make_unique<Activation>(
+--
+2.34.1
