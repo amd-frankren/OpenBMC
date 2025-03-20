@@ -1,0 +1,30 @@
+From 4d0ca53931572b342b347a1667ddc255fc91072a Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Fri, 7 Mar 2025 06:17:06 -0600
+Subject: [PATCH] meta-amd:dbus:Cpu Add vendor ID
+
+Add vendor ID property to Cpu interface.
+set type of vendor ID to string.
+
+Upstream-Status: Pending
+
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ yaml/xyz/openbmc_project/Inventory/Item/Cpu.interface.yaml | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/yaml/xyz/openbmc_project/Inventory/Item/Cpu.interface.yaml b/yaml/xyz/openbmc_project/Inventory/Item/Cpu.interface.yaml
+index c134417..17842b1 100644
+--- a/yaml/xyz/openbmc_project/Inventory/Item/Cpu.interface.yaml
++++ b/yaml/xyz/openbmc_project/Inventory/Item/Cpu.interface.yaml
+@@ -61,6 +61,10 @@ properties:
+       description: >
+           The microcode information for this processor
+       default: 0
++    - name: VendorId
++      type: string
++      description: >
++          The vendor identification for this processor.
+
+ enumerations:
+     - name: Capability
