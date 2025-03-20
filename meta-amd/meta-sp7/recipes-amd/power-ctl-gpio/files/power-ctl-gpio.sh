@@ -4,7 +4,7 @@ P0_MGMT_ASSERT_CLR_CMOS=1015
 P0_MGMT_ASSERT_PROCHOT_L=1017
 P0_ASSERT_RSMRST=1019
 P0_MGMT_ASSERT_THERMTRIP_L=1021
-
+P0_MGMT_ASSERT_WARM_RST_BTN_L=1053
 set_gpio_pwer_pins() {
     GPIO=$1
     value=$2
@@ -22,3 +22,4 @@ set_gpio_pwer_pins "$P0_MGMT_ASSERT_PROCHOT_L" "0"
 set_gpio_pwer_pins "$P0_MGMT_ASSERT_CLR_CMOS" "0"
 set_gpio_pwer_pins "$P0_ASSERT_RSMRST" "0"
 set_gpio_pwer_pins "$P0_MGMT_ASSERT_THERMTRIP_L" "0"
+set_gpio_pwer_pins "$P0_MGMT_ASSERT_WARM_RST_BTN_L" "1"
