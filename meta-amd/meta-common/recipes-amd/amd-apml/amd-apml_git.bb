@@ -1,8 +1,7 @@
 SUMMARY = "AMD EPYC System Management Interface Library"
 DESCRIPTION = "AMD EPYC System Management Interface Library for user space APML implementation"
 
-LICENSE = "Apache-2.0"
-LIC_FILES_CHKSUM = "file://License.txt;md5=a53f186511a093774907861d15f7014c"
+LICENSE = "CLOSED"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}:"
 
@@ -10,8 +9,8 @@ DEPENDS += "virtual/kernel"
 
 RDEPENDS:${PN}:append = "bash i2c-tools i3c-tools"
 
-SRC_URI = "git://github.com/amd/esmi_oob_library;protocol=https;branch=master"
-SRCREV = "48d0cd98051ef7c8e97b958ce061b89dd6bbd0c8"
+SRC_URI += "git://git@github.com/amd/apml_library.git;protocol=ssh;tag=apml-3.8.4"
+unset SRCREV
 
 S = "${WORKDIR}/git"
 
