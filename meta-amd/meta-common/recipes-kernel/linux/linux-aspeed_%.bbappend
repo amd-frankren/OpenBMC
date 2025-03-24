@@ -1,8 +1,8 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/linux-aspeed:"
 LINUX_VERSION:amd ?= "6.6.36"
 
-KSRC:amd ?= "git://git@github.com:/AMDESE/linux-aspeed.git;branch=dev-a1;protocol=ssh"
-SRCREV = "a0c1f6f455c700921557e805f504b464cabbc626"
+KSRC:amd ?= "git://git@github.com:/AMDESE/linux-aspeed.git;branch=usb3_vhub_driver_update;protocol=ssh"
+SRCREV = "b1e28ac6f02788cf48bf87d215b91ff63dd673d2"
 
 SRC_URI:append = "file://amd-bmc-baseline.cfg \
                   "
