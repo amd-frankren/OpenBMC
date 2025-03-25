@@ -7,6 +7,7 @@ SRC_URI += "file://0001-phosphor-dbus-interfaces-Add-re-timer-bundle-update-.pat
             file://0003-meta-amd-dbus-Add-D-Bus-support-for-VR-bundle-update.patch \
             file://0004-Add-AMD-OEM-RAS-configuration-interface.patch \
             file://0005-meta-amd-dbus-Cpu-Add-vendor-ID.patch \
+            file://0006-dbus-yaml-added-new-PCIe-yaml-file.patch \
             "
 do_configure:prepend() {
   cd ${S}/gen && ./regenerate-meson

@@ -1,0 +1,75 @@
+From 251d98969a64a5dcaaedab4fe29663e503278647 Mon Sep 17 00:00:00 2001
+From: ashok2ku <Ashok2.Kumar@amd.com>
+Date: Tue, 25 Mar 2025 15:11:32 -0500
+Subject: [PATCH] dbus:yaml: added new PCIe yaml file
+
+added new PCIe yaml file to trasfer  CBS, PCIe, Memory and Storage Data
+from bios.
+
+Signed-off-by: ashok2ku <Ashok2.Kumar@amd.com>
+---
+ .../PCIe/PcieData.interface.yaml              | 55 +++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+ create mode 100644 yaml/xyz/openbmc_project/PCIe/PcieData.interface.yaml
+
+diff --git a/yaml/xyz/openbmc_project/PCIe/PcieData.interface.yaml b/yaml/xyz/openbmc_project/PCIe/PcieData.interface.yaml
+new file mode 100644
+index 0000000..a46dba0
+--- /dev/null
++++ b/yaml/xyz/openbmc_project/PCIe/PcieData.interface.yaml
+@@ -0,0 +1,55 @@
++properties:
++    - name: dummy1
++      type: uint16
++      description: >
++          To do
++    - name: PcieDataTable
++      type: dict[string,dict[string, variant[int64,string]]]
++      description: >
++          std::map<string, std::map<std::string, std::variant<int64_t, std::string>>>
++methods:
++   - name: SetPcieData
++     description: >
++          Test Method.
++     parameters:
++        - name: data
++          type: dict[string,dict[string, variant[int64,string]]]
++          description: >
++            to do
++
++   - name: SetDimmData
++     description: >
++          Test Method.
++     parameters:
++        - name: data
++          type: dict[string,dict[string, variant[int64,string]]]
++          description: >
++            to do
++
++   - name: SetStorageData
++     description: >
++          Test Method.
++     parameters:
++        - name: data
++          type: dict[string,dict[string, variant[int64,string]]]
++          description: >
++            to do
++
++   - name: GetBiosAttribute
++     description: >
++          To get the attribute value of existing attributes.
++     returns:
++        - name: BiosAttributes
++          type: dict[string,variant[int64,string]]
++          description: >
++                To get the bios attribute current values and pending values if
++                previously set by setAttribute or SetPendingAttributes.
++
++   - name: SetBiosAttribute
++     description: >
++          To set the attribute value of existing attributes.
++     parameters:
++        - name: BiosAttributes
++          type: dict[string,variant[int64,string]]
++          description: >
++                AttributeName which has to be changed.
