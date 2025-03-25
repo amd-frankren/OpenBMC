@@ -7,6 +7,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 SRC_URI += "file://0001-bmcweb-changes-to-support-vrbundle-update.patch \
             file://0002-fix-redfish-lib-call-to-clear-cmos.patch \
             file://0003-clear-uboot-on-bmc-factory-reset.patch \
+            file://0004-Add-Family-VendorId-to-processor.patch \
             file://uboot_defenv \
            "
 

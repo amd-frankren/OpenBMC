@@ -1,0 +1,42 @@
+From 7e865b7f09613e5182b52a0b25c9fbbf09c6d000 Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Wed, 19 Mar 2025 01:20:13 -0500
+Subject: [PATCH] Processor: Add Family, VendorId
+- Added support for Family and VendorId properties
+  in the Processor schema.
+Upstream-Status: Pending
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ redfish-core/lib/processor.hpp | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+diff --git a/redfish-core/lib/processor.hpp b/redfish-core/lib/processor.hpp
+index 8015369d..705d95fa 100644
+--- a/redfish-core/lib/processor.hpp
++++ b/redfish-core/lib/processor.hpp
+@@ -154,6 +154,25 @@ inline void getCpuDataByInterface(
+                     asyncResp->res.jsonValue["TotalThreads"] = *value;
+                 }
+             }
++            else if (property.first == "VendorId")
++            {
++                const std::string* value =
++                    std::get_if<std::string>(&property.second);
++                if (value != nullptr)
++                {
++                    asyncResp->res.jsonValue["VendorId"] = *value;
++                }
++            }
++            else if (property.first == "Family")
++            {
++                const std::string* value =
++                    std::get_if<std::string>(&property.second);
++                if (value != nullptr)
++                {
++                    asyncResp->res.jsonValue["ProcessorId"]["Family"] = "0x" +
++                                                                        *value;
++                }
++            }
+             else if (property.first == "EffectiveFamily")
+             {
+                 const uint16_t* value = std::get_if<uint16_t>(&property.second);
+
