@@ -1,0 +1,28 @@
+From d788b0c7e48af4d4e42ce80d747235469fe7d6ed Mon Sep 17 00:00:00 2001
+From: ashok2ku <Ashok2.Kumar@amd.com>
+Date: Tue, 25 Mar 2025 14:25:04 -0500
+Subject: [PATCH] phosphor-misc/usb-ctrl: modified usb-ctrl script
+
+noticed that usb-ctrl failed to run
+commented out echo to complete script, need to relook
+
+Signed-off-by: ashok2ku <Ashok2.Kumar@amd.com>
+---
+ usb-ctrl/usb-ctrl | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/usb-ctrl/usb-ctrl b/usb-ctrl/usb-ctrl
+index 4d228fd..46b1ff5 100644
+--- a/usb-ctrl/usb-ctrl
++++ b/usb-ctrl/usb-ctrl
+@@ -182,8 +182,8 @@ function usb_insert()
+             echo "${storage}" > "${gadget_function}/lun.0/file"
+             ;;
+         ecm|eem|rndis)
+-            echo "${bmc_mac}" > "${gadget_function}/dev_addr"
+-            echo "${host_mac}" > "${gadget_function}/host_addr"
++#            echo "${bmc_mac}" > "${gadget_function}/dev_addr"
++#            echo "${host_mac}" > "${gadget_function}/host_addr"
+             ;;
+     esac
+     mkdir configs/c.1/strings/0x409

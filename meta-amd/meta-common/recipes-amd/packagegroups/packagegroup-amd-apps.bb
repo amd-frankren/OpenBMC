@@ -64,7 +64,9 @@ RDEPENDS_PN_SYSTEM_EXTRAS:amd-withhost = " \
         phosphor-watchdog \
         phosphor-host-postd \
         phosphor-post-code-manager \
+        phosphor-misc-usb-ctrl \
         vr-update \
+        usb-network \
         "
 
 python() {
