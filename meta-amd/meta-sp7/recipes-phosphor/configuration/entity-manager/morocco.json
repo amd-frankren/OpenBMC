@@ -1,1896 +1,1920 @@
-{
-  "Exposes": [
+[
     {
-      "Address": "0x48",
-      "Bus": "121",
-      "Name": "LM75_48",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 75
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 60
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 15
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 0
-        }
-      ],
-      "Type": "LM75A"
-    },
-    {
-      "Address": "0x49",
-      "Bus": "121",
-      "Name": "LM75_49",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 75
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 60
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 15
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 0
-        }
-      ],
-      "Type": "LM75A"
-    },
-    {
-      "Address": "0x4A",
-      "Bus": "121",
-      "Name": "LM75_4A",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 75
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 60
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 15
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 0
-        }
-      ],
-      "Type": "LM75A"
-    },
-    {
-      "Address": "0x4B",
-      "Bus": "121",
-      "Name": "LM75_4B",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 75
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 60
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 15
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 0
-        }
-      ],
-      "Type": "LM75A"
-    },
-    {
-      "Address": "0x4C",
-      "Bus": "121",
-      "Name": "LM75_4C",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 75
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 60
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 15
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 0
-        }
-      ],
-      "Type": "LM75A"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "121",
-      "Name": "LM75_4D",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 75
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 60
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 15
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 0
-        }
-      ],
-      "Type": "LM75A"
-    },
-    {
-      "Address": "0x4E",
-      "Bus": "121",
-      "Name": "LM75_4E",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 75
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 60
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 15
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 0
-        }
-      ],
-      "Type": "LM75A"
-    },
-    {
-      "Address": "0x4F",
-      "Bus": "121",
-      "Name": "LM75_4F",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 75
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 60
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 15
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 0
-        }
-      ],
-      "Type": "LM75A"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "122",
-      "Index": 0,
-      "Name": "CHASSIS_FAN_0",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "122",
-      "Index": 1,
-      "Name": "CHASSIS_FAN_1",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "122",
-      "Index": 2,
-      "Name": "CHASSIS_FAN_2",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "122",
-      "Index": 3,
-      "Name": "CHASSIS_FAN_3",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "122",
-      "Index": 4,
-      "Name": "CHASSIS_FAN_4",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "123",
-      "Index": 0,
-      "Name": "P0_FAN_0",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "123",
-      "Index": 1,
-      "Name": "P0_FAN_1",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "123",
-      "Index": 2,
-      "Name": "P0_FAN_2",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "123",
-      "Index": 3,
-      "Name": "P0_FAN_3",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "123",
-      "Index": 4,
-      "Name": "P0_FAN_4",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "124",
-      "Index": 0,
-      "Name": "P1_FAN_0",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "124",
-      "Index": 1,
-      "Name": "P1_FAN_1",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "124",
-      "Index": 2,
-      "Name": "P1_FAN_2",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "124",
-      "Index": 3,
-      "Name": "P1_FAN_3",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "124",
-      "Index": 4,
-      "Name": "P1_FAN_4",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "125",
-      "Index": 0,
-      "Name": "CENTER_FAN_0",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "125",
-      "Index": 1,
-      "Name": "CENTER_FAN_1",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "125",
-      "Index": 2,
-      "Name": "CENTER_FAN_2",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "125",
-      "Index": 3,
-      "Name": "CENTER_FAN_3",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "125",
-      "Index": 4,
-      "Name": "CENTER_FAN_4",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "203",
-      "Index": 0,
-      "Name": "PICPWR_FAN_0_0",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "203",
-      "Index": 1,
-      "Name": "PICPWR_FAN_0_1",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "203",
-      "Index": 2,
-      "Name": "PICPWR_FAN_0_2",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "203",
-      "Index": 3,
-      "Name": "PICPWR_FAN_0_3",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "203",
-      "Index": 4,
-      "Name": "PICPWR_FAN_0_4",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "204",
-      "Index": 0,
-      "Name": "PICPWR_FAN_1_0",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "204",
-      "Index": 1,
-      "Name": "PICPWR_FAN_1_1",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "204",
-      "Index": 2,
-      "Name": "PICPWR_FAN_1_2",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "204",
-      "Index": 3,
-      "Name": "PICPWR_FAN_1_3",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-      "Address": "0x4D",
-      "Bus": "204",
-      "Index": 4,
-      "Name": "PICPWR_FAN_1_4",
-      "Thresholds": [
-        {
-          "Direction": "greater than",
-          "Name": "upper critical",
-          "Severity": 1,
-          "Value": 14000
-        },
-        {
-          "Direction": "greater than",
-          "Name": "upper non critical",
-          "Severity": 0,
-          "Value": 12500
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower non critical",
-          "Severity": 0,
-          "Value": 1300
-        },
-        {
-          "Direction": "less than",
-          "Name": "lower critical",
-          "Severity": 1,
-          "Value": 900
-        }
-      ],
-      "Type": "I2CFan"
-    },
-    {
-        "Address": "0x40",
-        "Bus": 102,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "P0_VDD_CORE_0_RUN",
-        "Thresholds": [
+        "Exposes": [
             {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
+                "Address": "0x4D",
+                "Bus": "122",
+                "Index": 0,
+                "Name": "CHASSIS_FAN_0",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
             },
             {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
+                "Address": "0x4D",
+                "Bus": "122",
+                "Index": 1,
+                "Name": "CHASSIS_FAN_1",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
             },
             {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
+                "Address": "0x4D",
+                "Bus": "122",
+                "Index": 2,
+                "Name": "CHASSIS_FAN_2",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
             },
             {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
+                "Address": "0x4D",
+                "Bus": "122",
+                "Index": 3,
+                "Name": "CHASSIS_FAN_3",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "122",
+                "Index": 4,
+                "Name": "CHASSIS_FAN_4",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "123",
+                "Index": 0,
+                "Name": "P0_FAN_0",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "123",
+                "Index": 1,
+                "Name": "P0_FAN_1",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "123",
+                "Index": 2,
+                "Name": "P0_FAN_2",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "123",
+                "Index": 3,
+                "Name": "P0_FAN_3",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "123",
+                "Index": 4,
+                "Name": "P0_FAN_4",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "124",
+                "Index": 0,
+                "Name": "P1_FAN_0",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "124",
+                "Index": 1,
+                "Name": "P1_FAN_1",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "124",
+                "Index": 2,
+                "Name": "P1_FAN_2",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "124",
+                "Index": 3,
+                "Name": "P1_FAN_3",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "124",
+                "Index": 4,
+                "Name": "P1_FAN_4",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "125",
+                "Index": 0,
+                "Name": "CENTER_FAN_0",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "125",
+                "Index": 1,
+                "Name": "CENTER_FAN_1",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "125",
+                "Index": 2,
+                "Name": "CENTER_FAN_2",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "125",
+                "Index": 3,
+                "Name": "CENTER_FAN_3",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "125",
+                "Index": 4,
+                "Name": "CENTER_FAN_4",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "203",
+                "Index": 0,
+                "Name": "PICPWR_FAN_0_0",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "203",
+                "Index": 1,
+                "Name": "PICPWR_FAN_0_1",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "203",
+                "Index": 2,
+                "Name": "PICPWR_FAN_0_2",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "203",
+                "Index": 3,
+                "Name": "PICPWR_FAN_0_3",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "203",
+                "Index": 4,
+                "Name": "PICPWR_FAN_0_4",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "204",
+                "Index": 0,
+                "Name": "PICPWR_FAN_1_0",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "204",
+                "Index": 1,
+                "Name": "PICPWR_FAN_1_1",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "204",
+                "Index": 2,
+                "Name": "PICPWR_FAN_1_2",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "204",
+                "Index": 3,
+                "Name": "PICPWR_FAN_1_3",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "204",
+                "Index": 4,
+                "Name": "PICPWR_FAN_1_4",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 14000
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 12500
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 1300
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 900
+                    }
+                ],
+                "Type": "I2CFan"
+            },
+            {
+                "Address": "0x48",
+                "Bus": "121",
+                "Name": "LM75_48",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 75
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 60
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    }
+                ],
+                "Type": "LM75A"
+            },
+            {
+                "Address": "0x49",
+                "Bus": "121",
+                "Name": "LM75_49",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 75
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 60
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    }
+                ],
+                "Type": "LM75A"
+            },
+            {
+                "Address": "0x4A",
+                "Bus": "121",
+                "Name": "LM75_4A",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 75
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 60
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    }
+                ],
+                "Type": "LM75A"
+            },
+            {
+                "Address": "0x4B",
+                "Bus": "121",
+                "Name": "LM75_4B",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 75
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 60
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    }
+                ],
+                "Type": "LM75A"
+            },
+            {
+                "Address": "0x4C",
+                "Bus": "121",
+                "Name": "LM75_4C",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 75
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 60
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    }
+                ],
+                "Type": "LM75A"
+            },
+            {
+                "Address": "0x4D",
+                "Bus": "121",
+                "Name": "LM75_4D",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 75
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 60
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    }
+                ],
+                "Type": "LM75A"
+            },
+            {
+                "Address": "0x4E",
+                "Bus": "121",
+                "Name": "LM75_4E",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 75
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 60
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    }
+                ],
+                "Type": "LM75A"
+            },
+            {
+                "Address": "0x4F",
+                "Bus": "121",
+                "Name": "LM75_4F",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 75
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 60
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    },
+                    {
+                        "Direction": "less than",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    }
+                ],
+                "Type": "LM75A"
+            },
+            {
+                "Address": "0x40",
+                "Bus": 102,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "P0_VDD_CORE_0_RUN",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "XDPE12284",
+                "iout1_Name": "P0_VDD_CORE_0_RUN_CURR_A",
+                "pout1_Name": "P0_VDD_CORE_0_RUN_PWR_W",
+                "temp1_Name": "P0_VDD_CORE_0_RUN_TEMP_C",
+                "vout1_Name": "P0_VDD_CORE_0_RUN_VOLT_V"
+            },
+            {
+                "Address": "0x41",
+                "Bus": 102,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "P0_VDD_CORE_1_RUN",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "XDPE12284",
+                "iout1_Name": "P0_VDD_CORE_1_RUN_CURR_A",
+                "pout1_Name": "P0_VDD_CORE_1_RUN_PWR_W",
+                "temp1_Name": "P0_VDD_CORE_1_RUN_TEMP_C",
+                "vout1_Name": "P0_VDD_CORE_1_RUN_VOLT_V"
+            },
+            {
+                "Address": "0x42",
+                "Bus": 102,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "P0_VDD_VDDIO",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "XDPE12284",
+                "iout1_Name": "P0_VDD_VDDIO_CURR_A",
+                "pout1_Name": "P0_VDD_VDDIO_PWR_W",
+                "temp1_Name": "P0_VDD_VDDIO_TEMP_C",
+                "vout1_Name": "P0_VDD_VDDIO_VOLT_V"
+            },
+            {
+                "Address": "0x40",
+                "Bus": 202,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "P1_VDD_CORE_0_RUN",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "XDPE12284",
+                "iout1_Name": "P1_VDD_CORE_0_RUN_CURR_A",
+                "pout1_Name": "P1_VDD_CORE_0_RUN_PWR_W",
+                "temp1_Name": "P1_VDD_CORE_0_RUN_TEMP_C",
+                "vout1_Name": "P1_VDD_CORE_0_RUN_VOLT_V"
+            },
+            {
+                "Address": "0x41",
+                "Bus": 202,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "P1_VDD_CORE_1_RUN",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "XDPE12284",
+                "iout1_Name": "P1_VDD_CORE_1_RUN_CURR_A",
+                "pout1_Name": "P1_VDD_CORE_1_RUN_PWR_W",
+                "temp1_Name": "P1_VDD_CORE_1_RUN_TEMP_C",
+                "vout1_Name": "P1_VDD_CORE_1_RUN_VOLT_V"
+            },
+            {
+                "Address": "0x42",
+                "Bus": 202,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "P1_VDD_VDDIO",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "XDPE12284",
+                "iout1_Name": "P1_VDD_VDDIO_CURR_A",
+                "pout1_Name": "P1_VDD_VDDIO_PWR_W",
+                "temp1_Name": "P1_VDD_VDDIO_TEMP_C",
+                "vout1_Name": "P1_VDD_VDDIO_VOLT_V"
+            },
+            {
+                "Address": "0x47",
+                "Bus": 102,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "P0_VDD_18_S5_RUN",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "pmbus",
+                "iout1_Name": "P0_VDD_18_S5_RUN_CURR_A",
+                "pout1_Name": "P0_VDD_18_S5_RUN_PWR_W",
+                "temp1_Name": "P0_VDD_18_S5_RUN_TEMP_C",
+                "vout1_Name": "P0_VDD_18_S5_RUN_VOLT_V"
+            },
+            {
+                "Address": "0x46",
+                "Bus": 102,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "P0_VDD_33_S5_RUN",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "pmbus",
+                "iout1_Name": "P0_VDD_33_S5_RUN_CURR_A",
+                "pout1_Name": "P0_VDD_33_S5_RUN_PWR_W",
+                "temp1_Name": "P0_VDD_33_S5_RUN_TEMP_C",
+                "vout1_Name": "P0_VDD_33_S5_RUN_VOLT_V"
+            },
+            {
+                "Address": "0x47",
+                "Bus": 202,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "P1_VDD_18_S5_RUN",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "pmbus",
+                "iout1_Name": "P1_VDD_18_S5_RUN_CURR_A",
+                "pout1_Name": "P1_VDD_18_S5_RUN_PWR_W",
+                "temp1_Name": "P1_VDD_18_S5_RUN_TEMP_C",
+                "vout1_Name": "P1_VDD_18_S5_RUN_VOLT_V"
+            },
+            {
+                "Address": "0x46",
+                "Bus": 202,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "P1_VDD_33_S5_RUN",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "pmbus",
+                "iout1_Name": "P1_VDD_33_S5_RUN_CURR_A",
+                "pout1_Name": "P1_VDD_33_S5_RUN_PWR_W",
+                "temp1_Name": "P1_VDD_33_S5_RUN_TEMP_C",
+                "vout1_Name": "P1_VDD_33_S5_RUN_VOLT_V"
+            },
+            {
+                "Address": "0x43",
+                "Bus": 120,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "VDD_33_DUAL",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "pmbus",
+                "iout1_Name": "VDD_33_DUAL_CURR_A",
+                "pout1_Name": "VDD_33_DUAL_PWR_W",
+                "temp1_Name": "VDD_33_DUAL_TEMP_C",
+                "vout1_Name": "VDD_33_DUAL_VOLT_V"
+            },
+            {
+                "Address": "0x44",
+                "Bus": 120,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "VDD_33_RUN_B",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "pmbus",
+                "iout1_Name": "VDD_33_RUN_B_CURR_A",
+                "pout1_Name": "VDD_33_RUN_B_PWR_W",
+                "temp1_Name": "VDD_33_RUN_B_TEMP_C",
+                "vout1_Name": "VDD_33_RUN_B_VOLT_V"
+            },
+            {
+                "Address": "0x45",
+                "Bus": 120,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "VDD_33_RUN",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "pmbus",
+                "iout1_Name": "VDD_33_RUN_CURR_A",
+                "pout1_Name": "VDD_33_RUN_PWR_W",
+                "temp1_Name": "VDD_33_RUN_TEMP_C",
+                "vout1_Name": "VDD_33_RUN_VOLT_V"
+            },
+            {
+                "Address": "0x48",
+                "Bus": 120,
+                "Labels": [
+                    "iout1",
+                    "pout1",
+                    "temp1",
+                    "vout1"
+                ],
+                "Name": "VDD_5_DUAL",
+                "Thresholds": [
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper critical",
+                        "Severity": 1,
+                        "Value": 100
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower critical",
+                        "Severity": 1,
+                        "Value": 0
+                    },
+                    {
+                        "Direction": "greater than",
+                        "Label": "temp1",
+                        "Name": "upper non critical",
+                        "Severity": 0,
+                        "Value": 90
+                    },
+                    {
+                        "Direction": "less than",
+                        "Label": "temp1",
+                        "Name": "lower non critical",
+                        "Severity": 0,
+                        "Value": 15
+                    }
+                ],
+                "Type": "pmbus",
+                "iout1_Name": "VDD_5_DUAL_CURR_A",
+                "pout1_Name": "VDD_5_DUAL_PWR_W",
+                "temp1_Name": "VDD_5_DUAL_TEMP_C",
+                "vout1_Name": "VDD_5_DUAL_VOLT_V"
             }
         ],
-        "Type": "XDPE12284",
-        "iout1_Name": "P0_VDD_CORE_0_RUN_CURR_A",
-        "pout1_Name": "P0_VDD_CORE_0_RUN_PWR_W",
-        "temp1_Name": "P0_VDD_CORE_0_RUN_TEMP_C",
-        "vout1_Name": "P0_VDD_CORE_0_RUN_VOLT_V"
+        "Name": "HPM",
+        "Probe": "xyz.openbmc_project.FruDevice({'BOARD_PRODUCT_NAME': 'Morocco*'})",
+        "Type": "Board",
+        "xyz.openbmc_project.Inventory.Decorator.Asset": {
+            "Manufacturer": "$BOARD_MANUFACTURER",
+            "Model": "$BOARD_PRODUCT_NAME",
+            "PartNumber": "$BOARD_PART_NUMBER",
+            "SerialNumber": "$BOARD_SERIAL_NUMBER"
+        },
+        "xyz.openbmc_project.Inventory.Item.Board.Motherboard": {
+            "ProductId": 1
+        }
     },
     {
-        "Address": "0x41",
-        "Bus": 102,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "P0_VDD_CORE_1_RUN",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "XDPE12284",
-        "iout1_Name": "P0_VDD_CORE_1_RUN_CURR_A",
-        "pout1_Name": "P0_VDD_CORE_1_RUN_PWR_W",
-        "temp1_Name": "P0_VDD_CORE_1_RUN_TEMP_C",
-        "vout1_Name": "P0_VDD_CORE_1_RUN_VOLT_V"
-    },
-    {
-        "Address": "0x42",
-        "Bus": 102,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "P0_VDD_VDDIO",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "XDPE12284",
-        "iout1_Name": "P0_VDD_VDDIO_CURR_A",
-        "pout1_Name": "P0_VDD_VDDIO_PWR_W",
-        "temp1_Name": "P0_VDD_VDDIO_TEMP_C",
-        "vout1_Name": "P0_VDD_VDDIO_VOLT_V"
-    },
-    {
-        "Address": "0x47",
-        "Bus": 102,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "P0_VDD_18_S5_RUN",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "pmbus",
-        "iout1_Name": "P0_VDD_18_S5_RUN_CURR_A",
-        "pout1_Name": "P0_VDD_18_S5_RUN_PWR_W",
-        "temp1_Name": "P0_VDD_18_S5_RUN_TEMP_C",
-        "vout1_Name": "P0_VDD_18_S5_RUN_VOLT_V"
-    },
-    {
-        "Address": "0x46",
-        "Bus": 102,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "P0_VDD_33_S5_RUN",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "pmbus",
-        "iout1_Name": "P0_VDD_33_S5_RUN_CURR_A",
-        "pout1_Name": "P0_VDD_33_S5_RUN_PWR_W",
-        "temp1_Name": "P0_VDD_33_S5_RUN_TEMP_C",
-        "vout1_Name": "P0_VDD_33_S5_RUN_VOLT_V"
-    },
-    {
-        "Address": "0x40",
-        "Bus": 202,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "P1_VDD_CORE_0_RUN",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "XDPE12284",
-        "iout1_Name": "P1_VDD_CORE_0_RUN_CURR_A",
-        "pout1_Name": "P1_VDD_CORE_0_RUN_PWR_W",
-        "temp1_Name": "P1_VDD_CORE_0_RUN_TEMP_C",
-        "vout1_Name": "P1_VDD_CORE_0_RUN_VOLT_V"
-    },
-    {
-        "Address": "0x41",
-        "Bus": 202,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "P1_VDD_CORE_1_RUN",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "XDPE12284",
-        "iout1_Name": "P1_VDD_CORE_1_RUN_CURR_A",
-        "pout1_Name": "P1_VDD_CORE_1_RUN_PWR_W",
-        "temp1_Name": "P1_VDD_CORE_1_RUN_TEMP_C",
-        "vout1_Name": "P1_VDD_CORE_1_RUN_VOLT_V"
-    },
-    {
-        "Address": "0x42",
-        "Bus": 202,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "P1_VDD_VDDIO",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "XDPE12284",
-        "iout1_Name": "P1_VDD_VDDIO_CURR_A",
-        "pout1_Name": "P1_VDD_VDDIO_PWR_W",
-        "temp1_Name": "P1_VDD_VDDIO_TEMP_C",
-        "vout1_Name": "P1_VDD_VDDIO_VOLT_V"
-    },
-    {
-        "Address": "0x47",
-        "Bus": 202,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "P1_VDD_18_S5_RUN",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "pmbus",
-        "iout1_Name": "P1_VDD_18_S5_RUN_CURR_A",
-        "pout1_Name": "P1_VDD_18_S5_RUN_PWR_W",
-        "temp1_Name": "P1_VDD_18_S5_RUN_TEMP_C",
-        "vout1_Name": "P1_VDD_18_S5_RUN_VOLT_V"
-    },
-    {
-        "Address": "0x46",
-        "Bus": 202,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "P1_VDD_33_S5_RUN",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "pmbus",
-        "iout1_Name": "P1_VDD_33_S5_RUN_CURR_A",
-        "pout1_Name": "P1_VDD_33_S5_RUN_PWR_W",
-        "temp1_Name": "P1_VDD_33_S5_RUN_TEMP_C",
-        "vout1_Name": "P1_VDD_33_S5_RUN_VOLT_V"
-    },
-    {
-        "Address": "0x43",
-        "Bus": 120,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "VDD_33_DUAL",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "pmbus",
-        "iout1_Name": "VDD_33_DUAL_CURR_A",
-        "pout1_Name": "VDD_33_DUAL_PWR_W",
-        "temp1_Name": "VDD_33_DUAL_TEMP_C",
-        "vout1_Name": "VDD_33_DUAL_VOLT_V"
-    },
-    {
-        "Address": "0x44",
-        "Bus": 120,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "VDD_33_RUN_B",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "pmbus",
-        "iout1_Name": "VDD_33_RUN_B_CURR_A",
-        "pout1_Name": "VDD_33_RUN_B_PWR_W",
-        "temp1_Name": "VDD_33_RUN_B_TEMP_C",
-        "vout1_Name": "VDD_33_RUN_B_VOLT_V"
-    },
-    {
-        "Address": "0x45",
-        "Bus": 120,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "VDD_33_RUN",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "pmbus",
-        "iout1_Name": "VDD_33_RUN_CURR_A",
-        "pout1_Name": "VDD_33_RUN_PWR_W",
-        "temp1_Name": "VDD_33_RUN_TEMP_C",
-        "vout1_Name": "VDD_33_RUN_VOLT_V"
-    },
-    {
-        "Address": "0x48",
-        "Bus": 120,
-        "Labels": [
-            "iout1",
-            "pout1",
-            "temp1",
-            "vout1"
-        ],
-        "Name": "VDD_5_DUAL",
-        "Thresholds": [
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper critical",
-                "Severity": 1,
-                "Value": 100
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower critical",
-                "Severity": 1,
-                "Value": 0
-            },
-            {
-                "Direction": "greater than",
-                "Label": "temp1",
-                "Name": "upper non critical",
-                "Severity": 0,
-                "Value": 90
-            },
-            {
-                "Direction": "less than",
-                "Label": "temp1",
-                "Name": "lower non critical",
-                "Severity": 0,
-                "Value": 15
-            }
-        ],
-        "Type": "pmbus",
-        "iout1_Name": "VDD_5_DUAL_CURR_A",
-        "pout1_Name": "VDD_5_DUAL_PWR_W",
-        "temp1_Name": "VDD_5_DUAL_TEMP_C",
-        "vout1_Name": "VDD_5_DUAL_VOLT_V"
+        "Exposes": [],
+        "Name": "Chassis",
+        "Probe": "xyz.openbmc_project.FruDevice({'BOARD_PRODUCT_NAME': 'Morocco*'})",
+        "Type": "Chassis",
+        "xyz.openbmc_project.Inventory.Decorator.Asset": {
+            "Manufacturer": "$PRODUCT_MANUFACTURER",
+            "Model": "$PRODUCT_PRODUCT_NAME",
+            "PartNumber": "$PRODUCT_PART_NUMBER",
+            "SerialNumber": "$CHASSIS_SERIAL_NUMBER"
+        }
     }
-  ],
-  "Name": "2P HPM",
-  "Probe": "xyz.openbmc_project.FruDevice({'BOARD_PRODUCT_NAME': 'Morocco'})"
-}
+]
