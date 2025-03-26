@@ -88,7 +88,7 @@ start)
     ln -s functions/mass_storage.usb0 configs/c.1
     echo 1 > functions/mass_storage.usb0/lun.0/removable
     echo 1 > functions/mass_storage.usb0/lun.0/ro
-    echo 1 > functions/mass_storage.usb0/lun.0/cdrom
+    echo 0 > functions/mass_storage.usb0/lun.0/cdrom
     echo 0 > functions/mass_storage.usb0/lun.0/nofua
     echo $nbd_device > functions/mass_storage.usb0/lun.0/file
     device=$(which_dev)
