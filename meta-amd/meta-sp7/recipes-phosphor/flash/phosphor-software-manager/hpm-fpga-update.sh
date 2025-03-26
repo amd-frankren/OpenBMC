@@ -107,6 +107,9 @@ flash_image_to_mtd()
                         logger -t hpm-fpga-update "hpm fpga updated successfully..."
                     else
                         logger -t hpm-fpga-update "hpm fpga update failed..."
+                        unbind_spi_dev $SPI_DEV
+                        set_gpio_to_host
+                        exit 1
                     fi
                     break
                 fi

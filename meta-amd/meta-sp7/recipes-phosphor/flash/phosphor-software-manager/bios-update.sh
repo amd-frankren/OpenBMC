@@ -153,6 +153,9 @@ flash_image_to_mtd()
                         logger -t bios-update "bios updated successfully..."
                     else
                         logger -t bios-update "bios update failed..."
+                        unbind_spi_dev $SPI_DEVICE_1
+                        set_gpio_to_host
+                        exit 1
                     fi
                     break
                 fi
