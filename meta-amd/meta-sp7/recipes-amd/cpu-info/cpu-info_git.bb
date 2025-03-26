@@ -5,8 +5,8 @@ the SOC from the esmi OOB library API's"
 LICENSE = "CLOSED"
 FILESEXTRAPATHS:prepend := "${THISDIR}:"
 inherit meson pkgconfig systemd
-SRC_URI = "git://git@github.com/AMDESE/bmc-cpuinfo.git;branch=integ_sp7;protocol=ssh"
-SRCREV = "e6ab43699834409b5e1fbed53edcb61133ffb226"
+SRC_URI = "git://git@github.com/AMDESE/bmc-cpuinfo.git;branch=review;protocol=ssh"
+SRCREV = "c2aed73db98b39dacec249d5103d089a410e2926"
 S = "${WORKDIR}/git"
 DEPENDS += " \
     amd-apml \
@@ -22,3 +22,4 @@ do_configure:prepend() {
 }
 
 SYSTEMD_SERVICE:${PN} = "xyz.openbmc_project.Inventory.Item.Cpu_info.service"
+SYSTEMD_AUTO_ENABLE:${PN} = "disable"
