@@ -42,6 +42,21 @@ init_nct7363_fan_controller()
             # Fan speed control Regs, for 1-2 fans
             "0x90 $speed_val"  # Set PWM0 FSCPxDUTY
         )
+    elif [[ "$board_id" == "8E" ]]; then
+        echo "Initializing fans for Ghana"
+        FAN_SET_REG=(
+            # PWM initilization Regs, for 1-channel PWM
+            "0x2A 0x00"        # Disable WDT for no-fan testing
+            "0x38 0x01"        # Enable PWM0
+            "0x42 0x1E"        # Enable FANIN9-12
+            "0x20 0xA9"        # Set FANIN11 FANIN10 FANIN9 PWM0
+            "0x21 0x02"        # Set FANIN12
+            "0x22 0x00"        # Set GPIO10-13
+            "0x23 0x00"        # Set GPIO14-17
+
+            # Fan speed control Regs, for 1-2 fans
+            "0x90 $speed_val"  # Set PWM0 FSCPxDUTY
+        )
     else
         echo "Error: Unsupported board ID $board_id for nct7363 fan controller"
         return 1
@@ -64,7 +79,7 @@ set_nct7363_fan_speed()
 
     # prepare a list of nct7363 controllers on the board
     mapfile -t i2c_bus_array < <(find /sys/bus/i2c/drivers \
-            | grep nct7363 | grep 0020 | cut -d"/" -f 7 | cut -d"-" -f 1 | sort)
+            | grep nct736 | grep 0020 | cut -d"/" -f 7 | cut -d"-" -f 1 | sort)
 
     # Get the number of nct7363 controllers
     num_of_nct7363_controller=${#i2c_bus_array[@]}
@@ -136,13 +151,16 @@ case "$board_id" in
     # Marley(79, 0x7A, 0x7B)
     # Congo(0x80, 0x81, 0x86)
     # Morocco(0x82, 0x83, 0x87)
-    "79" | "7A" | "7B" | "80" | "81" | "86" | "82" | "83" | "87")
+    # Senegal (0x88)
+    # Malawi (0x8A)
+    "79" | "7A" | "7B" | "80" | "81" | "86" | "82" | "83" | "87" | "88" | "8A")
         # Call functions to set EMC2305 Fan speeds
         set_emc2305_fan_speed
         ;;
     # Kenya(0x84)
     # Nigeria(0x85)
-    "84" | "85")
+    # Ghana (0x8E)
+    "84" | "85" | "8E")
         # Call functions to set NCT7363 Fan speeds
         # TDB: remove the loop. once after CPLD fix
         while :
