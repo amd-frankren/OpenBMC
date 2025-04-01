@@ -5,7 +5,8 @@ Subject: [PATCH] meta-amd : webui-vue: Poll for firmware update progress and
  completion
 
 Added changes to poll for firmware update progess and completion
-for 7 minutes.
+for 20 minutes. The polling interval to check if the update is
+successful has been changed from 30 seconds to 10 seconds.
 
 Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
 ---
@@ -130,7 +131,7 @@ index ac4b23f..51075c9 100644
 +        this.endLoader();
 +        this.errorToast(this.$t('pageFirmware.toast.updateAborted'));
 +      } else {
-+        if (this.informProgress.overalltimeout > 420000) {
++        if (this.informProgress.overalltimeout > 1200000) {
 +          this.informProgress.overalltimeout = 0;
 +          this.endLoader();
 +          this.infoToast(this.$t('pageFirmware.toast.verifyUpdateMessage'), {
@@ -138,14 +139,14 @@ index ac4b23f..51075c9 100644
 +            refreshAction: true,
 +          });
 +        } else {
-+          this.informProgress.overalltimeout += 30000;
-+          setTimeout(this.informProgress, 30000);
++          this.informProgress.overalltimeout += 10000;
++          setTimeout(this.informProgress, 10000);
 +        }
 +      }
 +    },
 +    updateFirmware() {
 +      this.startLoader();
-+      const timerId = setTimeout(this.informProgress, 30000);
++      const timerId = setTimeout(this.informProgress, 10000);
        this.infoToast(this.$t('pageFirmware.toast.updateStartedMessage'), {
          title: this.$t('pageFirmware.toast.updateStarted'),
          timestamp: true,
