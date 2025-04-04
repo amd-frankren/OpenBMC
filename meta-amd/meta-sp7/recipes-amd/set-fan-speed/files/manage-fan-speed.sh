@@ -3,7 +3,7 @@
 while :
 do
     # Extract the temperature value from the output using awk
-    temp=$(apml_tool 0 --readregister sbtsi 0x01 |grep 0x1 | cut -c 13-14)
+    temp=$(apml_tool 0 --readregister sbtsi 0x01 |grep 0x1 | cut -c 19-21)
     temp_int=$((16#${temp}))
 
     # Print the extracted temperature value
