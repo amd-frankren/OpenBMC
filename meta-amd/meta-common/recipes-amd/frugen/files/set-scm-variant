@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# Board variables
+rev_file="/sys/devices/soc0/revision"
+i2c_bus=7 # SCM 0
+i2c_device=0x50 # FRU ID EEPROM
+i2c_address=0x4F # Board variant offset
+i2c_value_base=0
+
+# Function to check if the necessary parameter is supplied
+check_parameter() {
+    if [ -z "$1" ]; then
+        echo "Usage: $0 {espi|qspi}"
+        exit 1
+    fi
+
+    if [ "$1" != "espi" ] && [ "$1" != "qspi" ]; then
+        echo "Invalid argument: $1. Accepted values are 'espi' or 'qspi'."
+        exit 1
+    fi
+}
+
+# Function to read the revision
+read_revision() {
+    if [ ! -f "$rev_file" ]; then
+        echo "Error: Revision file does not exist at $rev_file"
+        exit 1
+    fi
+    rev=$(cat "$rev_file" 2>/dev/null)
+    if [ -n "$rev" ]; then
+        echo "Revision read successfully: $rev"
+    else
+        echo "Error: Revision is empty or could not be read from $rev_file"
+        exit 1
+    fi
+}
+
+# Function to calculate the I2C value
+calculate_i2c_value() {
+    case $1 in
+        espi)
+            i2c_value_suffix=1
+            echo "SCM FRU will be updated as eSPI variant"
+            ;;
+        qspi)
+            i2c_value_suffix=0
+            echo "SCM FRU will be updated as QSPI variant"
+            ;;
+    esac
+
+    if [ "$rev" == "A1" ]; then
+        i2c_value_base=$((i2c_value_base + 0x10))
+    fi
+
+    i2c_value=$(printf '0x%X' $((i2c_value_base + i2c_value_suffix)))
+}
+
+# Function to perform the I2C set operation
+perform_i2c_set() {
+    if ! i2cset -f -y "$i2c_bus" "$i2c_device" "$i2c_address" "$i2c_value"; then
+        echo "Error: i2cset failed to set value on I2C bus"
+        exit 1
+    fi
+    echo "SCM FRU successfully updated"
+}
+
+# Main function
+main() {
+    check_parameter "$1"
+    read_revision
+    calculate_i2c_value "$1"
+    perform_i2c_set
+}
+
+# Call the main function
+main "$@"

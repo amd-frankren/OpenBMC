@@ -12,6 +12,7 @@ SRCREV = "679d8dd9ad8511d3d22888a3b568f2eafceeaa11"
 SRC_URI += " \
            file://SCM_v1.json \
            file://scm-fru-edit.sh \
+           file://set-scm-variant \
            file://0001-Support-for-AMD-Internal-use-area.patch \
            file://0002-add-support-for-build-type-and-boot-variant.patch \
            "
@@ -31,4 +32,5 @@ do_install() {
     cp -r ${WORKDIR}/scm-fru-edit.sh ${D}/${sbindir}/
     install -d ${D}/etc/
     cp -r ${WORKDIR}/SCM_v1.json  ${D}/etc/
+    install -m 0755 ${WORKDIR}/set-scm-variant ${D}/${sbindir}/
 }
