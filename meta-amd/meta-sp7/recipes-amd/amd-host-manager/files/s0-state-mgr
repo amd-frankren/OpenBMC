@@ -26,11 +26,12 @@ set_initial_fan_speed() {
 
 # Function to detect falling edge event
 detect_falling_edge_event() {
+    echo "s0-state-mgr: APML alert signal polling start"
     timeout $FALLING_EDGE_TIMEOUT gpiomon --num-events=1 --falling-edge $FALLING_EDGE_PIN 20
     if [[ $? -ne 0 ]]; then
         echo "s0-state-mgr: Failed to detect falling edge event"
      else
-        echo "As0-state-mgr: APML alert signal detected"
+        echo "s0-state-mgr: APML alert signal detected"
     fi
 }
 

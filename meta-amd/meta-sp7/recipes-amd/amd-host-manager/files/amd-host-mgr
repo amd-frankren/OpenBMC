@@ -1,0 +1,184 @@
+#!/bin/bash
+
+# Source the utils include file
+source /usr/share/amd-host-manager/amd-utils
+
+# Host Service, object, and interface to monitor
+declare -r SERVICE="xyz.openbmc_project.State.Host"
+declare -r OBJECT="/xyz/openbmc_project/state/host0"
+declare -r INTERFACE="xyz.openbmc_project.State.Host"
+
+# Host states
+declare -r HOST_STATE_OFF="xyz.openbmc_project.State.Host.HostState.Off"
+declare -r HOST_STATE_RUNNING="xyz.openbmc_project.State.Host.HostState.Running"
+
+# Function to manage the BMC reboot process based on the por_rst value
+# and the HostState property.
+# If the HostState indicates that the host is running during a BMC reboot,
+# perform the necessary actions to ensure BMC host-specific interfaces
+# are in the correct state.
+handle_bmc_reboot() {
+    local host_state
+    local por_rst_value
+    local retries=5
+    local wait_time=2
+    local attempt=1
+
+    # Get the value of por_rst
+    por_rst_value=$(fw_printenv | grep -w 'por_rst' | cut -d '=' -f 2)
+    if [ $? -ne 0 ]; then
+        echo "amd-host-mgr: Failed to get por_rst value"
+        return 1
+    fi
+
+    # Perform action if por_rst is false
+    if [ "$por_rst_value" == "false" ]; then
+        echo "amd-host-mgr: por_rst is false. Performing BMC reboot type check..."
+
+        while [ $attempt -le $retries ]; do
+            echo "amd-host-mgr: Attempt $attempt to handle BMC reboot"
+
+            # Get the current host state
+            host_state=$(busctl get-property \
+                "$SERVICE" "$OBJECT" "$INTERFACE" "CurrentHostState" 2>/dev/null |
+                awk '{print $2}' | tr -d '"')
+            if [ $? -ne 0 ]; then
+                echo "amd-host-mgr: Failed to get host state. Retrying in $wait_time seconds..."
+                sleep $wait_time
+                attempt=$((attempt + 1))
+                continue
+            fi
+
+            echo "amd-host-mgr: Host state now ($host_state)"
+
+            # Check if the host state is "Running"
+            if [ "$host_state" == "$HOST_STATE_RUNNING" ]; then
+                echo "amd-host-mgr: Reboot action is in progress"
+                # Call s0-state-mgr with reboot argument
+                /usr/sbin/s0-state-mgr reboot
+                return 0
+            else
+                # Clear APML status and monitor for host state change.
+                set_apml_notready
+                return 0
+            fi
+        done
+
+        if [ $attempt -gt $retries ]; then
+            echo "amd-host-mgr: Failed to handle BMC reboot after $retries attempts"
+            set_apml_notready
+            return 1
+        fi
+    else
+        echo "amd-host-mgr: por_rst is not false. No action taken."
+        return 0
+    fi
+}
+
+# Function to check and return the host transition type
+get_host_transition_type() {
+    local transition_type
+    transition_type=$(busctl get-property \
+        "$SERVICE" "$OBJECT" "$INTERFACE" "RequestedHostTransition" 2>/dev/null |
+        awk '{print $2}' | tr -d '"')
+
+    if [ -n "$transition_type" ]; then
+        echo "$transition_type"
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to perform custom actions during Host power-off
+do_poweroff_actions() {
+    echo "amd-host-mgr: Performing custom actions for Host power-off"
+    # s5 specific actions for power-off
+    /usr/sbin/s5-state-mgr
+}
+
+# Function to perform custom actions during Host power-on
+do_poweron_actions() {
+    echo "amd-host-mgr: Performing custom actions for Host power-on"
+    # s0 specific actions for power-on
+    /usr/sbin/s0-state-mgr &
+}
+
+# Function to perform actions based on property value
+handle_state_action() {
+    local value="$1"
+    local transition_type
+
+    transition_type=$(get_host_transition_type)
+    if [ $? -eq 0 ]; then
+        echo "Transition type received: $transition_type"
+    else
+        echo "Failed to retrieve transition type"
+    fi
+
+    echo "amd-host-mgr: Property changed: $value"
+
+    case "$value" in
+    "$HOST_STATE_OFF")
+        do_poweroff_actions
+        ;;
+    "$HOST_STATE_RUNNING")
+        do_poweron_actions
+        ;;
+    *)
+        echo "amd-host-mgr: Unsupported host state: $value"
+        ;;
+    esac
+}
+
+# Function to monitor host state changes via D-Bus property
+monitor_host_state_change() {
+    local current_pid=""
+    dbus-monitor --system "type='signal', \
+    interface='org.freedesktop.DBus.Properties', \
+    member='PropertiesChanged', \
+    path='$OBJECT', \
+    arg0namespace='$INTERFACE'" |
+        while read -r line; do
+            if echo "$line" | grep -q "CurrentHostState"; then
+                # Extract the new property value
+                read -r line
+                value=$(echo "$line" | awk -F '"' '{print $2}')
+
+                # Kill the current perform_action process if running
+                if [ -n "$current_pid" ] && kill -0 "$current_pid" 2>/dev/null; then
+                    echo "amd-host-mgr: Killing existing process with PID $current_pid"
+                    kill -9 "$current_pid"
+                    wait "$current_pid" 2>/dev/null
+                fi
+
+                # Start a new perform_action process
+                handle_state_action "$value" &
+                current_pid=$!
+            fi
+        done
+}
+
+# Main function
+main() {
+    echo "amd-host-mgr: Monitoring host state and initiating actions"
+
+    if check_apml_status; then
+        echo "amd-host-mgr: APML is already enabled."
+    elif apml_reboot_status; then
+        handle_bmc_reboot
+    fi
+
+    # Monitor Host State Updates and initiate actions
+    monitor_host_state_change
+    if [ $? -ne 0 ]; then
+        echo "amd-host-mgr: Error occurred while monitoring host state changes"
+        exit 1
+    fi
+
+    echo "amd-host-mgr: All actions completed successfully"
+    exit 0
+}
+
+# Call the main function
+main

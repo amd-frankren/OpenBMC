@@ -1,3 +1,11 @@
 #TODO Remove this once recipes support is in.
 RDEPENDS_PN_SYSTEM_EXTRAS:remove:sp7:amd-withhost = "amd-fpga"
-RDEPENDS_PN_SYSTEM_EXTRAS:append:sp7:amd-withhost = "i3chub-init mtd-utils phosphor-ipmi-fru phosphor-inventory-manager fpga-tools cpu-info"
+RDEPENDS_PN_SYSTEM_EXTRAS:append:sp7:amd-withhost = " \
+    amd-host-manager \
+    cpu-info \
+    fpga-tools \
+    i3chub-init \
+    mtd-utils \
+    phosphor-inventory-manager \
+    phosphor-ipmi-fru \
+    "

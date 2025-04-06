@@ -6,6 +6,8 @@ source /usr/share/amd-host-manager/amd-utils
 # Define constants
 declare -r FAN_SPEED_LOW=0x32
 
+set_apml_notready
+
 # Powering-off: Kill the manage-fan-speed.sh process
 PID=$(ps | grep manage-fan-speed.sh | grep -v grep | awk '{print $1}')
 

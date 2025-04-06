@@ -8,7 +8,10 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 LICENSE = "CLOSED"
 
-RDEPENDS:${PN} += "bash"
+inherit obmc-phosphor-systemd
+
+RDEPENDS:${PN} += "libsystemd bash"
+DEPENDS += " systemd"
 
 S="${WORKDIR}"
 
@@ -16,12 +19,18 @@ SRC_URI += " \
         file://s0-state-mgr \
         file://s5-state-mgr \
         file://amd-utils \
+        file://amd-host-mgr \
+        file://amd-host-mgr.service \
         "
 
 do_install() {
     install -d ${D}/${sbindir}
     install -m 0755 ${S}/s0-state-mgr ${D}/${sbindir}/
     install -m 0755 ${S}/s5-state-mgr ${D}/${sbindir}/
+    install -m 0755 ${S}/amd-host-mgr ${D}/${sbindir}/
     install -d ${D}/${datadir}/amd-host-manager
     install -m 0755 ${S}/amd-utils ${D}/${datadir}/amd-host-manager/
 }
+
+SYSTEMD_PACKAGES = "${PN}"
+SYSTEMD_SERVICE:${PN} += "amd-host-mgr.service"
