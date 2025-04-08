@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Define read-only variables
+declare -r APML_BASE_PATH="/var/lib/amd-host-manager"
+declare -r APML_STATUS_FILE="$APML_BASE_PATH/apml_comm_active"
+declare -r APML_SYMLINK="/var/run/apml_comm_active"
+
+# Ensure the base path directory exists
+mkdir -p "$APML_BASE_PATH"
+
+# Function to set APML status
+set_apml_ready() {
+    # Create the status file
+    touch "$APML_STATUS_FILE"
+
+    # Create a symlink in /var/run
+    ln -sf "$APML_STATUS_FILE" "$APML_SYMLINK"
+}
+
+# Function to clear APML status
+set_apml_notready() {
+    # Remove the status file, which will also remove the symlink
+    rm -f "$APML_STATUS_FILE"
+}
+
+# Function to check APML status
+check_apml_status() {
+    if [[ -f "$APML_SYMLINK" ]]; then
+        echo "APML communication is enabled"
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Helper function to check persistent APML status before reboot
+apml_reboot_status() {
+    if [[ -f "$APML_STATUS_FILE" ]]; then
+        echo "Reboot: APML communication is enabled"
+        return 0
+    else
+        return 1
+    fi
+}
