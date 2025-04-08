@@ -1,0 +1,127 @@
+#!/bin/bash
+
+# Source the utils include file
+source /usr/share/amd-host-manager/amd-utils
+
+# Define constants
+declare -r INITIAL_FAN_SPEED=0x4c
+declare -r FALLING_EDGE_TIMEOUT=600
+declare -r FALLING_EDGE_PIN=3
+declare -r DEFAULT_FAN_SPEED=0x80
+declare -r APML_SLEEP_DURATION=5
+declare -r RETRIES=3
+
+# Declare apml_status as a global variable
+declare apml_status=true # or false, depending on your initial condition
+
+# Capture input argument
+declare input_arg="$1"
+
+# Function to set initial fan speed
+set_initial_fan_speed() {
+    set-fan-speed.sh $INITIAL_FAN_SPEED || {
+        echo "s0-state-mgr: Failed to set initial fan speed"
+    }
+}
+
+# Function to detect falling edge event
+detect_falling_edge_event() {
+    timeout $FALLING_EDGE_TIMEOUT gpiomon --num-events=1 --falling-edge $FALLING_EDGE_PIN 20
+    if [[ $? -ne 0 ]]; then
+        echo "s0-state-mgr: Failed to detect falling edge event"
+     else
+        echo "As0-state-mgr: APML alert signal detected"
+    fi
+}
+
+# Function to bind APML
+bind_apml() {
+    set-apml.sh bind
+    if [[ $? -ne 0 ]]; then
+        echo "s0-state-mgr: Failed to bind APML"
+    fi
+
+    sleep $APML_SLEEP_DURATION
+}
+
+# Function to unbind APML
+unbind_apml() {
+    set-apml.sh unbind
+    if [[ $? -ne 0 ]]; then
+        echo "s0-state-mgr: Failed to unbind APML"
+    fi
+
+    sleep $APML_SLEEP_DURATION
+}
+
+# Function to read SBTSI register
+read_sbtsi_register() {
+    apml_status=$(apml_tool 0 --readregister sbtsi 0x01 | grep -i sbrmi | awk '{print $2}')
+    if [[ $? -ne 0 ]]; then
+        echo "s0-state-mgr: Failed to read SBTSI register"
+        return 1
+    fi
+    return 0
+}
+
+# Function to set APML status
+set_apml_status() {
+    if [[ $apml_status ]]; then
+        echo "s0-state-mgr: SBTSI Failed"
+        set_apml_notready
+    else
+        echo "s0-state-mgr: SBTSI running"
+        set_apml_ready
+    fi
+}
+
+# Function to manage fan speed
+manage_fan_speed() {
+    if [[ $apml_status ]]; then
+        set-fan-speed.sh $DEFAULT_FAN_SPEED
+        if [[ $? -ne 0 ]]; then
+            echo "s0-state-mgr: Failed to set default fan speed"
+            exit 1
+        fi
+    else
+        manage-fan-speed.sh >/dev/null
+    fi
+}
+
+# Main function
+main() {
+    echo "s0-state-mgr: Monitoring host state and initiating actions"
+
+    set_initial_fan_speed
+
+    if [[ $input_arg == "reboot" ]]; then
+        echo "s0-state-mgr: reboot detected, skipping wait for falling edge event"
+    else
+        detect_falling_edge_event
+    fi
+
+    attempt=1
+    while [ $attempt -le $RETRIES ]; do
+        echo "Attempt $attempt of $RETRIES"
+        unbind_apml
+        bind_apml
+        read_sbtsi_register
+        if [ $? -eq 0 ]; then
+            break
+        fi
+        attempt=$((attempt + 1))
+    done
+    if [[ $attempt -gt $RETRIES ]]; then
+        echo "s0-state-mgr: failed after $RETRIES attempts"
+        exit 1
+    fi
+
+    set_apml_status
+
+    manage_fan_speed
+
+    echo "s0-state-mgr: executed successfully"
+}
+
+# Call the main function
+main
