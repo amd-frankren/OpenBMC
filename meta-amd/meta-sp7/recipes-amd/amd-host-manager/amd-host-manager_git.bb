@@ -13,10 +13,13 @@ RDEPENDS:${PN} += "bash"
 S="${WORKDIR}"
 
 SRC_URI += " \
+        file://s5-state-mgr \
         file://amd-utils \
         "
 
 do_install() {
+    install -d ${D}/${sbindir}
+    install -m 0755 ${S}/s5-state-mgr ${D}/${sbindir}/
     install -d ${D}/${datadir}/amd-host-manager
     install -m 0755 ${S}/amd-utils ${D}/${datadir}/amd-host-manager/
 

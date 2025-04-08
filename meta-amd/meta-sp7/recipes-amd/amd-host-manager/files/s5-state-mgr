@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Source the utils include file
+source /usr/share/amd-host-manager/amd-utils
+
+# Define constants
+declare -r FAN_SPEED_LOW=0x32
+
+# Powering-off: Kill the manage-fan-speed.sh process
+PID=$(ps | grep manage-fan-speed.sh | grep -v grep | awk '{print $1}')
+
+# Check if the process was found and kill it
+if [[ -n $PID ]]; then
+    kill -9 $PID ||
+        { echo "s5-state-mgr: Failed to kill manage-fan-speed.sh process"; }
+else
+    echo "s5-state-mgr: manage-fan-speed.sh process not found"
+fi
+
+# Unbind APML
+set-apml.sh unbind || { echo "s5-state-mgr: Failed to unbind APML"; }
+
+# Set fan speed to a lower value
+set-fan-speed.sh $FAN_SPEED_LOW || { echo "Failed to set fan speed"; }
+
+echo "Script executed successfully"
