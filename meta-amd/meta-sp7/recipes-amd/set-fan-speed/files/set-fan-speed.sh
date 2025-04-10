@@ -152,8 +152,14 @@ case "$board_id" in
     # Congo(0x80, 0x81, 0x86)
     # Morocco(0x82, 0x83, 0x87)
     # Senegal (0x88)
+    # Sahara (0x89)
     # Malawi (0x8A)
-    "79" | "7A" | "7B" | "80" | "81" | "86" | "82" | "83" | "87" | "88" | "8A")
+    # Zambia (0x8B)
+    # Zimbabwe (0x8C)
+    # Zanzibar (0x8D)
+    # Zaire (0x9E)
+    # Marrakesh (0xB0)
+    "79" | "7A" | "7B" | "80" | "81" | "82" | "83" | "86" | "87" | "88" | "89" | "8A" | "8B" | "8C" | "8D" | "9E" | "B0")
         # Call functions to set EMC2305 Fan speeds
         set_emc2305_fan_speed
         ;;
@@ -162,12 +168,7 @@ case "$board_id" in
     # Ghana (0x8E)
     "84" | "85" | "8E")
         # Call functions to set NCT7363 Fan speeds
-        # TDB: remove the loop. once after CPLD fix
-        while :
-        do
-            set_nct7363_fan_speed
-            sleep 3
-        done
+        set_nct7363_fan_speed
         ;;
     *)
         echo " Unknown board_id $board_id"
