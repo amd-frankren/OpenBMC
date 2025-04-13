@@ -1,0 +1,56 @@
+From 822c1e1bb6bc956dbc3870082e1908c2e3874b76 Mon Sep 17 00:00:00 2001
+From: ashok2ku <Ashok2.Kumar@amd.com>
+Date: Sun, 13 Apr 2025 06:10:10 -0500
+Subject: [PATCH] meta-amd:dbus: Add support for Pending Attribute
+
+Added new methods to Set/Get Pending Attribute
+And removed some of the unused Dbus Properties
+
+Tested fields: Verified qemu.
+
+Upsteam Status : Inappropriate
+
+Signed-off-by: ashok2ku <Ashok2.Kumar@amd.com>
+---
+ .../PCIe/PcieData.interface.yaml              | 27 ++++++++++++-------
+ 1 file changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/yaml/xyz/openbmc_project/PCIe/PcieData.interface.yaml b/yaml/xyz/openbmc_project/PCIe/PcieData.interface.yaml
+index 8aea67a..62ea63b 100644
+--- a/yaml/xyz/openbmc_project/PCIe/PcieData.interface.yaml
++++ b/yaml/xyz/openbmc_project/PCIe/PcieData.interface.yaml
+@@ -1,12 +1,3 @@
+-properties:
+-    - name: dummy1
+-      type: uint16
+-      description: >
+-          To do
+-    - name: PcieDataTable
+-      type: dict[string,dict[string, variant[int64,string]]]
+-      description: >
+-          std::map<string, std::map<std::string, std::variant<int64_t, std::string>>>
+ methods:
+    - name: SetPcieData
+      description: >
+@@ -53,3 +44,21 @@ methods:
+           type: dict[string,variant[int64,string]]
+           description: >
+                 AttributeName which has to be changed.
++
++   - name: GetPendingAttribute
++     description: >
++          To get the pending attribute value of existing attributes.
++     returns:
++        - name: BiosAttributes
++          type: dict[string,variant[int64,string]]
++          description: >
++                Get the list of bios attribute which are pending
++
++   - name: SetPendingAttribute
++     description: >
++          To set the pending attribute value and presist the attribute.
++     parameters:
++        - name: BiosAttributes
++          type: dict[string,variant[int64,string]]
++          description: >
++                List of atrributes which are requested by user to change
