@@ -10,6 +10,7 @@ SRC_URI += "file://0001-phosphor-dbus-interfaces-Add-re-timer-bundle-update-.pat
             file://0006-dbus-yaml-added-new-PCIe-yaml-file.patch \
             file://0007-meta-amd-dbus-Add-multi-host-configuration-yaml.patch \
             file://0008-Add-new-properties-hostversions-and-hostnumber.patch \
+            file://0009-dbus-yaml-added-support-for-Pending-attributes.patch \
             "
 do_configure:prepend() {
   cd ${S}/gen && ./regenerate-meson
