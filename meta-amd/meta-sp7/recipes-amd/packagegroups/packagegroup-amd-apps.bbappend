@@ -8,4 +8,5 @@ RDEPENDS_PN_SYSTEM_EXTRAS:append:sp7:amd-withhost = " \
     mtd-utils \
     phosphor-inventory-manager \
     phosphor-ipmi-fru \
+    tcpdump \
     "
