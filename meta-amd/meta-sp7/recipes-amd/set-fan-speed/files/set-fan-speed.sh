@@ -2,8 +2,8 @@
 
 set -e
 
-# Speed Limit 20% (Range 0x0 to 0xFF)
-SPEED_LIMIT=0x32
+# Speed Limit 30% (Range 0x0 to 0xFF)
+SPEED_LIMIT=0x4C
 
 init_nct7363_fan_controller()
 {
@@ -140,7 +140,7 @@ set_emc2305_fan_speed()
 #---------
 # Verify that input speed is not below Limit value.
 if [[ $1 -lt $SPEED_LIMIT ]]; then
-    echo "Error : You cannot set Fan speed less than 20% (0x32)"
+    echo "Error : You cannot set Fan speed less than 30% (0x4C)"
     exit 1
 else
     speed_val=$1
