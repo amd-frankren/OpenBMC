@@ -5,7 +5,7 @@ source /usr/share/amd-host-manager/amd-utils
 
 # Define constants
 declare -r INITIAL_FAN_SPEED=0x4c
-declare -r FALLING_EDGE_TIMEOUT=600
+declare -r FALLING_EDGE_TIMEOUT=30
 declare -r FALLING_EDGE_PIN=3
 declare -r DEFAULT_FAN_SPEED=0x80
 declare -r APML_SLEEP_DURATION=5
@@ -58,7 +58,7 @@ unbind_apml() {
 # Function to read SBTSI register
 read_sbtsi_register() {
     apml_status=$(apml_tool 0 --readregister sbtsi 0x01 | grep -i sbrmi | awk '{print $2}')
-    if [[ $? -ne 0 ]]; then
+    if [[ $apml_status ]]; then
         echo "s0-state-mgr: Failed to read SBTSI register"
         return 1
     fi
