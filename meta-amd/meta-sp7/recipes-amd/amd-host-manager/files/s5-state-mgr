@@ -4,7 +4,7 @@
 source /usr/share/amd-host-manager/amd-utils
 
 # Define constants
-declare -r FAN_SPEED_LOW=0x32
+declare -r FAN_SPEED_LOW=0x4C
 
 set_apml_notready
 
