@@ -12,6 +12,8 @@ help()
     echo
 }
 
+MCTP_LOCAL_ENDPOINT_ID=8
+
 #get the array of mctp i2c interfaces
 mapfile -t MCTP_I2C_INTF_LIST < <(ifconfig -a|cut -d' ' -f 1|grep mctpi2c)
 
@@ -61,6 +63,10 @@ mctp_i2c_intf_config()
             logger -t amd-mctp-config \
                 "mctp link set ${MCTP_I2C_INTF} up net ${MCTP_NETWORK_ID} failed."
         fi
+
+        #add local endpoint to the interface
+        mctp_i2c_local_endpoint_id_set "${MCTP_I2C_INTF}" "${MCTP_LOCAL_ENDPOINT_ID}"
+        MCTP_LOCAL_ENDPOINT_ID=$((MCTP_LOCAL_ENDPOINT_ID +1))
     done
 
     # add the following log informaiton to journalctl
@@ -70,7 +76,6 @@ mctp_i2c_intf_config()
 
 mctp_i2c_discover()
 {
-    MCTP_LOCAL_ENDPOINT_ID=8
 
     #prepare list of mctp i2c interfaces
     if [ "${#MCTP_I2C_INTF_LIST[@]}" -eq 0 ]; then
@@ -88,8 +93,6 @@ mctp_i2c_discover()
             continue
         fi
 
-    	mctp_i2c_local_endpoint_id_set "${MCTP_I2C_INTF}" "${MCTP_LOCAL_ENDPOINT_ID}"
-
         logger -t amd-mctp-config \
             "Discovering MCTP endpoints on the $MCTP_I2C_INTF..."
 
@@ -98,18 +101,16 @@ mctp_i2c_discover()
         # to them.
         #I2C_BUS_NUM=$(echo "$MCTP_I2C_INTF"|sed 's/mctpi2c//g')
         I2C_BUS_NUM=${MCTP_I2C_INTF//mctpi2c/}
-        I2C_ADDRS=$(i2cdetect -y "${I2C_BUS_NUM}" | cut -d':' -f 2 |
-                    grep -v "    0"|tr -dc '[0-9][a-f] ')
-        for I2C_ADDR in $I2C_ADDRS
-        do
-            busctl call xyz.openbmc_project.MCTP \
-                /xyz/openbmc_project/mctp \
-                au.com.CodeConstruct.MCTP \
+        for (( I2C_ADDR=8; I2C_ADDR<77; I2C_ADDR++ ))
+        {
+            busctl call au.com.codeconstruct.MCTP1 \
+                /au/com/codeconstruct/mctp1/interfaces/"${MCTP_I2C_INTF}" \
+                au.com.codeconstruct.MCTP.BusOwner1 \
                 AssignEndpoint \
-                say "${MCTP_I2C_INTF}" 1 0x"${I2C_ADDR}" 2>&1 |
+                ay 1 0x"${I2C_ADDR}" 2>&1 |
                     logger -t amd-mctp-config
                 logger -t amd-mctp-config "for 0x${I2C_ADDR}"
-        done
+        }
         logger -t amd-mctp-config \
             "Discovering MCTP endpoints on the $MCTP_I2C_INTF... Done."
 
@@ -126,8 +127,8 @@ mctp_i2c_discover()
     logger -t amd-mctp-config "mctp neighbor show:"
     mctp neigh show | logger -t amd-mctp-config
     logger -t amd-mctp-config ""
-    logger -t amd-mctp-config "busctl tree xyz.openbmc_project.MCTP:"
-    busctl tree xyz.openbmc_project.MCTP | logger -t amd-mctp-config
+    logger -t amd-mctp-config "busctl tree au.com.codeconstruct.MCTP1:"
+    busctl tree au.com.codeconstruct.MCTP1 | logger -t amd-mctp-config
 }
 
 # print help if no arguments are given
