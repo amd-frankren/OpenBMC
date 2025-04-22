@@ -13,5 +13,5 @@ SRC_URI += "file://0001-bmcweb-changes-to-support-vrbundle-update.patch \
 
 do_install:append() {
   install -d ${D}/${sysconfdir}
-  install -m 0644 ${S}/../uboot_defenv ${D}/${sysconfdir}/
+  install -m 0644 ${WORKDIR}/uboot_defenv ${D}/${sysconfdir}/
 }
