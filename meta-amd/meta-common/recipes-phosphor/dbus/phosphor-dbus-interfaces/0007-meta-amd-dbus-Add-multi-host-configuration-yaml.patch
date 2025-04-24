@@ -1,0 +1,43 @@
+From 7b4552e762cb8e7963442949eedf24cde1eeffc2 Mon Sep 17 00:00:00 2001
+From: aasboddu <Aashray.Boddu@amd.com>
+Date: Mon, 5 May 2025 12:09:34 -0500
+Subject: [PATCH] meta-amd:dbus: Add multi-host configuration yaml
+
+Added a new interface xyz.openbmc_project.Control.Mode
+Added D-Bus property Mode for user configured mode
+Added D-Bus property CurrentMode for current mode
+
+Upstream-Status: Pending
+
+Signed-off-by: aasboddu <Aashray.Boddu@amd.com>
+---
+ .../Control/HostMode.interface.yaml             | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+ create mode 100644 yaml/xyz/openbmc_project/Control/HostMode.interface.yaml
+
+diff --git a/yaml/xyz/openbmc_project/Control/HostMode.interface.yaml b/yaml/xyz/openbmc_project/Control/HostMode.interface.yaml
+new file mode 100644
+index 0000000..cef0be6
+--- /dev/null
++++ b/yaml/xyz/openbmc_project/Control/HostMode.interface.yaml
+@@ -0,0 +1,17 @@
++description: >
++  Interface for setting various host modes, including single-host, multi-host, and other configurations.
++
++properties:
++  - name: Mode
++    type: uint16
++    description: >
++      Indicates the user supplied boot mode configuration (e.g., SingleHost, MultiHost, etc.).
++    access: readwrite
++    default: 0
++
++  - name: CurrentMode
++    type: uint16
++    description: >
++      Indicates the current boot mode configuration (e.g., SingleHost, MultiHost, etc.).
++    access: readwrite
++    default: 0
+--
+2.34.1
+
