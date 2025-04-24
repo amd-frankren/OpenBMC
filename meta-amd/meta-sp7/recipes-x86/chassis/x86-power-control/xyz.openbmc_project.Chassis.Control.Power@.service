@@ -1,0 +1,15 @@
+[Unit]
+Description=Intel Power Control for the Host %i
+After=multi-host-config.service
+Requires=multi-host-config.service
+ConditionPathExists=/etc/amd/hosts.d/host%i.conf
+
+[Service]
+Restart=always
+RestartSec=3
+ExecStart=/usr/bin/power-control %i
+Type=dbus
+BusName=xyz.openbmc_project.State.Host%i
+
+[Install]
+WantedBy=sysinit.target
