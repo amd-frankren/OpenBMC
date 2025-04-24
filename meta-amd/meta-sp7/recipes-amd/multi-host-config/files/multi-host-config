@@ -1,18 +1,46 @@
 #!/bin/bash
 
 # Multi Host Service, object, and interface to monitor
-declare -r SERVICE="xyz.openbmc_project.Settings"
-declare -r OBJECT="/xyz/openbmc_project/control/HostMode"
-declare -r INTERFACE="xyz.openbmc_project.Control.HostMode"
-declare -r CURRENT_MODE="CurrentMode"
-declare -r USER_MODE="Mode"
+readonly SERVICE="xyz.openbmc_project.Settings"
+readonly OBJECT="/xyz/openbmc_project/control/HostMode"
+readonly INTERFACE="xyz.openbmc_project.Control.HostMode"
+readonly CURRENT_MODE="CurrentMode"
+readonly USER_MODE="Mode"
 
 # Platform config GPIOs
-declare -r MGMT_MON_PLATFORM_CONFIG=1114
-declare -r MGMT_ASSERT_PLATFORM_CONFIG=1115
+
+# Read the GPIO base value
+GPIOCHIP=$(cat /sys/devices/platform/soc@14000000/14c34c00.ltpi0-gpio/gpio/*/base)
+readonly GPIOCHIP
+readonly MGMT_MON_PLATFORM_CONFIG=$((GPIOCHIP + 102))
+readonly MGMT_ASSERT_PLATFORM_CONFIG=$((GPIOCHIP + 103))
+
+# Directory for AMD configuration files
+readonly CONFIG_DIR="/etc/amd"
+
+# Directory for host-specific configurations
+readonly HOST_CONFIG_DIR="$CONFIG_DIR/hosts.d"
 
 # Directory for runtime data
-readonly RUN_CONFIG_DIR="/var/run/amd"
+readonly MULTI_HOST_CONFIG_DIR="/var/lib/multi-host-config"
+readonly MULTI_HOST_CURRENT_MODE_FILE="current-mode"
+
+# Host names
+readonly CONF_SINGLE_HOST="host0.conf"
+readonly CONF_HOST1="host1.conf"
+readonly CONF_HOST2="host2.conf"
+
+# d-bus Constants
+readonly BASE_CHASSIS_PATH="/xyz/openbmc_project/state/chassis"
+readonly CHASSIS_PATH_0="${BASE_CHASSIS_PATH}0"
+readonly CHASSIS_PATH_1="${BASE_CHASSIS_PATH}1"
+readonly CHASSIS_PATH_2="${BASE_CHASSIS_PATH}2"
+readonly TRANSITION_OFF="xyz.openbmc_project.State.Chassis.Transition.Off"
+readonly CHASSIS_INTERFACE="xyz.openbmc_project.State.Chassis"
+
+readonly CHASSIS_SERVICE_0="${CHASSIS_INTERFACE}0"
+readonly CHASSIS_SERVICE_1="${CHASSIS_INTERFACE}1"
+readonly CHASSIS_SERVICE_2="${CHASSIS_INTERFACE}2"
 
 # HPM board ID
 HPM_BOARD_ID=0
@@ -23,7 +51,7 @@ set_platform_gpio_pin() {
     value=$2
 
     if [ ! -d "/sys/class/gpio/gpio$GPIO" ]; then
-        echo "$GPIO" > /sys/class/gpio/export
+        echo "$GPIO" >/sys/class/gpio/export
         cd "/sys/class/gpio/gpio$GPIO" || exit 1
     else
         cd "/sys/class/gpio/gpio$GPIO" || exit 1
@@ -62,12 +90,10 @@ power_off() {
 
     # Power off host based on processor mode
     if [ "$mode" -eq 0 ]; then
-        busctl set-property xyz.openbmc_project.State.Chassis /xyz/openbmc_project/state/chassis0 xyz.openbmc_project.State.Chassis RequestedPowerTransition s xyz.openbmc_project.State.Chassis.Transition.Off
-
+        busctl set-property "$CHASSIS_SERVICE_0" "$CHASSIS_PATH_0" "$CHASSIS_INTERFACE" RequestedPowerTransition s "$TRANSITION_OFF"
     elif [ "$mode" -eq 1 ]; then
-        busctl set-property xyz.openbmc_project.State.Chassis /xyz/openbmc_project/state/chassis1 xyz.openbmc_project.State.Chassis RequestedPowerTransition s xyz.openbmc_project.State.Chassis.Transition.Off
-
-        busctl set-property xyz.openbmc_project.State.Chassis /xyz/openbmc_project/state/chassis2 xyz.openbmc_project.State.Chassis RequestedPowerTransition s xyz.openbmc_project.State.Chassis.Transition.Off
+        busctl set-property "$CHASSIS_SERVICE_1" "$CHASSIS_PATH_1" "$CHASSIS_INTERFACE" RequestedPowerTransition s "$TRANSITION_OFF"
+        busctl set-property "$CHASSIS_SERVICE_2" "$CHASSIS_PATH_2" "$CHASSIS_INTERFACE" RequestedPowerTransition s "$TRANSITION_OFF"
     fi
 }
 
@@ -96,7 +122,7 @@ configure_board_id_fru() {
         elif [[ "$HPM_BOARD_ID" == "85" ]]; then #Nigeria
             P0_board_id=91
             P1_board_id=92
-        elif [[ "$HPM_BOARD_ID" == "8E"  ]]; then #Ghana
+        elif [[ "$HPM_BOARD_ID" == "8E" ]]; then #Ghana
             P0_board_id=93
             P1_board_id=94
         fi
@@ -113,7 +139,7 @@ configure_board_id_fru() {
         elif [[ "$HPM_BOARD_ID" == "85" ]]; then #Nigeria
             P0_board_id=85
             P1_board_id=92
-        elif [[ "$HPM_BOARD_ID" == "8E"  ]]; then #Ghana
+        elif [[ "$HPM_BOARD_ID" == "8E" ]]; then #Ghana
             P0_board_id=8E
             P1_board_id=94
         fi
@@ -136,22 +162,28 @@ configure_board_id_fru() {
 
 # Function to monitor multi-host state changes via D-Bus property
 monitor_multi_host_state_change() {
-    while read -r line; do
-        if echo "$line" | grep -q "string \"Mode\""; then
-            read -r line
-            value=$(echo "$line" | awk '{print $3}')
-            if [[ $value == 1 ]]; then
-                echo "MultiHostConfig changed to 2x1P"
-            else
-                echo "MultiHostConfig changed to 2P"
-            fi
-            break
-        fi
-    done < <(dbus-monitor --system "type='signal',\
+    dbus-monitor --system "type='signal',\
         interface='org.freedesktop.DBus.Properties',\
         member='PropertiesChanged',\
         path='$OBJECT',\
-        arg0namespace='$INTERFACE'")
+        arg0namespace='$INTERFACE'" | while read -r line; do
+        if echo "$line" | grep -q "string \"Mode\""; then
+            user_config_mode=$(busctl get-property $SERVICE $OBJECT $INTERFACE $USER_MODE | awk '{print $2}')
+            current_mode=$(cat "$MULTI_HOST_CONFIG_DIR/$MULTI_HOST_CURRENT_MODE_FILE")
+            # Check if the mode configured by user is same as the current mode
+            if [[ $user_config_mode != $current_mode ]]; then
+                echo "Host mode changed"
+
+                setMode $user_config_mode
+                if [ $? == 1 ]; then
+                    echo "Host mode configured: $user_config_mode"
+                    reboot
+                fi
+            else
+                echo "No Mode change detected..continue monitoring!!"
+            fi
+        fi
+        done
 }
 
 # Function to configure the boot mode
@@ -159,28 +191,13 @@ setMode() {
     local mode="$1"
     local bootstrap_mode
 
-    # Ensure /etc/hosts.d/ directory exists
-    if [ ! -d /etc/hosts.d ]; then
-        mkdir -p /etc/hosts.d
-    fi
-
-    # Ensure RUN_CONFIG_DIR directory exists
-    if [ ! -d $RUN_CONFIG_DIR ];then
-        mkdir -p $RUN_CONFIG_DIR
-    fi
-
     if [[ "$mode" == 0 ]]; then
         # Create host0 file
-        touch /etc/hosts.d/host0.conf
+        touch "$HOST_CONFIG_DIR/$CONF_SINGLE_HOST"
 
-        # Remove host1 and host2 config if present
-        if [ -f /etc/hosts.d/host1.conf ]; then
-            rm /etc/hosts.d/host1.conf
-        fi
-
-        if [ -f /etc/hosts.d/host2.conf ]; then
-            rm /etc/hosts.d/host2.conf
-        fi
+        # Remove host1 and host2 file
+        rm -rf $HOST_CONFIG_DIR/$CONF_HOST1
+        rm -rf $HOST_CONFIG_DIR/$CONF_HOST2
 
         # Check the bootstrap mode
         bootstrap_mode=$(get_platform_gpio_pin "$MGMT_MON_PLATFORM_CONFIG")
@@ -197,21 +214,17 @@ setMode() {
             set_platform_gpio_pin "$MGMT_ASSERT_PLATFORM_CONFIG" "$mode"
         fi
 
-        # Signal read status to services
-        touch "$RUN_CONFIG_DIR/amd-config-ready"
-
         # Set the new current mode
         busctl set-property $SERVICE $OBJECT $INTERFACE $CURRENT_MODE q $mode
-
+        echo $mode > $MULTI_HOST_CONFIG_DIR/$MULTI_HOST_CURRENT_MODE_FILE
+        return 1
     elif [[ "$mode" == 1 ]]; then
         # Create host1 and host2 files
-        touch /etc/hosts.d/host1.conf
-        touch /etc/hosts.d/host2.conf
+        touch $HOST_CONFIG_DIR/$CONF_HOST1
+        touch $HOST_CONFIG_DIR/$CONF_HOST2
 
         # Remove host0 config if present
-        if [ -f /etc/hosts.d/host0.conf ]; then
-            rm /etc/hosts.d/host0.conf
-        fi
+        rm -rf $HOST_CONFIG_DIR/$CONF_SINGLE_HOST
 
         # Check the bootstrap mode
         bootstrap_mode=$(get_platform_gpio_pin "$MGMT_MON_PLATFORM_CONFIG")
@@ -227,22 +240,25 @@ setMode() {
             set_platform_gpio_pin "$MGMT_ASSERT_PLATFORM_CONFIG" "$mode"
         fi
 
-        # Signal read status to services
-        touch "$RUN_CONFIG_DIR/amd-config-ready"
-
         # Set the new current mode
         busctl set-property $SERVICE $OBJECT $INTERFACE $CURRENT_MODE q $mode
+        echo $mode > $MULTI_HOST_CONFIG_DIR/$MULTI_HOST_CURRENT_MODE_FILE
+        return 1
     else
         echo "Invalid mode: $mode"
-        exit 1
+        return 0
     fi
 }
 
 # Main function
 main() {
+    # Create the directory if it doesn't exist
+    mkdir -p "$CONFIG_DIR"
+    mkdir -p "$MULTI_HOST_CONFIG_DIR"
+    mkdir -p "$HOST_CONFIG_DIR"
 
     HPM_BOARD_ID=$(/sbin/fw_printenv -n board_id)
-    echo "DEBUG: $HPM_BOARD_ID"
+    echo "INFO: HPM Board ID - $HPM_BOARD_ID"
 
     # Check for 2P Platforms Morocco(0x82, 0x83, 0x87), Nigeria(0x85), Ghana(0x8E)
     if [[ ! "$HPM_BOARD_ID" =~ ^(82|83|85|87|8E)$ ]]; then
@@ -250,26 +266,30 @@ main() {
         exit 1
     fi
 
-    # Check for current mode
-    current_mode=$(busctl get-property $SERVICE $OBJECT $INTERFACE $CURRENT_MODE | awk '{print $2}')
+    if [ ! -e $MULTI_HOST_CONFIG_DIR/$MULTI_HOST_CURRENT_MODE_FILE ]; then
+        echo "First time boot or factory reset"
+
+        current_mode=0
+        touch $MULTI_HOST_CONFIG_DIR/$MULTI_HOST_CURRENT_MODE_FILE
+        echo 0 > $MULTI_HOST_CONFIG_DIR/$MULTI_HOST_CURRENT_MODE_FILE
+
+    else
+        current_mode=$(cat "$MULTI_HOST_CONFIG_DIR/$MULTI_HOST_CURRENT_MODE_FILE")
+    fi
 
     # Configure the curent mode
+    echo "DEBUG: Setting current mode $current_mode"
     setMode $current_mode
 
     # Monitor the D-Bus property change
+    echo "DEBUG: Monitoring D-Bus"
     monitor_multi_host_state_change
 
-    user_config_mode=$(busctl get-property $SERVICE $OBJECT $INTERFACE $USER_MODE | awk '{print $2}')
-
-    # Check if the mode configured by user is same as the current mode
-    if [[ $user_config_mode != $current_mode ]]; then
-        setMode $user_config_mode
-
-        # Set current mode same as user mode
-        busctl set-property $SERVICE $OBJECT $INTERFACE $CURRENT_MODE q $user_config_mode
+    if [ $? == 1 ]; then
+        reboot;
     fi
 
-    reboot;
+    echo "Multi-host configuration failed"
 }
 
 # Call the main function
