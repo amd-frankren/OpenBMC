@@ -4,12 +4,10 @@ EXTRA_OEMESON:append = " \
     "
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-SRC_URI += "file://0001-bmcweb-changes-to-support-vrbundle-update.patch \
-            file://0002-fix-redfish-lib-call-to-clear-cmos.patch \
-            file://0003-clear-uboot-on-bmc-factory-reset.patch \
-            file://0004-Add-Family-VendorId-to-processor.patch \
-            file://uboot_defenv \
-           "
+SRC_URI = "git://github.com/AMDESE/bmcweb;branch=integ_sp7;protocol=https"
+SRCREV = "ccf23ad3bb4f740f5b388e46eef8e16f95193c8d"
+
+SRC_URI += "file://uboot_defenv"
 
 do_install:append() {
   install -d ${D}/${sysconfdir}
