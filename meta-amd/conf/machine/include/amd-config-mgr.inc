@@ -1,0 +1,3 @@
+MACHINEOVERRIDES =. "amd-configmgr:"
+
+OBMC_HOST_INSTANCES = "0 1 2"

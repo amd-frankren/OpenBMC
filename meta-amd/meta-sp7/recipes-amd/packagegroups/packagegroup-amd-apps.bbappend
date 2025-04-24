@@ -10,3 +10,6 @@ RDEPENDS_PN_SYSTEM_EXTRAS:append:sp7:amd-withhost = " \
     phosphor-ipmi-fru \
     tcpdump \
     "
+RDEPENDS_PN_SYSTEM_EXTRAS:append:sp7:amd-configmgr = " \
+    multi-host-config \
+    "
