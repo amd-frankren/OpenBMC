@@ -46,6 +46,7 @@ RDEPENDS:${PN}-system = " \
         entity-manager \
         i3c-tools \
         ipmitool \
+        multi-host-config \
         phosphor-pid-control \
         phosphor-state-manager-bmc \
         set-fan-speed \
