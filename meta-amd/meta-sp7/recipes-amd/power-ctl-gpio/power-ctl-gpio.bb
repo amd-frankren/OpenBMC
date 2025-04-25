@@ -14,8 +14,12 @@ S="${WORKDIR}"
 
 SRC_URI += " \
         file://power-ctl-gpio.service \
+        file://power-ctl-gpio.sh \
         "
+do_install() {
+  install -d ${D}/${sbindir}
+  install -m 0755 ${S}/power-ctl-gpio.sh ${D}/${sbindir}/
+}
 
 SYSTEMD_PACKAGES = "${PN}"
 SYSTEMD_SERVICE:${PN} += "power-ctl-gpio.service"
-
