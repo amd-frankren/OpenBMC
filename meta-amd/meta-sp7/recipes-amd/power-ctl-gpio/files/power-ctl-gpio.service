@@ -1,5 +1,7 @@
 [Unit]
 Description=Set Power Control GPIO values
+
+ConditionPathExists=/etc/amd/configs.d/amd-config-ready
 Before=xyz.openbmc_project.Chassis.Control.Power@0.service
 
 [Service]
