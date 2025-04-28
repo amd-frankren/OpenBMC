@@ -1,0 +1,7 @@
+/xyz/openbmc_project/control/HostMode:
+    - Interface: xyz.openbmc_project.Control.HostMode
+      Properties:
+          Mode:
+              Default: '0'
+          CurrentMode:
+              Default: '0'
