@@ -2,7 +2,7 @@
 #
 # BMC GPIO setting for BIOS Clear CMOS
 set -e
-GPIOCHIP=1012
+GPIOCHIP=$(cat /sys/devices/platform/soc@14000000/14c34c00.ltpi0-gpio/gpio/*/base)
 
 # TODO : revisit and fix this for SP5 (pin 218)  in the future
 GPIOOFFSET=3
