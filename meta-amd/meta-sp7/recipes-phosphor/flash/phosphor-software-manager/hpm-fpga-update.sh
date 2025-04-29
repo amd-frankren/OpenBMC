@@ -4,14 +4,17 @@ set +e
 
 IMAGE_DIR=$1
 
-#gpiochip1012 + 25
-GPIOAB3=1037
+GPIO_BASE=$(cat /sys/devices/platform/soc@14000000/14c34c00.ltpi0-gpio/gpio/*/base)
+logger -t hpm-fpga-update "GPIO base value is $GPIO_BASE"  
 
-#gpiochip1012 + 27
-GPIOAB4=1039
+#gpiochip1012 + AB[3] (25)
+GPIOAB3=$((GPIO_BASE + 25)) 
 
-#gpiochip1012 + 29
-GPIOAB5=1041
+#gpiochip1012 + AB[4] (27)
+GPIOAB4=$((GPIO_BASE + 27)) 
+
+#gpiochip1012 + AB[5] (29)
+GPIOAB5=$((GPIO_BASE + 29)) 
 
 SPI_DEV="14030000.spi"
 SPI_PATH="/sys/bus/platform/drivers/spi-aspeed-smc"
