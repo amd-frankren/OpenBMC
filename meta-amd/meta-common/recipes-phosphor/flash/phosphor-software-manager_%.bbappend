@@ -21,6 +21,7 @@ SRC_URI += "file://bios-update.sh \
             file://0006-Preserve-VR-firmware-version.patch \
             file://0007-fix-clear-cmos.patch \
             file://0008-meta-amd-flash-read-FPGA-ver-from-i2c.patch \
+            file://0009-meta-amd-flash-add-support-for-2-1P.patch \
            "
 
 do_install:append() {
