@@ -1,0 +1,186 @@
+From 526f5d15e6f5373efa328f39fb5d88ed97f763ef Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Tue, 29 Apr 2025 10:52:49 -0500
+Subject: [PATCH] meta-amd: flash: Add support for 2*1P
+
+Support bios firmware update for 2*1P mode
+where update will be performed depending on the
+hostnumber provided by the user and the versions
+will be updated accordingly.
+
+Tested in Morocco platform.
+
+Upstream Status: Inappropriate
+
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ activation.cpp   | 36 +++++++++++++++++++++++++++++++++++-
+ item_updater.cpp | 27 +++++++++++++++++++++++++--
+ version.hpp      | 10 ++++++++--
+ 3 files changed, 68 insertions(+), 5 deletions(-)
+
+diff --git a/activation.cpp b/activation.cpp
+index e8450bf..9e9b4df 100644
+--- a/activation.cpp
++++ b/activation.cpp
+@@ -29,6 +29,16 @@
+             os.close();\
+ }
+
++#define SET_BIOS_VER(file)                                                     \
++    {                                                                          \
++        std::ofstream os(PERSIST_DIR file);                                    \
++        {                                                                      \
++            cereal::JSONOutputArchive oarchive(os);                            \
++            oarchive(cereal::make_nvp(ACTIVE_VER_KEY, hostVersionsArr));       \
++        }                                                                      \
++        os.close();                                                            \
++    }
++
+ extern boost::asio::io_context& getIOContext();
+
+ namespace phosphor
+@@ -504,9 +514,16 @@ void Activation::onStateChangesBios(sdbusplus::message_t& msg)
+     std::string newStateUnit{};
+     std::string newStateResult{};
+
++    uint16_t hostID = hostNumber();
++
+     // Read the msg and populate each variable
+     msg.read(newStateID, newStateObjPath, newStateUnit, newStateResult);
+
++    std::string tmpFilePath = "/tmp/env-" + versionId;
++    std::ofstream tmpFile(tmpFilePath);
++    tmpFile << "HOSTNUMBER=" << hostID << std::endl;
++    tmpFile.close();
++
+     auto biosServiceFile = "obmc-flash-host-bios@" + versionId + ".service";
+
+     if (newStateUnit == biosServiceFile)
+@@ -523,15 +540,32 @@ void Activation::onStateChangesBios(sdbusplus::message_t& msg)
+             activation(softwareServer::Activation::Activations::Active);
+
+             info("Bios upgrade completed successfully.");
++
++            std::vector<std::string> hostVersionsArr =
++                parent.biosVersion->hostVersions();
++
++            hostVersionsArr[hostID] =
++                parent.versions.find(versionId)->second->version();
+             parent.biosVersion->version(
+                 parent.versions.find(versionId)->second->version());
+-            SET_VER(BIOS_VER_FILE);
++
++            parent.biosVersion->hostVersions(hostVersionsArr);
++
++            SET_BIOS_VER(BIOS_VER_FILE);
+             parent.versions.find(versionId)->second->version("--");
+
+             // Delete the uploaded activation
+             boost::asio::post(getIOContext(), [this]() {
+                 this->parent.erase(this->versionId);
+             });
++
++            std::error_code ec;
++            std::filesystem::remove(tmpFilePath, ec);
++            if (ec)
++            {
++                error("Failed to delete env file {PATH}, error: {ERR}", "PATH",
++                      tmpFilePath, "ERR", ec.message());
++            }
+         }
+         else if (newStateResult == "failed")
+         {
+diff --git a/item_updater.cpp b/item_updater.cpp
+index 1ab2904..d695cb7 100644
+--- a/item_updater.cpp
++++ b/item_updater.cpp
+@@ -38,6 +38,25 @@
+         is.close(); \
+     }
+
++#define GET_BIOS_VER(file)   {\
++        std::ifstream is(PERSIST_DIR file, std::ios::in); \
++        try \
++        { \
++            std::vector<std::string> line; \
++            cereal::JSONInputArchive iarchive(is); \
++                iarchive(cereal::make_nvp(ACTIVE_VER_KEY, line)); \
++                for (size_t i = 0; i < line.size() && i < hostVersionsArr->size(); ++i) \
++                { \
++                    (*hostVersionsArr)[i] = line[i];  \
++                } \
++        } \
++        catch (cereal::Exception& e) \
++        { \
++            fs::remove_all(path); \
++        } \
++        is.close(); \
++    }
++
+ namespace phosphor
+ {
+ namespace software
+@@ -889,7 +908,10 @@ void ItemUpdater::createBIOSObject()
+
+     auto versionId = path.substr(pos + 1);
+     std::string version = "Unknown";
+-    GET_VER(BIOS_VER_FILE);
++    std::optional<std::vector<std::string>> hostVersionsArr =
++        std::vector<std::string>{"Unknown", "Unknown", "Unknown"};
++
++    GET_BIOS_VER(BIOS_VER_FILE);
+     AssociationList assocs = {};
+     biosActivation = std::make_unique<Activation>(
+         bus, path, *this, versionId, server::Activation::Activations::Active,
+@@ -897,10 +919,11 @@ void ItemUpdater::createBIOSObject()
+     auto dummyErase = [](std::string /*entryId*/) {
+         // Do nothing;
+     };
++
+     biosVersion = std::make_unique<VersionClass>(
+         bus, path, version, VersionPurpose::Host, "", "",
+         std::vector<std::string>(),
+-        std::bind(dummyErase, std::placeholders::_1), "");
++        std::bind(dummyErase, std::placeholders::_1), "",hostVersionsArr);
+     biosVersion->deleteObject =
+         std::make_unique<phosphor::software::manager::Delete>(bus, path,
+                                                               *biosVersion);
+diff --git a/version.hpp b/version.hpp
+index b732c4d..b096997 100644
+--- a/version.hpp
++++ b/version.hpp
+@@ -101,15 +101,19 @@ class Version : public VersionInherit
+             const std::string& versionString, VersionPurpose versionPurpose,
+             const std::string& extVersion, const std::string& filePath,
+             const std::vector<std::string>& compatibleNames, eraseFunc callback,
+-            const std::string& id) :
++            const std::string& id,const std::optional<std::vector<std::string>>& versionsArr = std::nullopt) :
+         VersionInherit(bus, (objPath).c_str(),
+                        VersionInherit::action::defer_emit),
+-        eraseCallback(callback), id(id), versionStr(versionString)
++        eraseCallback(callback), id(id), versionStr(versionString), hostVersionsArr(versionsArr)
+     {
+         // Set properties.
+         extendedVersion(extVersion);
+         purpose(versionPurpose);
+         version(versionString);
++        if(hostVersionsArr.has_value())
++        {
++            hostVersions(*hostVersionsArr);
++        }
+         path(filePath);
+         names(compatibleNames);
+         // Emit deferred signal.
+@@ -207,6 +211,8 @@ class Version : public VersionInherit
+     /** @brief This Version's version string */
+     const std::string versionStr;
+
++    std::optional<std::vector<std::string>> hostVersionsArr;
++
+     /** @brief If this version is the functional one */
+     bool functional = false;
+ };
+--
+2.34.1
+
