@@ -1,0 +1,52 @@
+From 8e7fb4130499800e6ad5a9a68c9be615fbdf9f3c Mon Sep 17 00:00:00 2001
+From: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+Date: Wed, 30 Apr 2025 06:15:09 -0500
+Subject: [PATCH] meta-amd: dbus: Add new properties - HostVersions and
+ HostNumber
+
+Added a new D-Bus properies "HostNumber" and "HostVersions"
+to support 2*1P firmware updates.
+
+Verified: Tested in Morocco platform
+
+Upstream status: Inappropriate
+
+Signed-off-by: Abinaya Dhandapani <abinaya.dhandapani@amd.com>
+---
+ yaml/xyz/openbmc_project/Software/Activation.interface.yaml | 4 ++++
+ yaml/xyz/openbmc_project/Software/Version.interface.yaml    | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/yaml/xyz/openbmc_project/Software/Activation.interface.yaml b/yaml/xyz/openbmc_project/Software/Activation.interface.yaml
+index aba2a62..5fd29ac 100644
+--- a/yaml/xyz/openbmc_project/Software/Activation.interface.yaml
++++ b/yaml/xyz/openbmc_project/Software/Activation.interface.yaml
+@@ -9,6 +9,10 @@ properties:
+       type: enum[self.RequestedActivations]
+       description: >
+           The desired Activation state of the Software.Version.
++    - name: HostNumber
++      type: uint16
++      description: >
++          Host number of the processor to be activated.
+ enumerations:
+     - name: Activations
+       description: >
+diff --git a/yaml/xyz/openbmc_project/Software/Version.interface.yaml b/yaml/xyz/openbmc_project/Software/Version.interface.yaml
+index 1ff26e7..371f45d 100644
+--- a/yaml/xyz/openbmc_project/Software/Version.interface.yaml
++++ b/yaml/xyz/openbmc_project/Software/Version.interface.yaml
+@@ -10,6 +10,10 @@ properties:
+       type: string
+       description: >
+           The version identifier.
++    - name: HostVersions
++      type: array[string]
++      description: >
++          Array of all firmware versions.
+     - name: Purpose
+       type: enum[self.VersionPurpose]
+       description: >
+--
+2.34.1
+
