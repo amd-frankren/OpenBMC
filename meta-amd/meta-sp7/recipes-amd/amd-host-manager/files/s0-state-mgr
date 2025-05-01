@@ -24,17 +24,6 @@ set_initial_fan_speed() {
     }
 }
 
-# Function to detect falling edge event
-detect_falling_edge_event() {
-    echo "s0-state-mgr: APML alert signal polling start"
-    timeout $FALLING_EDGE_TIMEOUT gpiomon --num-events=1 --falling-edge $FALLING_EDGE_PIN 20
-    if [[ $? -ne 0 ]]; then
-        echo "s0-state-mgr: Failed to detect falling edge event"
-     else
-        echo "s0-state-mgr: APML alert signal detected"
-    fi
-}
-
 # Function to bind APML
 bind_apml() {
     set-apml.sh bind
@@ -98,7 +87,7 @@ main() {
     if [[ $input_arg == "reboot" ]]; then
         echo "s0-state-mgr: reboot detected, skipping wait for falling edge event"
     else
-        detect_falling_edge_event
+        sleep $FALLING_EDGE_TIMEOUT
     fi
 
     attempt=1
