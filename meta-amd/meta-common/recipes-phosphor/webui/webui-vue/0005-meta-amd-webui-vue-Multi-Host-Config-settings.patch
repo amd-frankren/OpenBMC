@@ -1,0 +1,282 @@
+From 83a46ed770903779f436affe67c62d5e4586e52a Mon Sep 17 00:00:00 2001
+From: ashok2ku <Ashok2.Kumar@amd.com>
+Date: Sun, 4 May 2025 22:55:49 -0500
+Subject: [PATCH] meta-amd:webui-vue: Multi Host Config settings
+
+- Add webui support for Multi Host Config settings
+  User can select option of 2P and 2x1P
+
+Signed-off-by: ashok2ku <Ashok2.Kumar@amd.com>
+---
+ .../AppNavigation/AppNavigationMixin.js       |  5 +
+ src/locales/en-US.json                        | 14 +++
+ src/router/routes.js                          |  9 ++
+ src/store/index.js                            |  2 +
+ .../Operations/MultiHostSelectionStore.js     | 46 ++++++++++
+ src/views/Operations/MultiHost/MultiHost.vue  | 92 +++++++++++++++++++
+ src/views/Operations/MultiHost/index.js       |  2 +
+ 7 files changed, 170 insertions(+)
+ create mode 100644 src/store/modules/Operations/MultiHostSelectionStore.js
+ create mode 100644 src/views/Operations/MultiHost/MultiHost.vue
+ create mode 100644 src/views/Operations/MultiHost/index.js
+
+diff --git a/src/components/AppNavigation/AppNavigationMixin.js b/src/components/AppNavigation/AppNavigationMixin.js
+index b33b24b..d49d5d8 100644
+--- a/src/components/AppNavigation/AppNavigationMixin.js
++++ b/src/components/AppNavigation/AppNavigationMixin.js
+@@ -72,6 +72,11 @@ const AppNavigationMixin = {
+           label: this.$t('appNavigation.operations'),
+           icon: 'iconControl',
+           children: [
++            {
++              id: 'multihost',
++              label: this.$t('appNavigation.multihost'),
++              route: '/operations/multihost',
++            },
+             {
+               id: 'factory-reset',
+               label: this.$t('appNavigation.factoryReset'),
+diff --git a/src/locales/en-US.json b/src/locales/en-US.json
+index 16ca10b..25ab33c 100644
+--- a/src/locales/en-US.json
++++ b/src/locales/en-US.json
+@@ -111,6 +111,7 @@
+         "dumps": "@:appPageTitle.dumps",
+         "eventLogs": "@:appPageTitle.eventLogs",
+         "factoryReset": "@:appPageTitle.factoryReset",
++        "multihost": "@:appPageTitle.multihost",
+         "firmware": "@:appPageTitle.firmware",
+         "hardwareStatus": "Hardware status",
+         "inventory": "@:appPageTitle.inventory",
+@@ -142,6 +143,7 @@
+         "dumps": "Dumps",
+         "eventLogs": "Event logs",
+         "factoryReset": "Factory reset",
++        "multihost": "Multi Host Settings",
+         "firmware": "Firmware",
+         "inventory": "Inventory and LEDs",
+         "kvm": "KVM",
+@@ -324,6 +326,18 @@
+             "resetToDefaultsError": "Factory reset of BMC and server settings failed."
+         }
+     },
++    "pageMultiHost": {
++        "description": "Configure Multi-Host settings to determine how the system start after a power cycle",
++        "form": {
++            "multiHostLable": "Multi-Host settings options",
++            "2pmodeLabel": "2P Mode - [Default]",
++            "2x1pmodeLabel": "2x1P Mode"
++        },
++        "toast": {
++            "resetMultiHostSuccess": "Multi Host Config of server settings successful.",
++            "resetMultiHostError": "Multi Host Config of server settings failed."
++       }
++    },
+     "pageFirmware": {
+         "cardActionSwitchToRunning": "Switch to running",
+         "cardBodyVersion": "Version",
+diff --git a/src/router/routes.js b/src/router/routes.js
+index 5424cab..da7a6c7 100644
+--- a/src/router/routes.js
++++ b/src/router/routes.js
+@@ -4,6 +4,7 @@ import ConsoleLayout from '@/layouts/ConsoleLayout.vue';
+ import DateTime from '@/views/Settings/DateTime';
+ import EventLogs from '@/views/Logs/EventLogs';
+ import FactoryReset from '@/views/Operations/FactoryReset';
++import MultiHost from '@/views/Operations/MultiHost';
+ import Firmware from '@/views/Operations/Firmware';
+ import Inventory from '@/views/HardwareStatus/Inventory';
+ import Kvm from '@/views/Operations/Kvm';
+@@ -199,6 +200,14 @@ const routes = [
+           title: i18n.t('appPageTitle.snmpAlerts'),
+         },
+       },
++      {
++        path: '/operations/multihost',
++        name: 'multihost',
++        component: MultiHost,
++        meta: {
++          title: i18n.t('appPageTitle.multihost'),
++        },
++      },
+       {
+         path: '/operations/factory-reset',
+         name: 'factory-reset',
+diff --git a/src/store/index.js b/src/store/index.js
+index ef335da..41e0107 100644
+--- a/src/store/index.js
++++ b/src/store/index.js
+@@ -30,6 +30,7 @@ import AssemblyStore from './modules/HardwareStatus/AssemblyStore';
+ import PostCodeLogsStore from './modules/Logs/PostCodeLogsStore';
+ import PoliciesStore from './modules/SecurityAndAccess/PoliciesStore';
+ import FactoryResetStore from './modules/Operations/FactoryResetStore';
++import MultiHostSelectionStore from './modules/Operations/MultiHostSelectionStore';
+ import SnmpAlertsStore from './modules/Settings/SnmpAlertsStore';
+ import KeyClearStore from './modules/Operations/KeyClearStore';
+
+@@ -75,6 +76,7 @@ export default new Vuex.Store({
+     virtualMedia: VirtualMediaStore,
+     policies: PoliciesStore,
+     factoryReset: FactoryResetStore,
++    multihostSelection: MultiHostSelectionStore,
+     keyClear: KeyClearStore,
+   },
+ });
+diff --git a/src/store/modules/Operations/MultiHostSelectionStore.js b/src/store/modules/Operations/MultiHostSelectionStore.js
+new file mode 100644
+index 0000000..e13eb96
+--- /dev/null
++++ b/src/store/modules/Operations/MultiHostSelectionStore.js
+@@ -0,0 +1,46 @@
++import api from '@/store/api';
++import i18n from '@/i18n';
++
++const MultiHostSelectionStore = {
++  namespaced: true,
++  state: {
++    multihostOption: null,
++  },
++  getters: {
++    multihostOption: (state) => state.multihostOption,
++  },
++  mutations: {
++    setSelectedSetting(state, value) {
++      state.multihostOption = value;
++    },
++  },
++  actions: {
++    async getMultiHostSetting({ commit }) {
++      return await api
++        .get('/redfish/v1/Systems/system/MultiHost')
++        .then((response) => {
++          const parsedValue = String(response.data.Mode);
++          commit('setSelectedSetting', parsedValue);
++        })
++        .catch((error) => {
++          console.log('multi host get', error);
++        });
++    },
++    async setMultiHostSetting({ state }) {
++      const configMode = state.multihostOption;
++      console.log(configMode);
++      const data = {
++        Mode: configMode === '0' ? 0 : 1,
++      };
++      return await api
++        .post('/redfish/v1/Systems/system/MultiHost', data)
++        .then(() => i18n.t('pageMultiHost.toast.resetMultiHostSuccess'))
++        .catch((error) => {
++          console.log('multi host set: ', error);
++          throw new Error(i18n.t('pageMultiHost.toast.resetMultiHostError'));
++        });
++    },
++  },
++};
++
++export default MultiHostSelectionStore;
+diff --git a/src/views/Operations/MultiHost/MultiHost.vue b/src/views/Operations/MultiHost/MultiHost.vue
+new file mode 100644
+index 0000000..5d5fcc6
+--- /dev/null
++++ b/src/views/Operations/MultiHost/MultiHost.vue
+@@ -0,0 +1,92 @@
++<template>
++  <b-container fluid="xl">
++    <page-title :description="$t('pageMultiHost.description')" />
++
++    <!-- Reset Form -->
++    <b-form id="multi-host" @submit.prevent="onMultiHostSelectionSubmit">
++      <b-row>
++        <b-col md="8">
++          <b-form-group :label="$t('pageMultiHost.form.multiHostLable')">
++            <b-form-radio-group
++              id="multi-host-options"
++              v-model="multihostOption"
++              stacked
++            >
++              <b-form-radio
++                class="mb-1"
++                value="0"
++                aria-describedby="reset-2p"
++                data-test-id="multihostnode-radio-reset2p"
++              >
++                {{ $t('pageMultiHost.form.2pmodeLabel') }}
++              </b-form-radio>
++              <b-form-radio
++                class="mb-1"
++                value="1"
++                aria-describedby="reset-2x1p"
++                data-test-id="multihostnode-radio-reset2x1p"
++              >
++                {{ $t('pageMultiHost.form.2x1pmodeLabel') }}
++              </b-form-radio>
++            </b-form-radio-group>
++          </b-form-group>
++          <b-button
++            type="submit"
++            variant="primary"
++            data-test-id="multihostnode-button-submit"
++          >
++            {{ $t('global.action.saveSettings') }}
++          </b-button>
++        </b-col>
++      </b-row>
++    </b-form>
++  </b-container>
++</template>
++
++<script>
++import PageTitle from '@/components/Global/PageTitle';
++import BVToastMixin from '@/components/Mixins/BVToastMixin';
++import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
++import { mapGetters } from 'vuex';
++
++export default {
++  name: 'MultiHostSelection',
++  components: { PageTitle },
++  mixins: [LoadingBarMixin, BVToastMixin],
++  computed: {
++    ...mapGetters('multihostSelection', {
++      storeMultihostOption: 'multihostOption',
++    }),
++    multihostOption: {
++      get() {
++        return this.storeMultihostOption;
++      },
++      set(value) {
++        this.$store.commit('multihostSelection/setSelectedSetting', value);
++      },
++    },
++  },
++  created() {
++    this.startLoader();
++    this.$store
++      .dispatch('multihostSelection/getMultiHostSetting')
++      .finally(() => this.endLoader());
++  },
++  methods: {
++    onMultiHostSelectionSubmit() {
++      this.$store
++        .dispatch('multihostSelection/setMultiHostSetting')
++        .then((title) => {
++          this.successToast('', {
++            title,
++          });
++        })
++        .catch(({ message }) => {
++          this.errorToast('', {
++            title: message,
++          });
++        });
++    },
++  },
++};
++</script>
+diff --git a/src/views/Operations/MultiHost/index.js b/src/views/Operations/MultiHost/index.js
+new file mode 100644
+index 0000000..6738016
+--- /dev/null
++++ b/src/views/Operations/MultiHost/index.js
+@@ -0,0 +1,2 @@
++import MultiHost from './MultiHost.vue';
++export default MultiHost;
