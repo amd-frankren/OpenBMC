@@ -1,0 +1,45 @@
+From 5775c460144f0d3ea68927a485bd36ce2e5b3d65 Mon Sep 17 00:00:00 2001
+From: samijosh <Samir.Joshi@amd.com>
+Date: Mon, 5 May 2025 10:56:00 -0500
+Subject: [PATCH] meta-amd : webui-vue:changed async behavior on reboot
+
+Removed async from getLastRebootTime to
+make sure post does not get called
+when bmc is in middle of reboot
+
+Signed-off-by: samijosh <Samir.Joshi@amd.com>
+---
+ src/store/modules/Operations/ControlStore.js | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/src/store/modules/Operations/ControlStore.js b/src/store/modules/Operations/ControlStore.js
+index efcdf62..638f4fc 100644
+--- a/src/store/modules/Operations/ControlStore.js
++++ b/src/store/modules/Operations/ControlStore.js
+@@ -61,9 +61,9 @@ const ControlStore = {
+         })
+         .catch((error) => console.log(error));
+     },
+-    async getLastBmcRebootTime({ commit }) {
++    getLastBmcRebootTime({ commit }) {
+       return api
+-        .get(`${await this.dispatch('global/getBmcPath')}`)
++        .get('/redfish/v1/Managers/bmc')
+         .then((response) => {
+           const lastBmcReset = response.data.LastResetTime;
+           const lastBmcRebootTime = new Date(lastBmcReset);
+@@ -74,10 +74,7 @@ const ControlStore = {
+     async rebootBmc({ dispatch }) {
+       const data = { ResetType: 'GracefulRestart' };
+       return await api
+-        .post(
+-          `${await this.dispatch('global/getBmcPath')}/Actions/Manager.Reset`,
+-          data,
+-        )
++        .post('/redfish/v1/Managers/bmc/Actions/Manager.Reset', data)
+         .then(() => dispatch('getLastBmcRebootTime'))
+         .then(() => i18n.t('pageRebootBmc.toast.successRebootStart'))
+         .catch((error) => {
+--
+2.34.1
+
