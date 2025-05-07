@@ -23,4 +23,3 @@ do_configure:prepend() {
 }
 
 SYSTEMD_SERVICE:${PN} = "xyz.openbmc_project.Inventory.Item.Cpu_info.service"
-SYSTEMD_AUTO_ENABLE:${PN} = "disable"
