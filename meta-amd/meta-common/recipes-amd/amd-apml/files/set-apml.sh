@@ -29,12 +29,18 @@ esac
 DEV_I3C_SBTSI_PATH="/sys/bus/i3c/drivers/sbtsi_i3c"
 DEV_I3C_SBTSI_4="4-118"
 DEV_I3C_SBTSI_4_1="4-10118"
-DEV_I3C_SBTSI_5="5-118"
-DEV_I3C_SBTSI_5_1="5-10118"
+DEV_I3C_SBTSI_5="5-1000118"
+DEV_I3C_SBTSI_5_1="5-1010118"
 
 DEV_I3C_SBRMI_PATH="/sys/bus/i3c/drivers/sbrmi_i3c"
 DEV_I3C_SBRMI_4="4-1118"
-DEV_I3C_SBRMI_5="5-1118"
+DEV_I3C_SBRMI_5="5-1001118"
+
+DEV_I3C_SCOOB_PATH="/sys/bus/i3c/drivers/mctp-i3c"
+DEV_I3C_SCOOB_4="4-2118"
+DEV_I3C_SCOOB_4_1="4-12118"
+DEV_I3C_SCOOB_5="5-1002118"
+DEV_I3C_SCOOB_5_1="5-1012118"
 
 # Set i3c APML
 set_i3c_apml()
@@ -55,6 +61,10 @@ unbind_i3c_drivers()
     sleep 1
     echo  $DEV_I3C_SBRMI_4 > $DEV_I3C_SBRMI_PATH/unbind
     sleep 1
+    echo  $DEV_I3C_SCOOB_4 > $DEV_I3C_SCOOB_PATH/unbind
+    sleep 1
+    echo  $DEV_I3C_SCOOB_4_1 > $DEV_I3C_SCOOB_PATH/unbind
+    sleep 1
     if [[ $num_of_cpu == 2 ]]
     then
         echo  $DEV_I3C_SBTSI_5 > $DEV_I3C_SBTSI_PATH/unbind
@@ -62,6 +72,11 @@ unbind_i3c_drivers()
         echo  $DEV_I3C_SBTSI_5_1 > $DEV_I3C_SBTSI_PATH/unbind
         sleep 1
         echo  $DEV_I3C_SBRMI_5 > $DEV_I3C_SBRMI_PATH/unbind
+        sleep 1
+        echo  $DEV_I3C_SCOOB_5 > $DEV_I3C_SCOOB_PATH/unbind
+        sleep 1
+        echo  $DEV_I3C_SCOOB_5_1 > $DEV_I3C_SCOOB_PATH/unbind
+        sleep 1
     fi
     # Remove platform i3c driver
     sleep 3
