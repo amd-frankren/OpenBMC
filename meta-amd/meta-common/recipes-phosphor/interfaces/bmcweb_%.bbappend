@@ -5,7 +5,7 @@ EXTRA_OEMESON:append = " \
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 SRC_URI = "git://github.com/AMDESE/bmcweb;branch=integ_sp7;protocol=https"
-SRCREV = "ccf23ad3bb4f740f5b388e46eef8e16f95193c8d"
+SRCREV = "bd4027d5cb21144c5412639756a50150d2854f40"
 
 SRC_URI += "file://uboot_defenv"
 
