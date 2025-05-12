@@ -6,7 +6,7 @@ LICENSE = "CLOSED"
 FILESEXTRAPATHS:prepend := "${THISDIR}:"
 inherit meson pkgconfig systemd
 SRC_URI = "git://git@github.com/AMDESE/bmc-cpuinfo.git;branch=integ_sp7;protocol=ssh"
-SRCREV = "06f32e5166bf68d207419979a0356ddf31edb6b1"
+SRCREV = "a684a6c8a8a65bda09eab08e585116ec47619d33"
 
 S = "${WORKDIR}/git"
 DEPENDS += " \
