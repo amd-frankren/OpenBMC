@@ -50,7 +50,7 @@ RDEPENDS:${PN}-system = " \
         phosphor-pid-control \
         phosphor-state-manager-bmc \
         set-fan-speed \
-        power-ctl-gpio \
+        platform-init \
         srvcfg-manager \
         ${RDEPENDS_PN_SYSTEM_EXTRAS} \
         ${RDEPENDS_PN_SYSTEM_MFG} \

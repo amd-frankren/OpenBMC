@@ -1,11 +1,11 @@
 [Unit]
-Description=Set Power Control GPIO values
+Description=Set platform initialization values
 Before=multi-host-config.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=no
-ExecStart=/usr/sbin/power-ctl-gpio.sh
+ExecStart=/usr/sbin/platform-init.sh
 
 [Install]
 WantedBy=sysinit.target
