@@ -67,15 +67,62 @@ multihost_supported() {
     fi
 }
 
+generate_platform_config() {
+    boardID=$(fw_printenv board_id | sed -n "s/^board_id=//p")
+
+    case "$boardID" in
+        "80"|"81"|"86") # Congo Board ID
+            cpuCount=1
+            ;;
+        "82"|"83"|"87") # Morocco Board ID
+            cpuCount=2
+            ;;
+        "84") # Kenya Board ID
+            cpuCount=1
+            ;;
+        "85") # Nigeria Board ID
+            cpuCount=2
+            ;;
+        *)
+            cpuCount=1 # Default count for unknown board ID's
+            ;;
+    esac
+
+    # Ensure the directory exists
+    mkdir -p /var/lib/platform-config
+
+    cat <<EOF > /var/lib/platform-config/platform.json
+{
+  "CpuCount": $cpuCount,
+  "Model": "0x50",
+  "FamilyID": "0x1A",
+  "DebugLogID": [
+    1,
+    2,
+    3,
+    23,
+    24,
+    33,
+    36,
+    37,
+    38,
+    40
+  ]
+}
+EOF
+}
+
 # Main function to execute the GPIO pin settings
 main() {
-    echo "power-ctl-gpio: AMD power control GPIO started"
+    echo "platform-init: AMD power control GPIO started"
     set_p0_gpio_pins
 
     # Check if multihost is supported
     if multihost_supported; then
         set_p1_gpio_pins
     fi
+
+    generate_platform_config
 }
 
 # Execute the main function
