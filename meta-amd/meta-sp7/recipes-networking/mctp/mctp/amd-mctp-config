@@ -29,6 +29,20 @@ mctp_i2c_root_intf_get()
     done
 }
 
+mctp_neigh_route_delete()
+{
+    # shellcheck disable=SC2012
+    mapfile -t MCTP_INTF_LIST < <(ls /sys/class/net | awk -v pattern="mctp$1" '$0 ~ pattern {print $0}')
+    for MCTP_INTF in "${MCTP_INTF_LIST[@]}"
+    do
+        mapfile -t EIDS < <(mctp neigh show dev "$MCTP_INTF" | awk '{print $2}')
+        for EID in "${EIDS[@]}"; do
+            mctp neigh del "$EID" dev "$MCTP_INTF"
+            mctp route del "$EID" via "$MCTP_INTF"
+        done
+    done
+}
+
 mctp_local_endpoint_id_set()
 {
     local OP=$1
@@ -36,7 +50,7 @@ mctp_local_endpoint_id_set()
     local ENDPOINT_ID=$3
 
     if ! mctp addr "${OP}" "${ENDPOINT_ID}" dev "${MCTP_INTF}" 2>&1 |
-            logger -t amd-mctp-config; then
+        logger -t amd-mctp-config; then
         #log the error and continue configuring
         logger -t amd-mctp-config \
             "mctp addr ${OP} ${ENDPOINT_ID} dev ${MCTP_INTF} failed."
@@ -45,7 +59,6 @@ mctp_local_endpoint_id_set()
 
 mctp_intf_config()
 {
-
     # Use mapfile to read the contents of /sys/class/net and filter interfaces using awk
     # $0 - interface name
     #  ~ - pattern matching operator in awk
@@ -60,28 +73,106 @@ mctp_intf_config()
     fi
 
     if [ "$1" == "i2c" ]; then
-	unset "MCTP_INTF_LIST[-1]"
+        unset "MCTP_INTF_LIST[-1]"
     fi
 
     for MCTP_INTF in "${MCTP_INTF_LIST[@]}"
     do
+        if [ "$LINK_STATE" == "up" ]; then
+            #add local endpoint to the interface
+            mctp_local_endpoint_id_set "add" "${MCTP_INTF}" "${MCTP_LOCAL_ENDPOINT_ID}"
+        else
+            #delete local endpoint to the interface
+            mctp_local_endpoint_id_set "del" "${MCTP_INTF}" "${MCTP_LOCAL_ENDPOINT_ID}"
+        fi
+
         #set the interface state
         if ! mctp link set "${MCTP_INTF}" "$LINK_STATE" net "${MCTP_NETWORK_ID}" 2>&1 |
-                logger -t amd-mctp-config; then
+            logger -t amd-mctp-config; then
             #log the error and continue bring up the next interface
             logger -t amd-mctp-config \
                 "mctp link set ${MCTP_INTF} ${LINK_STATE} net ${MCTP_NETWORK_ID} failed."
-        else
-            if [ "$LINK_STATE" == "up" ]; then
-                #add local endpoint to the interface
-                mctp_local_endpoint_id_set "add" "${MCTP_INTF}" "${MCTP_LOCAL_ENDPOINT_ID}"
-            else
-                #delete local endpoint to the interface
-                mctp_local_endpoint_id_set "del" "${MCTP_INTF}" "${MCTP_LOCAL_ENDPOINT_ID}"
-            fi
-            MCTP_LOCAL_ENDPOINT_ID=$((MCTP_LOCAL_ENDPOINT_ID + 1))
         fi
+        MCTP_NETWORK_ID=$((MCTP_NETWORK_ID + 1))
     done
+}
+
+mctp_pcie_discover()
+{
+    #prepare list of mctp PCIe interfaces
+    # shellcheck disable=SC2012
+    mapfile -t MCTP_INTF_LIST < <(ls /sys/class/net | awk -v pattern=mctppcie '$0 ~ pattern {print $0}')
+    if [ "${#MCTP_INTF_LIST[@]}" -eq 0 ]; then
+        logger -t amd-mctp-config \
+            "No MCTP PCIe interfaces are configured on the system."
+        return
+    fi
+
+    # do the PCIe MCTP endpoint discovery for each interface
+    for MCTP_INTF in "${MCTP_INTF_LIST[@]}"
+    do
+        logger -t amd-mctp-config \
+            "Discovering MCTP endpoints on the $MCTP_INTF..."
+
+        busctl call au.com.codeconstruct.MCTP1 \
+            /au/com/codeconstruct/mctp1/interfaces/"${MCTP_INTF}" \
+            au.com.codeconstruct.MCTP.BusOwner1 AssignEndpoint \
+            ay 2 0x00 0x00 2>&1 | logger -t amd-mctp-config
+        logger -t amd-mctp-config "for 0x0000"
+
+        logger -t amd-mctp-config \
+            "Discovering MCTP endpoints on the $MCTP_INTF... Done."
+    done
+
+    logger -t amd-mctp-config "mctp route show:"
+    mctp route show 2>&1 | logger -t amd-mctp-config
+    logger -t amd-mctp-config ""
+    logger -t amd-mctp-config "mctp neighbor show:"
+    mctp neigh show | logger -t amd-mctp-config
+    logger -t amd-mctp-config ""
+    logger -t amd-mctp-config "busctl tree au.com.codeconstruct.MCTP1:"
+    busctl tree au.com.codeconstruct.MCTP1 | logger -t amd-mctp-config
+}
+
+mctp_i3c_discover()
+{
+    #prepare list of mctp I3C interfaces
+    # shellcheck disable=SC2012
+    mapfile -t MCTP_INTF_LIST < <(ls /sys/class/net | awk -v pattern=mctpi3c '$0 ~ pattern {print $0}')
+    if [ "${#MCTP_INTF_LIST[@]}" -eq 0 ]; then
+        logger -t amd-mctp-config \
+            "No MCTP I3C interfaces are configured on the system."
+        return
+    fi
+
+    # do the PCIe MCTP endpoint discovery for each interface
+    for MCTP_INTF in "${MCTP_INTF_LIST[@]}"
+    do
+        logger -t amd-mctp-config \
+            "Discovering MCTP endpoints on the $MCTP_INTF..."
+        if [ "$MCTP_INTF" == "mctpi3c4" ]; then
+            PID="0x00 0x00 0x00 0x00 0x21 0x18"
+        else
+            PID="0x00 0x00 0x01 0x00 0x21 0x18"
+        fi
+
+        busctl call au.com.codeconstruct.MCTP1 \
+                /au/com/codeconstruct/mctp1/interfaces/"${MCTP_INTF}" \
+                au.com.codeconstruct.MCTP.BusOwner1 AssignEndpoint \
+                ay 6 $PID 2>&1 | logger -t amd-mctp-config
+            logger -t amd-mctp-config "for PID = $PID"
+            logger -t amd-mctp-config \
+                "Discovering MCTP endpoints on the $MCTP_INTF... Done."
+    done
+
+    logger -t amd-mctp-config "mctp route show:"
+    mctp route show 2>&1 | logger -t amd-mctp-config
+    logger -t amd-mctp-config ""
+    logger -t amd-mctp-config "mctp neighbor show:"
+    mctp neigh show | logger -t amd-mctp-config
+    logger -t amd-mctp-config ""
+    logger -t amd-mctp-config "busctl tree au.com.codeconstruct.MCTP1:"
+    busctl tree au.com.codeconstruct.MCTP1 | logger -t amd-mctp-config
 }
 
 mctp_i2c_discover()
@@ -119,7 +210,7 @@ mctp_i2c_discover()
             busctl call au.com.codeconstruct.MCTP1 \
                 /au/com/codeconstruct/mctp1/interfaces/"${MCTP_I2C_INTF}" \
                 au.com.codeconstruct.MCTP.BusOwner1 AssignEndpoint \
-		ay 1 0x"${I2C_ADDR}" 2>&1 |
+                ay 1 0x"${I2C_ADDR}" 2>&1 |
                     logger -t amd-mctp-config
                 logger -t amd-mctp-config "for 0x${I2C_ADDR}"
         done
@@ -151,14 +242,19 @@ fi
 
 while getopts ":cdhu" OPTION; do
     case $OPTION in
-	c) #cleanup the mctp configuration
+        c) #cleanup the mctp configuration
+            mctp_neigh_route_delete "pcie"
             mctp_intf_config "pcie" "down"
+            mctp_neigh_route_delete "i3c"
             mctp_intf_config "i3c" "down"
+            mctp_neigh_route_delete "i2c"
             mctp_intf_config "i2c" "down"
             ;;
 
         d) # trigger the discovery process
-            mctp_i2c_discover "$MCTP_I2C_NETWORK_ID"
+            #mctp_pcie_discover
+            mctp_i3c_discover
+            mctp_i2c_discover
             ;;
 
         h) # display Help
