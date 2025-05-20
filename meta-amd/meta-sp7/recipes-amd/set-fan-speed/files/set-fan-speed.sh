@@ -5,6 +5,10 @@ set -e
 # Speed Limit 30% (Range 0x0 to 0xFF)
 SPEED_LIMIT=0x4C
 
+PUMP_I2C_1P=122
+PUMP_I2C_2P=125
+PUMP_I2C_GHANA=130
+
 init_nct7363_fan_controller()
 {
     # Define platform specific nct7363 controller registers
@@ -65,6 +69,31 @@ init_nct7363_fan_controller()
     return 0
 }
 
+init_nct7363_pump_fan()
+{
+    if [[ "$board_id" == "8E" ]]; then
+        echo "Initializing pump fans for Ghana"
+    else
+        echo "only Ghana has pump fans"
+        return 0
+    fi
+    # Define platform specific nct7363 controller registers
+    FAN_SET_REG=(
+        # PWM initilization Regs, for 1-channel PWM
+        "0x2A 0x00"        # Disable WDT for no-fan testing
+        "0x38 0x01"        # Enable PWM0
+        "0x42 0x1E"        # Enable FANIN9-12
+        "0x20 0xA9"        # Set FANIN11 FANIN10 FANIN9 PWM0
+        "0x21 0x02"        # Set FANIN12
+        "0x22 0x00"        # Set GPIO10-13
+        "0x23 0x00"        # Set GPIO14-17
+
+        # Fan speed control Regs, for 1-2 fans, set to 100%
+        "0x90 0xFF"  # Set PWM0 FSCPxDUTY
+    )
+    return 0
+}
+
 set_nct7363_fan_speed()
 {
     # Fan Controller Dev ID
@@ -89,6 +118,14 @@ set_nct7363_fan_speed()
     # Set nct7363 fan controller registers
     for ((i=0; i<num_of_nct7363_controller; i++)); do
         local bus=${i2c_bus_array[i]}
+
+        # in PRB only Ghana has pump fan
+        if [ "$bus" == "$PUMP_I2C" ]; then
+            init_nct7363_pump_fan || retval=$?
+            if [[ "$retval" -ne 0 ]]; then
+                echo "Error: init_nct7363_pump_fan failed."
+            fi
+        fi
 
         for reg_val in "${FAN_SET_REG[@]}"; do
             local register="${reg_val%% *}"
@@ -127,7 +164,21 @@ set_emc2305_fan_speed()
     do
         for (( j=0; j <num_of_fans; j++));
         do
-            i2cset -f -y "${i2c_bus_array[i]}" $EMC2305_DEV "${FAN_SET_REG[j]}" "$speed_val" || retval=$?
+            pwm=$speed_val
+            if [ "${i2c_bus_array[i]}" == "$PUMP_I2C" ]; then
+                if [ "$P2" == "true" ]; then
+                    if [ $j -le 1 ]; then
+                        # pump fans run at 100%
+                        pwm=255
+                    fi
+                else
+                    if [ $j -ge 4 ]; then
+                        # pump fans run at 100%
+                        pwm=255
+                    fi
+                fi
+            fi
+            i2cset -f -y "${i2c_bus_array[i]}" $EMC2305_DEV "${FAN_SET_REG[j]}" "$pwm" || retval=$?
             if [[ "$retval" -ne 0 ]]; then
                 echo "Error: Setting fan speed failed or there is no fan connected..."
                 break
@@ -149,24 +200,39 @@ fi
 board_id=$(/sbin/fw_printenv -n board_id)
 case "$board_id" in
     # Marley(79, 0x7A, 0x7B)
-    # Congo(0x80, 0x81, 0x86)
     # Morocco(0x82, 0x83, 0x87)
+    # Malawi (0x8A)
+    "79" | "7A" | "7B" | "82" | "83" | "87" | "8A")
+        PUMP_I2C=$PUMP_I2C_2P
+        P2="true"
+        # Call functions to set EMC2305 Fan speeds
+        set_emc2305_fan_speed
+        ;;
+    # Congo(0x80, 0x81, 0x86)
     # Senegal (0x88)
     # Sahara (0x89)
-    # Malawi (0x8A)
     # Zambia (0x8B)
     # Zimbabwe (0x8C)
     # Zanzibar (0x8D)
     # Zaire (0x9E)
     # Marrakesh (0xB0)
-    "79" | "7A" | "7B" | "80" | "81" | "82" | "83" | "86" | "87" | "88" | "89" | "8A" | "8B" | "8C" | "8D" | "9E" | "B0")
+    "80" | "81" | "86" | "88" | "89" | "8B" | "8C" | "8D" | "9E" | "B0")
+        PUMP_I2C=$PUMP_I2C_1P
+        P2="false"
         # Call functions to set EMC2305 Fan speeds
         set_emc2305_fan_speed
         ;;
     # Kenya(0x84)
     # Nigeria(0x85)
+    "84" | "85")
+        # no pump fan in Kenya and Nigeria
+        PUMP_I2C=0xFF
+        # Call functions to set NCT7363 Fan speeds
+        set_nct7363_fan_speed
+        ;;
     # Ghana (0x8E)
-    "84" | "85" | "8E")
+    "8E")
+        PUMP_I2C=$PUMP_I2C_GHANA
         # Call functions to set NCT7363 Fan speeds
         set_nct7363_fan_speed
         ;;
