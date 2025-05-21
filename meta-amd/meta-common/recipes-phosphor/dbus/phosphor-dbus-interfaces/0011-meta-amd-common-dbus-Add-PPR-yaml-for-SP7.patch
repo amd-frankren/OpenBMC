@@ -1,0 +1,129 @@
+From bf5a46792d6f57de0c90ebd379a559379e1a4664 Mon Sep 17 00:00:00 2001
+From: modolaty <mohsen.dolaty@amd.com>
+Date: Tue, 29 Apr 2025 19:07:40 -0500
+Subject: [PATCH] meta-amd:common:dbus Add PPR yaml for SP7
+
+Add Post Package Repair yaml for SP7 platforms.
+Code is merged from PPR in SP5.
+there are 5 new methods
+- setPostPackageRepairData
+- getPostPackageRepairStatus
+- getPostPackageRepairConfig
+- setPostPackageRepairConfig
+- startRuntimeRepair
+
+Tested:
+- verified in Congo RevA with fused part
+
+Signed-off-by: modolaty <mohsen.dolaty@amd.com>
+---
+ .../PostPackageRepair/PprData.interface.yaml  | 98 +++++++++++++++++++
+ 1 file changed, 98 insertions(+)
+ create mode 100644 yaml/xyz/openbmc_project/PostPackageRepair/PprData.interface.yaml
+
+diff --git a/yaml/xyz/openbmc_project/PostPackageRepair/PprData.interface.yaml b/yaml/xyz/openbmc_project/PostPackageRepair/PprData.interface.yaml
+new file mode 100644
+index 0000000..f58a499
+--- /dev/null
++++ b/yaml/xyz/openbmc_project/PostPackageRepair/PprData.interface.yaml
+@@ -0,0 +1,98 @@
++description: >
++    Accept post package repair data coming in from user and return the status of the post package repair.
++
++properties:
++    - name: CurrentRepairEntry
++      type: uint16
++      description: >
++          It is used to indicate the current repair entry. Starts from 0
++          and is limited to a maximum of 64.
++    - name: RecordAdd
++      type: boolean
++      description: >
++          Indicates if the post package repair record is added.
++    - name: oobPprEnable
++      type: boolean
++      description: >
++          Indicates if Out-of-Band post package repair is enabled.
++    - name: RtToBt
++      type: boolean
++      description: >
++          Creates BT from successful RT PPR.
++    - name: BtSetToHard
++      type: boolean
++      description: >
++          Sets BT to Hard Repair when creating from RT PPR.
++
++methods:
++    - name: setPostPackageRepairData
++      description: >
++          Method to set the post package repair data.
++      parameters:
++        - name: RepairEntryNum
++          type: uint16
++          description: >
++            The entry number for post package repair.
++        - name: RepairType
++          type: uint16
++          description: >
++            The post package repair type data.
++        - name: SocNum
++          type: uint16
++          description: >
++            The Soc Number.
++        - name: Payload
++          type: array[uint16]
++          description: >
++            The post package repair data payload.
++      returns:
++        - name: recordAdded
++          type: boolean
++          description: >
++            A boolean value to indicate whether record added or not.
++    - name: getPostPackageRepairStatus
++      description: >
++          Method to get the cached post package repair status.
++      returns:
++        - name: pprDataOut
++          type: array[struct[uint16,uint16,uint16,uint16,array[uint16]]]
++          description: >
++            An array of post package repair entries and its status.
++    - name: getPostPackageRepairConfig
++      description: >
++          Method to get the post package repair configuration.
++      returns:
++        - name: pprConfig
++          type: array[uint16]
++          description: >
++            An array of post package Repair Config data
++    - name: setPostPackageRepairConfig
++      description: >
++          Method to set the post package repair configuraton.
++      parameters:
++        - name: chgFlag
++          type: uint16
++          description: >
++            A uint16 value where each bit indicates which configuration parameter has changed.
++        - name: data
++          type: boolean
++          description: >
++            A boolean value to indicate whether the config parameter is enabled or disabled.
++      returns:
++        - name: result
++          type: boolean
++          description: >
++            A boolean value to indicate whether configuration was changed or not.
++    - name: startRuntimeRepair
++      description: >
++          Method to get the cached post package repair status.
++      parameters:
++        - name: Index
++          type: uint16
++          description: >
++              Index indicates which repair entry post package repair is requested.
++      returns:
++        - name: Status
++          type: uint32
++          description: >
++            APML command status of the repair entry.
+--
+2.34.1
