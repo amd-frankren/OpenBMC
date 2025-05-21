@@ -1,0 +1,59 @@
+From 2d039d6f452b0ea82d89a9d82337a78e503ac4b1 Mon Sep 17 00:00:00 2001
+From: ashok2ku <Ashok2.Kumar@amd.com>
+Date: Wed, 21 May 2025 11:52:01 -0500
+Subject: [PATCH] webui-vue: add new warning message for BMC update
+
+BMC update takes longer time on venice, hence added new
+warning message for user to avoid interrupt in between update
+
+Tested fields: Verified qemu.
+
+Upsteam Status : Inappropriate
+
+Signed-off-by: ashok2ku <Ashok2.Kumar@amd.com>
+---
+ src/locales/en-US.json                               |  3 ++-
+ .../Firmware/FirmwareModalUpdateFirmware.vue         | 12 +++++++++++-
+ 2 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/src/locales/en-US.json b/src/locales/en-US.json
+index 25ab33c..32c8f2e 100644
+--- a/src/locales/en-US.json
++++ b/src/locales/en-US.json
+@@ -378,7 +378,8 @@
+             "updateFirmwareInfo": "The BMC will reboot during the update process. The server cannot be powered on until the update is finished.",
+             "updateFirmwareInfo2": "The running image (%{running}) will be copied to backup. The backup image will be deleted.",
+             "updateFirmwareInfo3": "Are you sure you want to proceed with the update?",
+-            "updateFirmwareInfoDefault": "The new image will be uploaded and activated. After that, the BMC or host will reboot automatically to run from the new image."
++            "updateFirmwareInfoDefault": "The new image will be uploaded and activated. After that, the BMC or host will reboot automatically to run from the new image.",
++            "updateFirmwareInfoWarning": "Caution: The BMC firmware update takes ~20 minutes to complete. Please do not AC cycle or interrupt the process, as doing so may result in update failure and a corrupted flash."
+         },
+         "toast": {
+             "errorSwitchImages": "Error switching running and backup images.",
+diff --git a/src/views/Operations/Firmware/FirmwareModalUpdateFirmware.vue b/src/views/Operations/Firmware/FirmwareModalUpdateFirmware.vue
+index 1835521..c9bfaa3 100644
+--- a/src/views/Operations/Firmware/FirmwareModalUpdateFirmware.vue
++++ b/src/views/Operations/Firmware/FirmwareModalUpdateFirmware.vue
+@@ -22,7 +22,10 @@
+       </p>
+     </template>
+     <template v-else>
+-      {{ $t('pageFirmware.modal.updateFirmwareInfoDefault') }}
++      <p>{{ $t('pageFirmware.modal.updateFirmwareInfoDefault') }}</p>
++      <p class="warning-message">
++        {{ $t('pageFirmware.modal.updateFirmwareInfoWarning') }}
++      </p>
+     </template>
+   </b-modal>
+ </template>
+@@ -42,3 +45,10 @@ export default {
+   },
+ };
+ </script>
++
++<style scoped>
++.warning-message {
++  color: red;
++  font-weight: bold;
++}
++</style>
