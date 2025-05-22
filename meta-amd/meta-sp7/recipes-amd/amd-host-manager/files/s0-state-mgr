@@ -71,11 +71,12 @@ manage_fan_speed() {
         set-fan-speed.sh $DEFAULT_FAN_SPEED
         if [[ $? -ne 0 ]]; then
             echo "s0-state-mgr: Failed to set default fan speed"
-            exit 1
         fi
+        manage-fan-speed.sh false true & >/dev/null
     else
-        manage-fan-speed.sh >/dev/null
+        manage-fan-speed.sh true true & >/dev/null
     fi
+    exit 0
 }
 
 # Main function
