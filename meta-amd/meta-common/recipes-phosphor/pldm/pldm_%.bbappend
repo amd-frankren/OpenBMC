@@ -1,4 +1,4 @@
 SRC_URI:amd = "git://github.com/AMDESE/pldm;branch=integ_sp7;protocol=https"
-SRCREV:amd = "a162a28a42f6e3654a23efa31c759866d7003cca"
+SRCREV:amd = "56fc23cd3823f2c7f1a47461615e336989a378d7"
 
 EXTRA_OEMESON:append = " -Doem-ibm=disabled -Doem-ampere=disabled"
