@@ -9,8 +9,8 @@ DEPENDS += "virtual/kernel"
 
 RDEPENDS:${PN}:append = "bash i2c-tools i3c-tools"
 
-SRC_URI += "git://git@github.com/amd/apml_library.git;protocol=ssh;tag=apml-3.8.4"
-unset SRCREV
+SRC_URI = "git://github.com/amd/esmi_oob_library;protocol=https;branch=master"
+SRCREV = "1c5f45363cbb7d39bf3344bc5d522956455b41fc"
 
 S = "${WORKDIR}/git"
 
