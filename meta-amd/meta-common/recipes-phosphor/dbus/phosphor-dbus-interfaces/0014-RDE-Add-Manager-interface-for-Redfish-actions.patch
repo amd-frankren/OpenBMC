@@ -1,0 +1,435 @@
+From 7dd6e9750eb47fdd319ab7deaf28eb22c5d17cf1 Mon Sep 17 00:00:00 2001
+From: Jayanth Othayoth <Jayanth.Othayoth@amd.com>
+Date: Sat, 21 Jun 2025 10:24:53 +0000
+Subject: [PATCH] RDE: Add Device and Manager interfaces
+
+Introduces new D-Bus interfaces to support Redfish Device Enablement
+capabilities in OpenBMC. Adds per-device introspection via the
+xyz.openbmc_project.RDE.Device interface and a centralized control path
+via xyz.openbmc_project.RDE.Manager.
+
+The Device interface exposes supported operations, features,
+schema descriptors, and capability negotiation status for each
+discovered device.
+
+The Manager interface supports performing Redfish operations
+(GET, POST,etc.) on target devices using inline or file-based
+payloads with optional encoding hints.
+
+Key additions:
+  - OperationType, FeatureType, and SchemaDescriptorKeys enums.
+  - PerformRedfishOperation, GetDeviceSchemaInfo, and
+    GetSupportedOperations  methods.
+  - Support for PayloadFormatType and SchemaOutputFormat for
+    flexible input and output handling.
+  - NegotiationStatus enum tracks RDE capability negotiation state.
+
+Upstream Status: [Review https://gerrit.openbmc.org/c/openbmc/phosphor-dbus-interfaces/+/81300]
+
+Signed-off-by: Jayanth Othayoth <Jayanth.Othayoth@amd.com>
+---
+ .../openbmc_project/RDE/Common.interface.yaml |  59 ++++++++
+ .../openbmc_project/RDE/Device.interface.yaml | 116 +++++++++++++++
+ .../RDE/Manager.interface.yaml                | 134 ++++++++++++++++++
+ yaml/xyz/openbmc_project/RDE/README.md        |  59 ++++++++
+ 4 files changed, 368 insertions(+)
+ create mode 100644 yaml/xyz/openbmc_project/RDE/Common.interface.yaml
+ create mode 100644 yaml/xyz/openbmc_project/RDE/Device.interface.yaml
+ create mode 100644 yaml/xyz/openbmc_project/RDE/Manager.interface.yaml
+ create mode 100644 yaml/xyz/openbmc_project/RDE/README.md
+
+diff --git a/yaml/xyz/openbmc_project/RDE/Common.interface.yaml b/yaml/xyz/openbmc_project/RDE/Common.interface.yaml
+new file mode 100644
+index 0000000..c7d91ed
+--- /dev/null
++++ b/yaml/xyz/openbmc_project/RDE/Common.interface.yaml
+@@ -0,0 +1,59 @@
++enumerations:
++    - name: OperationType
++      description: >
++          Represents individual operations that can be performed on system
++          resources. These types align with typical RESTful interface behavior.
++      values:
++          - name: HEAD
++            value: 0
++            description: >
++                Check if a resource is accessible without retrieving its
++                content.
++          - name: READ
++            value: 1
++            description: >
++                Retrieve a resource or collection (commonly associated with HTTP
++                GET).
++          - name: CREATE
++            value: 2
++            description: >
++                Create a new resource (commonly associated with HTTP POST).
++          - name: DELETE
++            value: 3
++            description: >
++                Remove an existing resource.
++          - name: UPDATE
++            value: 4
++            description: >
++                Apply partial modifications to a resource (commonly associated
++                with HTTP PATCH).
++          - name: REPLACE
++            value: 5
++            description: >
++                Fully replace an existing resource with a new version (commonly
++                associated with HTTP PUT).
++          - name: ACTION
++            value: 6
++            description: >
++                Perform a defined operation on a resource, typically involving
++                custom or parameterized behavior.
++
++    - name: SchemaDescriptorKeys
++      description: >
++          Valid keys used within RedfishSchemaDescriptors to describe schema
++          structure and supported commands.
++      values:
++          - name: Schema
++            description: >
++                The resource type name (e.g., "Processor", "Memory").
++          - name: SubURI
++            description: >
++                The relative URI path to the resource (e.g.,
++                "Processors/{ProcessorId}").
++          - name: Version
++            description: >
++                The schema version used to describe the resource (e.g., "1.1").
++          - name: CommandPath
++            description: >
++                The relative path to a supported action or operation (e.g.,
++                "Actions/Reset").
+diff --git a/yaml/xyz/openbmc_project/RDE/Device.interface.yaml b/yaml/xyz/openbmc_project/RDE/Device.interface.yaml
+new file mode 100644
+index 0000000..0943ca7
+--- /dev/null
++++ b/yaml/xyz/openbmc_project/RDE/Device.interface.yaml
+@@ -0,0 +1,116 @@
++description: >
++    Represents a Redfish Device Enablement (RDE) device discovered and managed
++    by the BMC. This object abstracts the logical representation of a Redfish-
++    accessible device and is created for each such endpoint detected via any
++    supported transport (PLDM, SPDM, etc).
++
++    The object may also optionally implement `xyz.openbmc_project.Common.UUID`
++    to address the requirement for devices with multiple endpoints and for
++    hot-plug devices.
++
++service_names:
++    - default: xyz.openbmc_project.RDE.Device
++
++properties:
++    - name: Name
++      type: string
++      description: >
++          Human-readable device name or alias useful for logging and tooling.
++
++    - name: Id
++      type: string
++      description: >
++          BMC-wide unique identifier usable across protocol layers.
++
++    - name: SupportedOps
++      type: array[enum[xyz.openbmc_project.RDE.Common.OperationType]]
++      description: >
++          Redfish logical operations supported by the device, as determined
++          through capability discovery. These align with operation-specific
++          flags defined in the RDE specification.
++
++    - name: SupportedFeatures
++      type: array[enum[self.FeatureType]]
++      description: >
++          Redfish protocol capabilities supported by this device, including
++          feature-level support like BEJ or eventing.
++
++    - name: RedfishSchemaDescriptors
++      type: array[dict[string, string]]
++      description: >
++          A flat array of Redfish resource descriptors. Each dictionary must
++          include key-value pairs that describe a Redfish resource and its
++          supported command. Valid keys are defined in the SchemaDescriptorKeys
++          enumeration.
++
++    - name: NegotiationStatus
++      type: enum[self.NegotiationStatus]
++      description: >
++          Current state of capability negotiation with the device.
++
++methods:
++    - name: RefreshDeviceInfo
++      description: >
++          Refreshes and updates capability and schema metadata from the device.
++      in: []
++      out: []
++
++signals:
++    - name: DeviceUpdated
++      description: >
++          Emitted when any device property changes due to refresh or other
++          events.
++      args:
++          - name: changed
++            type: dict[string, variant]
++
++associations:
++    - name: binds_to_endpoint
++      description: >
++          Indicates the transport-level MCTP endpoint associated with this
++          device.
++      reverse_name: hosts_rde_device
++      required_endpoint_interfaces:
++          - xyz.openbmc_project.MCTP.Endpoint
++
++enumerations:
++    - name: FeatureType
++      description: >
++          Redfish-level protocol features and auxiliary capabilities supported
++          by the device.
++
++      values:
++          - name: BEJ
++            description: >
++                Supports Binary Encoded JSON (BEJ) v1.1 encoding and decoding.
++          - name: EVENTS
++            description: >
++                Supports Redfish Events or Long-running Tasks.
++          - name: ACTIONS
++            description: >
++                Supports Redfish Actions.
++
++    - name: NegotiationStatus
++      description: >
++          Current state of capability negotiation with the device.
++
++      values:
++          - name: NotStarted
++            description: >
++                Negotiation has not yet been initiated for this device.
++          - name: InProgress
++            description: >
++                Negotiation is currently underway; capability exchange is in
++                progress.
++          - name: Success
++            description: >
++                Negotiation completed successfully; device capabilities are
++                known.
++          - name: Failed
++            description: >
++                Negotiation attempt failed; device capability discovery could
++                not be completed.
++          - name: Partial
++            description: >
++                Negotiation completed with partial success; some device
++                capabilities may be incomplete or limited.
+diff --git a/yaml/xyz/openbmc_project/RDE/Manager.interface.yaml b/yaml/xyz/openbmc_project/RDE/Manager.interface.yaml
+new file mode 100644
+index 0000000..b3102dd
+--- /dev/null
++++ b/yaml/xyz/openbmc_project/RDE/Manager.interface.yaml
+@@ -0,0 +1,134 @@
++description: >
++    Interface for performing RDE operations on Redfish-capable devices. Supports
++    inline or file-based payloads and provides schema and capability discovery
++    services.
++
++service_names:
++    - default: xyz.openbmc_project.RDE.Manager
++
++methods:
++    - name: PerformRedfishOperation
++      description: >
++          Execute a Redfish operation on the target device using either an
++          inline or file-based payload.
++      parameters:
++          - name: RequestId
++            type: uint32
++            description: >
++                Unique identifier for the request.
++          - name: OperationId
++            type: enum[xyz.openbmc_project.RDE.Common.OperationType]
++            description: >
++                Type of Redfish operation to perform.
++          - name: TargetURI
++            type: string
++            description: >
++                URI of the target resource or action (e.g.,
++                /Actions/CustomCommand).
++          - name: DeviceId
++            type: string
++            description: >
++                Unique device identifier.
++          - name: Payload
++            type: string
++            description: >
++                Inline JSON/BEJ payload string or a file path/URI. If
++                PayloadFormat is FilePath, this must point to the file.
++          - name: PayloadFormat
++            type: enum[self.PayloadFormatType]
++            default: Inline
++            optional: true
++            description: >
++                Specifies whether Payload is embedded or provided as a file
++                path.
++          - name: EncodingType
++            type: string
++            default: "BEJ"
++            optional: true
++            description: >
++                Payload encoding format. Options include BEJ or JSON.
++          - name: SessionId
++            type: string
++            optional: true
++            description: >
++                Session identifier to correlate related transactions.
++      returns:
++          - name: Response
++            type: string
++            description: >
++                JSON-formatted or encoded response depending on operation.
++          - name: StatusCode
++            type: uint16
++            description: >
++                HTTP-style numeric status code representing execution outcome.
++      errors:
++          - xyz.openbmc_project.Common.Error.InternalFailure
++          - xyz.openbmc_project.Common.Error.InvalidArgument
++          - xyz.openbmc_project.Common.Error.NotAllowed
++          - xyz.openbmc_project.Common.Error.Unavailable
++
++    - name: GetDeviceSchemaInfo
++      description: >
++          Retrieve the schema or URI dictionary for a target device.
++      parameters:
++          - name: DeviceId
++            type: string
++            description: >
++                Unique identifier for the target device.
++      returns:
++          - name: SchemaInfo
++            type: array[dict[string, string]]
++            description: >
++                A flat array of Redfish resource descriptors. Each dictionary
++                must include key-value pairs that describe a Redfish resource
++                and its supported command. Valid keys are defined in the
++                SchemaDescriptorKeys enumeration.
++      errors:
++          - xyz.openbmc_project.Common.Error.Unavailable
++          - xyz.openbmc_project.Common.Error.InternalFailure
++
++    - name: GetSupportedOperations
++      description: >
++          Return the list of supported Redfish operations and encoding types for
++          a target device.
++      parameters:
++          - name: DeviceId
++            type: string
++            description: >
++                Unique device identifier.
++      returns:
++          - name: SupportedOps
++            type: array[enum[xyz.openbmc_project.RDE.Common.OperationType]]
++            description: >
++                Redfish logical operations supported by the device, as
++                determined through capability discovery. These align with
++                operation-specific flags defined in the RDE specification.
++      errors:
++          - xyz.openbmc_project.Common.Error.InternalFailure
++
++enumerations:
++    - name: SchemaOutputFormat
++      description: >
++          Format of schema response content.
++      values:
++          - name: JsonData
++            description: Return the schema as an inline JSON string.
++          - name: FilePath
++            description: Return a URI or file path to the schema.
++
++    - name: PayloadFormatType
++      description: >
++          Format of the payload input.
++      values:
++          - name: Inline
++            description: Payload is embedded inline as a string.
++          - name: FilePath
++            description: Payload is a path or URI to external data.
++
++paths:
++    - namespace: /xyz/openbmc_project/rde
++      segments:
++          - name: BMC
++            value: bmc
++          - name: System
++            value: system
+diff --git a/yaml/xyz/openbmc_project/RDE/README.md b/yaml/xyz/openbmc_project/RDE/README.md
+new file mode 100644
+index 0000000..d0532f3
+--- /dev/null
++++ b/yaml/xyz/openbmc_project/RDE/README.md
+@@ -0,0 +1,59 @@
++# xyz.openbmc_project.RDE
++
++## Overview
++
++This module defines D-Bus interfaces for Redfish Device Enablement (RDE)
++services, allowing the BMC to discover, manage, and interact with
++Redfish-capable devices over supported transports such as PLDM, NVMe-MI, and
++SPDM.
++
++It provides two key interfaces:
++
++- `xyz.openbmc_project.RDE.Device`: Represents each RDE-capable endpoint.
++
++- `xyz.openbmc_project.RDE.Manager`: Centralized interface for invoking Redfish
++  operations and querying device metadata.
++
++---
++
++## Components
++
++### 1. RDE Device Interface
++
++The `Device` interface exposes:
++
++- Supported Redfish operations (e.g., GET, REPLACE)
++- Protocol-level feature support (e.g., BEJ encoding, Redfish Events)
++- Redfish schema descriptors used for client introspection
++- Device-wide metadata including unique identifier and negotiation status
++
++This interface is automatically instantiated for each discovered RDE device.
++
++### 2. RDE Manager Interface
++
++The `Manager` interface provides:
++
++- Methods to perform Redfish operations on any device by ID
++- Access to schema metadata and supported capabilities
++- Support for inline or file-based payloads and responses
++- A simplified abstraction for clients that do not directly track device paths
++
++---
++
++## Usage Summary
++
++- Use the `Device` interface when working directly with a known D-Bus object
++  path or to subscribe to property changes.
++- Use the `Manager` interface for centralized access when you have only a device
++  ID or when performing file-based or inline Redfish operations.
++- Both interfaces are designed to be complementary. Clients may choose based on
++  privilege level, integration depth, or preferred data access pattern.
++
++---
++
++## Documentation References
++
++- `Device.interface.yaml`: YAML definition for the `Device` interface
++- `Manager.interface.yaml`: YAML definition for the `Manager` interface
++- Enumerations include operation types, feature types, schema keys, and
++  negotiation status
+--
+2.43.0
+
