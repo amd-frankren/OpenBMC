@@ -1,5 +1,5 @@
 SRC_URI:amd = "git://github.com/AMDESE/pldm;branch=integ_sp7;protocol=https"
-SRCREV:amd = "9bae8c483778d8a62a56cd103e5cfc56629f05e8"
+SRCREV:amd = "a372f7e21a7cfe41781058e3348c346fb62e7c88"
 
 DEPENDS += "libbej"
 
