@@ -1,0 +1,81 @@
+From 412bc86e28fb64258a57d2f9ea415ee249f8dc26 Mon Sep 17 00:00:00 2001
+From: frankren <frankren@amd.com>
+Date: Sun, 27 Jul 2025 20:25:36 +0800
+Subject: [PATCH] In order to enable pRoT, re-layout the BMC flash partition.
+
+Signed-off-by: frankren <frankren@amd.com>
+---
+ .../boot/dts/aspeed/amd-flash-layout-128.dtsi | 51 +++++++++++++++++--
+ 1 file changed, 46 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/aspeed/amd-flash-layout-128.dtsi b/arch/arm64/boot/dts/aspeed/amd-flash-layout-128.dtsi
+index d7b6ad31a5ce..f420d9bcf745 100644
+--- a/arch/arm64/boot/dts/aspeed/amd-flash-layout-128.dtsi
++++ b/arch/arm64/boot/dts/aspeed/amd-flash-layout-128.dtsi
+@@ -16,17 +16,58 @@ u-boot-env@400000 {
+ 	};
+ 
+ 	kernel@420000 {
+-		reg = <0x420000 0x1000000>; // 16MB
++		reg = <0x420000 0x0800000>; // 8M
+ 		label = "kernel";
+ 	};
+ 
+-	rofs@1420000 {
+-		reg = <0x1420000 0x4BE0000>; // 77.875MB
++	rofs@c20000 {
++		reg = <0xc20000 0x1ce0000>; // 28.875 MB
+ 		label = "rofs";
+ 	};
+ 
+-	rwfs@6000000 {
+-		reg = <0x6000000 0x2000000>; // 32MB
++	rwfs@2900000 {
++		reg = <0x2900000 0x200000>; // 2MB
+ 		label = "rwfs";
+ 	};
++
++
++	// u-boot + u-boot-env + kernel + rofs        = 41MB
++	// u-boot + u-boot-env + kernel + rofs + rwfs = 43MB
++
++	pfm@2b00000 {
++		reg = <0x2b00000 0x20000>; // 128KB
++		label = "pfm";
++	};
++
++	rc-image@2b20000 {
++		reg = <0x2b20000 0x2900000>; // 41MB
++		label = "rc-image";
++	};
++
++	image-stg@5420000 {
++		reg = <0x5420000 0x2900000>; // 41MB
++		label = "image-stg";
++	};
++
++	pfr-stg@7d20000 {
++		reg = <0x7d20000 0x100000>; // 1MB
++		label = "pfr-stg";
++	};
++			
++	afm-stg@7e20000 {
++		reg = <0x7e20000 0x20000>; // 128KB
++		label = "afm-stg";
++	};
++
++	afm-rc@7e40000 {
++		reg = <0x7e40000 0x20000>; // 128KB
++		label = "afm-rc";
++	};
++
++
++	reserved-1@7e60000 {
++		reg = <0x7e60000 0x1a0000>; // 1.625MB (1MB + 640KB)
++		label = "reserved-1";
++	};
++
+ };
+-- 
+2.34.1
+
