@@ -7,9 +7,7 @@ RDEPENDS_PN_SYSTEM_EXTRAS:append:sp7:amd-withhost = " \
     fpga-tools \
     i3chub-init \
     mtd-utils \
-    phosphor-inventory-manager \
     phosphor-ipmi-fru \
-    tcpdump \
     "
 RDEPENDS_PN_SYSTEM_EXTRAS:append:sp7:amd-configmgr = " \
     multi-host-config \
